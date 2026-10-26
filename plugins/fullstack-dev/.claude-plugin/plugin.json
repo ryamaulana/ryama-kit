@@ -1,0 +1,8 @@
+{
+  "name": "fullstack-dev",
+  "version": "0.1.0",
+  "description": "Fullstack dev crew (prd, architect, fe, be, ui-critic, cyber, qa) driven by docs/PRD.md, scoped by commands, enforced by hooks. Requires ui-designer-kit for visual work.",
+  "author": {
+    "name": "ryama"
+  }
+}

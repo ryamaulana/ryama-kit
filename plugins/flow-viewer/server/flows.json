@@ -1,0 +1,290 @@
+{
+  "free": {
+    "title": "Overview (semua agent)",
+    "nodes": [
+      {
+        "id": "prd",
+        "role": "PRD + acceptance criteria",
+        "optional": true,
+        "col": 1,
+        "row": 0
+      },
+      {
+        "id": "architect",
+        "role": "ARCHITECTURE + TASKS",
+        "optional": true,
+        "col": 1,
+        "row": 1
+      },
+      {
+        "id": "ui-designer",
+        "role": "referensi, DESIGN.md, visual",
+        "optional": true,
+        "col": 2,
+        "row": 1
+      },
+      {
+        "id": "be",
+        "role": "API, DB, logic",
+        "optional": true,
+        "col": 2,
+        "row": 0
+      },
+      {
+        "id": "fe",
+        "role": "wiring dan logic frontend",
+        "optional": true,
+        "col": 2,
+        "row": 2
+      },
+      {
+        "id": "ui-critic",
+        "role": "review screenshot",
+        "optional": true,
+        "col": 3,
+        "row": 1
+      },
+      {
+        "id": "qa",
+        "role": "tes acceptance (Playwright)",
+        "optional": true,
+        "col": 3,
+        "row": 0
+      },
+      {
+        "id": "cyber",
+        "role": "review keamanan",
+        "optional": true,
+        "col": 3,
+        "row": 2
+      }
+    ],
+    "edges": [
+      [
+        "prd",
+        "architect"
+      ],
+      [
+        "architect",
+        "ui-designer"
+      ],
+      [
+        "ui-designer",
+        "be"
+      ],
+      [
+        "ui-designer",
+        "fe"
+      ],
+      [
+        "be",
+        "ui-critic"
+      ],
+      [
+        "fe",
+        "ui-critic"
+      ],
+      [
+        "ui-critic",
+        "qa"
+      ],
+      [
+        "ui-critic",
+        "cyber"
+      ]
+    ]
+  },
+  "prd-check": {
+    "title": "prd-check",
+    "nodes": [
+      {
+        "id": "prd",
+        "role": "audit gap PRD"
+      }
+    ],
+    "edges": []
+  },
+  "boilerplate": {
+    "title": "boilerplate",
+    "nodes": [
+      {
+        "id": "architect",
+        "role": "ARCHITECTURE + TASKS"
+      },
+      {
+        "id": "fe",
+        "role": "scaffold frontend"
+      },
+      {
+        "id": "be",
+        "role": "scaffold backend"
+      }
+    ],
+    "edges": [
+      [
+        "architect",
+        "fe"
+      ],
+      [
+        "architect",
+        "be"
+      ]
+    ]
+  },
+  "ui-only": {
+    "title": "ui-only",
+    "nodes": [
+      {
+        "id": "ui-designer",
+        "role": "referensi, DESIGN.md, mockup"
+      }
+    ],
+    "edges": []
+  },
+  "fe-only": {
+    "title": "fe-only",
+    "nodes": [
+      {
+        "id": "architect",
+        "role": "jika ARCHITECTURE belum ada",
+        "optional": true
+      },
+      {
+        "id": "fe",
+        "role": "wiring dan logic"
+      },
+      {
+        "id": "ui-designer",
+        "role": "visual"
+      },
+      {
+        "id": "ui-critic",
+        "role": "review screenshot"
+      }
+    ],
+    "edges": [
+      [
+        "architect",
+        "fe"
+      ],
+      [
+        "fe",
+        "ui-designer"
+      ],
+      [
+        "ui-designer",
+        "ui-critic"
+      ]
+    ]
+  },
+  "be-only": {
+    "title": "be-only",
+    "nodes": [
+      {
+        "id": "architect",
+        "role": "jika ARCHITECTURE belum ada",
+        "optional": true
+      },
+      {
+        "id": "be",
+        "role": "API, DB, logic"
+      },
+      {
+        "id": "cyber",
+        "role": "review keamanan"
+      }
+    ],
+    "edges": [
+      [
+        "architect",
+        "be"
+      ],
+      [
+        "be",
+        "cyber"
+      ]
+    ]
+  },
+  "review": {
+    "title": "review",
+    "nodes": [
+      {
+        "id": "qa",
+        "role": "tes acceptance"
+      },
+      {
+        "id": "cyber",
+        "role": "review keamanan"
+      },
+      {
+        "id": "ui-critic",
+        "role": "review screenshot",
+        "optional": true
+      }
+    ],
+    "edges": []
+  },
+  "all": {
+    "title": "all",
+    "nodes": [
+      {
+        "id": "architect",
+        "role": "ARCHITECTURE + TASKS"
+      },
+      {
+        "id": "ui-designer",
+        "role": "DESIGN.md + mockup"
+      },
+      {
+        "id": "be",
+        "role": "API, DB, logic"
+      },
+      {
+        "id": "fe",
+        "role": "wiring dan logic"
+      },
+      {
+        "id": "ui-critic",
+        "role": "review screenshot"
+      },
+      {
+        "id": "qa",
+        "role": "tes acceptance"
+      },
+      {
+        "id": "cyber",
+        "role": "review keamanan"
+      }
+    ],
+    "edges": [
+      [
+        "architect",
+        "ui-designer"
+      ],
+      [
+        "ui-designer",
+        "be"
+      ],
+      [
+        "ui-designer",
+        "fe"
+      ],
+      [
+        "be",
+        "ui-critic"
+      ],
+      [
+        "fe",
+        "ui-critic"
+      ],
+      [
+        "ui-critic",
+        "qa"
+      ],
+      [
+        "qa",
+        "cyber"
+      ]
+    ]
+  }
+}

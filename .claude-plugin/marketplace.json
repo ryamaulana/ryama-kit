@@ -1,0 +1,24 @@
+{
+  "name": "ryama-kit",
+  "description": "Kumpulan plugin pribadi ryama untuk Claude Code",
+  "owner": {
+    "name": "ryama"
+  },
+  "plugins": [
+    {
+      "name": "ui-designer-kit",
+      "source": "./plugins/ui-designer-kit",
+      "description": "Agent ui-designer: referensi -> DESIGN.md -> build -> cek Playwright -> review guidelines"
+    },
+    {
+      "name": "fullstack-dev",
+      "source": "./plugins/fullstack-dev",
+      "description": "Crew fullstack: prd, architect, fe, be, ui-critic, cyber, qa + command scope + hooks. Visual work didelegasikan ke ui-designer."
+    },
+    {
+      "name": "flow-viewer",
+      "source": "./plugins/flow-viewer",
+      "description": "Graf live ala n8n: agent/skill yang beneran jalan vs flow yang diharapkan (localhost:4777)."
+    }
+  ]
+}
