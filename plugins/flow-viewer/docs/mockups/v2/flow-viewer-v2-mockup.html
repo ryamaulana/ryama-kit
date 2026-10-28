@@ -1,0 +1,546 @@
+<!doctype html>
+<html lang="id" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Flow Viewer v2 — mockup</title>
+<script>try{var t=localStorage.getItem('fv2-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<style>
+:root{
+  --bg:#f4f4f4;--dot:#d6d6d6;--card:#ffffff;--line:#e4e4e4;--ink:#1a1a1a;--ink2:#5c5c5c;--ink3:#8a8a8a;
+  --acc:#1e63d6;--accbg:#e4edfb;--ok:#15803d;--okbg:#e6f3ea;--warn:#c2680a;--warnbg:#fbf0dd;--bad:#d1291f;--badbg:#fbe9e6;
+  --wait:#8a8a8a;--waitbg:#ececec;--edge:#bcbcbc;--shadow:0 1px 2px rgba(0,0,0,.06),0 4px 14px rgba(0,0,0,.05);--panel:#ffffff;
+}
+:root[data-theme=dark]{
+  --bg:#121212;--dot:#262626;--card:#1b1b1b;--line:#2b2b2b;--ink:#ededed;--ink2:#a6a6a6;--ink3:#767676;
+  --acc:#5b9cff;--accbg:#14263f;--ok:#4ade80;--okbg:#12281c;--warn:#fbbf24;--warnbg:#2e2410;--bad:#f87171;--badbg:#2f1717;
+  --wait:#8a8a8a;--waitbg:#262626;--edge:#434343;--shadow:0 1px 2px rgba(0,0,0,.4),0 4px 14px rgba(0,0,0,.3);--panel:#161616;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:14px/1.45 "Segoe UI Variable Text","Segoe UI",system-ui,-apple-system,"Helvetica Neue",sans-serif;display:flex;flex-direction:column;overflow:hidden}
+button{font:inherit;color:inherit;cursor:pointer}
+header{white-space:nowrap;height:56px;flex:none;display:flex;align-items:center;gap:20px;padding:0 20px;background:var(--card);border-bottom:1px solid var(--line)}
+.brand{font-weight:700;font-size:15px;letter-spacing:-.01em}
+.flow{max-width:190px;overflow:hidden;text-overflow:ellipsis;font-size:12px;color:var(--ink2);background:var(--waitbg);padding:3px 10px;border-radius:99px}
+.stats{display:flex;gap:6px;margin-left:8px}
+.stat{display:flex;align-items:baseline;gap:7px;padding:6px 14px;border-radius:10px}
+.stat b{font-size:17px;font-weight:650;font-variant-numeric:tabular-nums}
+.stat span{font-size:12px;color:var(--ink2)}
+.stat+.stat{border-left:1px solid var(--line);border-radius:0;padding-left:20px}
+.bar{width:84px;height:5px;border-radius:9px;background:var(--waitbg);overflow:hidden;align-self:center}
+.bar i{display:block;height:100%;background:var(--acc);width:50%}
+.sp{flex:1}
+.need{display:none;align-items:center;gap:8px;background:var(--warnbg);color:var(--warn);border:1px solid color-mix(in srgb,var(--warn) 35%,transparent);padding:6px 13px;border-radius:99px;font-weight:600;font-size:13px}
+.need.on{display:inline-flex}
+.need::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--warn);animation:pulse 1.6s infinite}
+.ib{border:1px solid var(--line);background:var(--card);border-radius:9px;padding:6px 12px;font-size:13px;color:var(--ink2)}
+.ib:hover{color:var(--ink);border-color:var(--ink3)}
+.ib.on{background:var(--accbg);color:var(--acc);border-color:transparent}
+.conn{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink2)}
+.conn i{width:7px;height:7px;border-radius:50%;background:var(--ok)}
+.wrap{flex:1;display:flex;min-height:0}
+#stage{flex:1;position:relative;overflow:hidden;background-image:radial-gradient(var(--dot) 1.2px,transparent 1.2px);background-size:22px 22px}
+#cv{position:absolute;left:0;top:0;transform-origin:0 0}
+svg#ed{position:absolute;left:0;top:0;pointer-events:none;overflow:visible}
+.col{position:absolute;top:0;width:300px}
+.col h4{margin:0 0 14px;font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink3);font-weight:600}
+.node{position:absolute;width:300px;height:124px;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:12px 14px;cursor:pointer;transition:border-color .15s,transform .15s}
+.node:hover{border-color:var(--ink3)}
+.node.sel{border-color:var(--acc);box-shadow:0 0 0 3px var(--accbg),var(--shadow)}
+.node.run{border-color:var(--acc)}
+.node.run::after{content:"";position:absolute;inset:-1px;border-radius:14px;border:1.5px solid var(--acc);animation:ring 2s infinite;pointer-events:none}
+.nh{display:flex;align-items:center;gap:10px}
+.ico{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:var(--waitbg);color:var(--ink2);flex:none}
+.ico svg{width:16px;height:16px}
+.run .ico{background:var(--accbg);color:var(--acc)}
+.done .ico{background:var(--okbg);color:var(--ok)}
+.nm{font-weight:600;font-size:13.5px;line-height:1.2;white-space:nowrap}
+.rl{font-size:11.5px;color:var(--ink3)}
+.pill{margin-left:auto;font-size:11px;font-weight:600;padding:2px 9px;border-radius:99px;background:var(--waitbg);color:var(--wait);white-space:nowrap}
+.run .pill{background:var(--accbg);color:var(--acc)}
+.done .pill{background:var(--okbg);color:var(--ok)}
+.fail .pill{background:var(--badbg);color:var(--bad)}
+.ask .pill{background:var(--warnbg);color:var(--warn)}
+.act{margin:10px 0 0;font-size:12.5px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.act code{font:12px ui-monospace,Consolas,monospace;background:var(--waitbg);padding:1px 6px;border-radius:5px;color:var(--ink)}
+.nf{white-space:nowrap;display:flex;gap:12px;margin-top:10px;padding-top:9px;border-top:1px solid var(--line);font-size:11.5px;color:var(--ink3);font-variant-numeric:tabular-nums}
+.nf span{white-space:nowrap}.nf b{color:var(--ink2);font-weight:600}
+.zoom{position:absolute;right:16px;bottom:16px;display:flex;background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);overflow:hidden}
+.zoom button{border:0;background:none;padding:6px 11px;font-size:13px;color:var(--ink2)}
+.zoom button:hover{background:var(--waitbg)}
+.legend{position:absolute;right:196px;bottom:16px;display:flex;gap:14px;font-size:11.5px;color:var(--ink3);background:var(--card);border:1px solid var(--line);padding:6px 12px;border-radius:10px}
+.legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}
+aside{display:flex;flex:none}
+.pan{width:0;overflow:hidden;background:var(--panel);border-left:1px solid var(--line);transition:width .2s ease}
+.pan.open{width:420px}
+.pan .pi{width:420px;height:100%;overflow:auto;padding:16px}
+.pan h2{margin:0 0 2px;font-size:16px;display:flex;align-items:center;gap:8px}
+.pan h2 small{margin-left:auto;font-size:12px;color:var(--ink2);font-weight:500}
+.pan h2 button{margin-left:6px;border:0;background:none;color:var(--ink3);font-size:18px;line-height:1;padding:2px 6px}
+.pan .sub{margin:2px 0 14px}
+.rail{width:72px;flex:none;display:flex;align-items:center;justify-content:center;padding:14px 0;background:var(--bg);border-left:1px solid var(--line)}
+.rail .pill2{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 6px;border-radius:30px;background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow)}
+.rail button{position:relative;width:56px;height:52px;border:0;border-radius:14px;background:none;color:var(--ink2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}.rail button .rl2{font-size:10px;letter-spacing:.02em}
+.rail button:hover{background:var(--waitbg);color:var(--ink)}
+.rail button.on{background:var(--accbg);color:var(--acc)}
+.rail button svg{width:19px;height:19px}
+.rail button em{position:absolute;top:0;right:2px;min-width:17px;height:17px;border-radius:99px;background:var(--waitbg);color:var(--ink2);border:1px solid var(--line);font:600 10px/15px inherit;font-style:normal;text-align:center;padding:0 5px}
+.rail button em.w{background:var(--warn);color:#fff;border-color:var(--warn)}
+.rail .ln{width:22px;height:1px;background:var(--line);margin:2px 0}
+.tkmini{display:flex;height:7px;width:110px;border-radius:9px;overflow:hidden;background:var(--waitbg);align-self:center;cursor:pointer;margin-left:4px}
+.tkmini i{display:block;height:100%}
+.sec{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)}
+.sec>header{height:auto;border:0;background:none;padding:12px 14px;display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none}
+.sec>header b{font-size:13.5px;font-weight:650}
+.sec>header small{margin-left:auto;color:var(--ink2);font-size:12px;font-variant-numeric:tabular-nums}
+.sec>header i{width:7px;height:7px;border-right:1.6px solid var(--ink3);border-bottom:1.6px solid var(--ink3);transform:rotate(45deg);margin:-3px 0 0 4px;transition:transform .15s}
+.sec.shut>header i{transform:rotate(-45deg);margin-top:0}
+.sec .in{padding:0 14px 14px}
+.sec.shut .in{display:none}
+.sec.q{background:var(--warnbg);border-color:color-mix(in srgb,var(--warn) 40%,transparent)}
+.sec.flash{animation:fl 1s}
+@keyframes fl{0%{box-shadow:0 0 0 3px var(--accbg)}100%{box-shadow:var(--shadow)}}
+.big{font-size:24px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.big span{font-size:12.5px;font-weight:500;color:var(--ink2);letter-spacing:0;margin-left:6px}
+.ag{padding:9px 0;border-top:1px solid var(--line)}
+.ag:first-of-type{border-top:0}
+.ag .l{display:flex;align-items:center;gap:8px;font-size:13px}
+.ag .l .r{margin-left:auto;font-variant-numeric:tabular-nums;font-weight:600}
+.ag .m{font-size:11.5px;color:var(--ink3);margin:3px 0 0 16px;font-variant-numeric:tabular-nums}
+.ag .pb{height:4px;border-radius:9px;background:var(--waitbg);margin:6px 0 0 16px;overflow:hidden}
+.ag .pb i{display:block;height:100%;border-radius:9px}
+.note{font-size:11.5px;color:var(--ink3);margin-top:8px}
+.body{display:none}
+.pg{display:none}.pg.on{display:block}
+h3{margin:0 0 4px;font-size:15px}
+.sub{color:var(--ink2);font-size:12.5px;margin-bottom:14px}
+.box{border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:10px;background:var(--card)}
+.box.q{background:var(--warnbg);border-color:color-mix(in srgb,var(--warn) 35%,transparent)}
+.box small{color:var(--ink3);display:block;margin-bottom:3px;font-size:11px;text-transform:uppercase;letter-spacing:.06em}
+.kv{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line);font-size:13px}
+.kv:last-child{border:0}.kv span{color:var(--ink2)}
+.msg{margin-bottom:10px;font-size:13px}
+.msg .w{font-size:11px;color:var(--ink3);margin-bottom:2px}
+.msg.u .t{background:var(--accbg);border-radius:10px;padding:8px 11px;display:inline-block}
+.tb{height:8px;border-radius:9px;background:var(--waitbg);overflow:hidden;display:flex;margin:6px 0 12px}
+.tb i{display:block;height:100%}
+.row{display:flex;align-items:center;gap:8px;padding:7px 0;font-size:13px;border-bottom:1px solid var(--line)}
+.row:last-child{border:0}
+.row .r{margin-left:auto;color:var(--ink3);font-size:12px;font-variant-numeric:tabular-nums}
+.dt{width:8px;height:8px;border-radius:50%;flex:none}
+.mono{font:12px ui-monospace,Consolas,monospace}
+@keyframes pulse{50%{opacity:.35}}
+@keyframes ring{0%{opacity:.7;transform:scale(1)}100%{opacity:0;transform:scale(1.04)}}
+@keyframes dash{to{stroke-dashoffset:-20}}
+path.live{stroke-dasharray:5 5;animation:dash 1s linear infinite;stroke:var(--acc)!important}
+.tkov{flex:none;display:flex;align-items:center;gap:22px;padding:10px 20px;background:var(--card);border-bottom:1px solid var(--line);cursor:pointer}
+.tkov:hover{background:color-mix(in srgb,var(--card) 90%,var(--waitbg))}
+.tkov .tt{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink3);font-weight:600;margin-bottom:1px}
+.tkov .bg{font-size:22px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tkov .bg span{font-size:12.5px;font-weight:500;color:var(--ink2);letter-spacing:0;margin-left:6px}
+.tkov .mid{flex:1;min-width:0}
+.tkov .bar2{display:flex;height:10px;border-radius:9px;overflow:hidden;background:var(--waitbg)}
+.tkov .bar2 i{display:block;height:100%}
+.tkov .lg{display:flex;gap:18px;margin-top:7px;font-size:12px;color:var(--ink2);white-space:nowrap;overflow:hidden}
+.tkov .lg span{display:inline-flex;align-items:center;gap:6px}
+.tkov .lg i{width:8px;height:8px;border-radius:3px;flex:none}
+.tkov .go{font-size:12px;color:var(--acc);white-space:nowrap}
+header.top{height:auto;min-height:68px;padding:8px 20px;gap:0;align-items:stretch}
+header.top .c{flex:none;display:flex;flex-direction:column;justify-content:center;padding:0 14px;max-width:250px;border-left:1px solid var(--line);min-width:0}
+header.top .c.brandc{border:0;padding-left:0;gap:5px;align-items:flex-start}
+header.top .k{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink3);font-weight:600}
+header.top .v{font-size:12.5px;color:var(--ink2);white-space:nowrap}
+header.top .v b{font-size:19px;color:var(--ink);font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;margin-right:3px}
+header.top .d{font-size:11.5px;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+header.top .tkc{flex:1 1 0;cursor:pointer;min-width:300px;max-width:none;overflow:hidden}
+header.top .tkc:hover .v b{color:var(--acc)}
+header.top .bar2{display:flex;height:8px;border-radius:9px;overflow:hidden;background:var(--waitbg);margin-top:5px}
+header.top .bar2 i{display:block;height:100%}
+header.top .lg{display:flex;gap:14px;margin-top:4px;font-size:11.5px;color:var(--ink2);white-space:nowrap;overflow:hidden}
+header.top .lg span{display:inline-flex;align-items:center;gap:5px}
+header.top .lg i{width:7px;height:7px;border-radius:2px;flex:none}
+header.top>.need{margin-left:12px;flex:none;font-size:12.5px;padding:6px 11px}header.top .d{max-width:none}header.top>.need,header.top>.conn,header.top>.ib{align-self:center;margin-left:12px}
+.hs{display:flex;align-items:center;gap:6px;margin:16px 0 6px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);font-weight:600}
+.hs small{font-size:11px}
+.chs{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.ch{font-size:11.5px;padding:2px 9px;border-radius:99px;background:var(--waitbg);color:var(--ink2);white-space:nowrap}
+.ch.w{background:var(--warnbg);color:var(--warn)}.ch.ok{background:var(--okbg);color:var(--ok)}.ch.acc{background:var(--accbg);color:var(--acc)}
+.bi{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px}
+.bi:last-child{border:0}.bi .dt{margin-top:6px}.bi>div{flex:1;min-width:0}.bi .ch{margin-left:auto;flex:none}.bi .r{margin-left:auto;color:var(--ink2);font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.d2{font-size:12px;color:var(--ink3);margin-top:1px}
+.opt{margin-top:8px;padding:8px 12px;border:1px solid color-mix(in srgb,var(--warn) 40%,transparent);border-radius:10px;font-size:13px;background:var(--card);color:var(--ink)}
+.msg.tl{color:var(--ink3)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.grid2 .box{margin:0}.grid2 b{font-size:17px}
+.tlx{font-size:12.5px;color:var(--ink2)}.tlx>div{padding:6px 0 6px 12px;border-left:2px solid var(--line);margin-left:3px}
+.tlx .mono{color:var(--ink3);margin-right:4px}
+.lg2>div{line-height:1.9}
+
+.node .ico{width:40px;height:40px;border-radius:12px;background:color-mix(in srgb,var(--rc,#888) 15%,var(--card));color:var(--rc,var(--ink2));position:relative;flex:none}
+.node .ico svg{width:20px;height:20px}
+.sb{position:absolute;right:-5px;bottom:-5px;width:17px;height:17px;border-radius:50%;border:2px solid var(--card);font:700 10px/13px inherit;font-style:normal;color:#fff;text-align:center;display:none}
+.sb.done{display:block;background:var(--ok)}.sb.run{display:block;background:var(--acc);animation:spin 1.1s linear infinite}
+.sb.ask{display:block;background:var(--warn)}.sb.fail{display:block;background:var(--bad)}.sb.skip{display:block;background:var(--wait)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.port{position:absolute;top:50%;width:11px;height:11px;margin-top:-5.5px;border-radius:50%;background:var(--card);border:2px solid var(--edge)}
+.port.l{left:-6px}.port.r{right:-6px}
+.node.run .port,.node.done .port{border-color:var(--ok)}.node.run .port{border-color:var(--acc)}
+.node.fail{border-color:var(--bad)}.node.fail .port{border-color:var(--bad)}
+.node.ask{border-color:var(--warn)}
+.node.skip{opacity:.6;border-style:dashed}
+.node.wait{background:color-mix(in srgb,var(--card) 70%,var(--bg))}
+.need.bad{background:var(--badbg);color:var(--bad);border-color:color-mix(in srgb,var(--bad) 35%,transparent)}.need.bad::before{background:var(--bad)}
+.need.ok{background:var(--okbg);color:var(--ok);border-color:color-mix(in srgb,var(--ok) 35%,transparent)}.need.ok::before{background:var(--ok);animation:none}
+.proj{border:1px solid var(--line);background:var(--card);border-radius:9px;padding:3px 10px;font-weight:650;font-size:13px;display:inline-flex;align-items:center;gap:6px}
+.proj:hover{border-color:var(--ink3)}
+.dl{font-size:11.5px;color:var(--ok);margin-left:6px;font-weight:600}.dl.up{color:var(--warn)}
+#pop{position:fixed;z-index:50;min-width:260px;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.18);padding:6px;display:none}
+#pop.on{display:block}
+#pop .it{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-size:13px;cursor:pointer}
+#pop .it:hover{background:var(--waitbg)}#pop .it small{margin-left:auto;color:var(--ink3);font-size:11.5px}
+#pop hr{border:0;border-top:1px solid var(--line);margin:5px 0}
+#pop .hd{padding:6px 10px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);font-weight:600}
+.sw{width:30px;height:17px;border-radius:99px;background:var(--waitbg);position:relative;margin-left:auto;flex:none}
+.sw::after{content:"";position:absolute;left:2px;top:2px;width:13px;height:13px;border-radius:50%;background:var(--ink3);transition:.15s}
+.sw.on{background:var(--acc)}.sw.on::after{left:15px;background:#fff}
+#modal{position:fixed;inset:0;background:rgba(10,12,16,.45);display:none;place-items:center;z-index:60}
+#modal.on{display:grid}
+#modal .mc{width:560px;max-width:92vw;max-height:88vh;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px 24px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+#modal h2{margin:0 0 4px;font-size:18px;display:flex;align-items:center;gap:10px}
+#modal .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0}
+#modal .g3 .box{margin:0}#modal .g3 b{font-size:20px}
+.stsw{border-style:dashed!important;position:absolute;left:50%;top:12px;z-index:5;transform:translateX(-50%);display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:6px 8px;box-shadow:var(--shadow);font-size:12px;color:var(--ink3);white-space:nowrap}
+.stsw button{border:0;background:none;padding:4px 10px;border-radius:8px;font-size:12px;color:var(--ink2)}
+.stsw button.on{background:var(--accbg);color:var(--acc);font-weight:600}
+.stsw .tt{padding-left:8px;border-left:1px solid var(--line);color:var(--ink2)}
+.ck{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);font-size:13px}
+.ck input{accent-color:var(--acc)}.ck .r{margin-left:auto;color:var(--ink2);font-size:12px;font-variant-numeric:tabular-nums;text-align:right}
+
+.node{width:210px;height:auto!important;background:none!important;border:0!important;box-shadow:none!important;padding:0!important;border-radius:0!important;opacity:1!important}
+.node.run::after,.node::after{display:none!important}
+.node .tile{width:88px;height:88px;margin:0 auto;border-radius:26px;display:grid;place-items:center;position:relative;color:var(--rc);background:color-mix(in srgb,var(--rc) 16%,var(--card));border:1.5px solid color-mix(in srgb,var(--rc) 32%,var(--line));box-shadow:var(--shadow);transition:transform .15s,box-shadow .15s}
+.node:hover .tile{transform:translateY(-2px)}
+.node .tile>svg{width:38px;height:38px}
+.node .tile .sb{right:-7px;top:-7px;bottom:auto;width:22px;height:22px;font-size:12px;line-height:18px;border-width:2.5px}
+.node .tile .port{top:50%;margin-top:-5.5px}
+.node .tile .port.l{left:-6px}.node .tile .port.r{right:-6px}
+.node.sel .tile{box-shadow:0 0 0 4px var(--accbg),0 0 0 6px var(--acc)}
+.node.run .tile{border-color:var(--acc);animation:glow 2s ease-in-out infinite}
+@keyframes glow{50%{box-shadow:0 0 0 7px color-mix(in srgb,var(--acc) 16%,transparent),var(--shadow)}}
+.node.ask .tile{border-color:var(--warn)}.node.fail .tile{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 10%,var(--card))}
+.node.wait .tile{filter:saturate(.45);opacity:.8}.node.skip .tile{border-style:dashed;opacity:.5}
+.node.wait .lb,.node.skip .lb{opacity:.75}
+.lb{text-align:center;margin-top:10px}
+.lb .n{font-weight:650;font-size:14px;line-height:1.25}
+.lb .s{font-size:12.5px;color:var(--ink3);margin-top:1px;font-variant-numeric:tabular-nums}
+.lb .s.run{color:var(--acc)}.lb .s.done{color:var(--ok)}.lb .s.ask{color:var(--warn)}.lb .s.fail{color:var(--bad)}
+.lb .a{font-size:12px;color:var(--ink3);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 6px}
+.lb .cp{display:flex;gap:5px;justify-content:center;margin-top:6px;flex-wrap:wrap}
+.lb .ch.m{background:var(--accbg);color:var(--acc)}
+.oi{position:absolute;display:flex;justify-content:center;gap:16px}
+.oi>div{display:flex;flex-direction:column;align-items:center;font-size:11px;color:var(--ink3);width:70px;text-align:center;line-height:1.25}
+.oi .oc{width:40px;height:40px;border-radius:50%;background:var(--card);border:1px solid var(--line);display:grid;place-items:center;color:var(--ink2);margin-bottom:3px;box-shadow:var(--shadow)}
+.oi .oc svg{width:18px;height:18px}.oi b{font-size:12px;color:var(--ink);font-weight:650}
+.sm{position:absolute;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px;box-shadow:var(--shadow);cursor:pointer}
+.sm:hover{border-color:var(--ink3)}
+.smh{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);font-weight:600;margin-bottom:6px}
+.smr{display:flex;gap:10px;align-items:flex-start;padding:6px 0}.smr+.smr{border-top:1px solid var(--line)}
+.smr .oc{width:30px;height:30px;border-radius:9px;background:var(--waitbg);display:grid;place-items:center;color:var(--ink2);flex:none}
+.smr .oc svg{width:16px;height:16px}
+.smr b{font-size:12.5px;display:block;line-height:1.25}.smr small{font-size:11px;color:var(--ink3);display:block;line-height:1.3}
+.mb{height:4px;border-radius:9px;background:var(--waitbg);margin-top:5px;overflow:hidden}.mb i{display:block;height:100%;background:var(--acc)}
+.agx{border-top:1px solid var(--line);padding:10px 0}.agx:first-of-type{border-top:0}
+.agh{display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer}.agh .r{margin-left:auto;font-weight:600;font-variant-numeric:tabular-nums}
+.agh .chev{width:7px;height:7px;border-right:1.6px solid var(--ink3);border-bottom:1.6px solid var(--ink3);transform:rotate(-45deg);margin:0 2px 0 4px;transition:transform .15s}
+.agx.open .chev{transform:rotate(45deg);margin-top:-3px}
+.agx .pb{height:4px;border-radius:9px;background:var(--waitbg);margin:6px 0 0 16px;overflow:hidden}.agx .pb i{display:block;height:100%;border-radius:9px}.agx .m{margin:4px 0 0 16px;font-size:11.5px;color:var(--ink3)}
+.ctxb{margin:10px 0 0 16px;background:var(--bg);border-radius:10px;padding:10px 12px}
+.ctxh{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:6px}.ctxh span{color:var(--ink3);font-variant-numeric:tabular-nums}
+.ctxbar{height:9px!important;margin:0 0 8px!important}
+.crow{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:3px 0}.crow .sq{width:10px;height:10px;border-radius:3px;flex:none}
+.crow span{flex:1;min-width:0}.crow b{font-variant-numeric:tabular-nums;font-weight:600;min-width:46px;text-align:right}.crow em{font-style:normal;color:var(--ink3);width:62px;text-align:right;font-size:11.5px}
+.agx>.hs,.agx>.crow,.agx>.chs{margin-left:16px}
+header.top .k,.hs,.col h4,.stsw .tt,.smh,.tt{font-family:ui-monospace,"Cascadia Mono",Consolas,"SF Mono",monospace;letter-spacing:.05em}
+@media(max-width:1340px){header.top .c{padding:0 10px}#hb-run .d{display:none}header.top .tkc{min-width:240px}.rawt{display:none}header.top>.conn{display:none}}
+@media(max-width:1120px){#hb-prog .d{display:none}.brand{font-size:14px}header.top .v b{font-size:17px}header.top>.need{font-size:12px;padding:5px 9px}.dl{display:none}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="c brandc"><span class="brand">Flow Viewer</span><button class="proj" id="proj" title="Ganti proyek"><span id="pname">ryama-kit</span><span style="color:var(--ink3)">▾</span></button></div>
+  <div class="c" id="hb-run"></div>
+  <div class="c" id="hb-prog" title="Agent yang sudah selesai dari semua agent di alur ini"></div>
+  <div class="c tkc" id="tkov" title="Klik untuk detail token per agent"></div>
+  <button class="need on" id="need"></button>
+  <span class="conn" title="Terhubung ke Claude Code"><i></i></span>
+  <button class="ib" id="th">Gelap</button>
+  <button class="ib" id="set" title="Pengaturan">⋯</button>
+</header>
+<div class="wrap">
+  <div id="stage"><div id="cv"></div>
+    <div class="zoom"><button id="zo">−</button><button id="zf">Pas layar</button><button id="zi">+</button></div>
+    <div class="stsw" id="stsw"></div><div class="legend"><span><i style="background:var(--acc)"></i>berjalan</span><span><i style="background:var(--ok)"></i>selesai</span><span><i style="background:var(--warn)"></i>butuh input</span><span><i style="background:var(--wait)"></i>menunggu</span></div>
+  </div>
+  <aside id="side"><div class="pan" id="pan"><div class="pi" id="pi"></div></div><div class="rail"><div class="pill2" id="rail"></div></div></aside>
+</div>
+<div id="pop"></div><div id="modal"><div class="mc" id="mc"></div></div>
+<script>
+const IC={
+ chat:'<path d="M4 5h16v11H9l-5 4z"/>',spark:'<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M18 6l-2.5 2.5M8.5 15.5L6 18"/>',
+ doc:'<path d="M7 3h8l4 4v14H7zM15 3v4h4M10 12h6M10 16h6"/>',flow:'<rect x="3" y="4" width="7" height="6" rx="1"/><rect x="14" y="14" width="7" height="6" rx="1"/><path d="M10 7h4v10"/>',
+ db:'<ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/>',
+ pal:'<circle cx="12" cy="12" r="9"/><circle cx="8" cy="10" r="1"/><circle cx="12" cy="7.5" r="1"/><circle cx="16" cy="10" r="1"/>',
+ code:'<path d="M8 8l-4 4 4 4M16 8l4 4-4 4M14 5l-4 14"/>',check:'<circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/>',
+ eye:'<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',shield:'<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>'};
+const A=[
+ {id:'in',c:0,y:0,n:'Prompt kamu',r:'Input',s:'done',p:'selesai',a:'<code>/fullstack-dev:build login</code>',tk:'—',t:'07.57',ic:'chat'},
+ {id:'or',c:0,y:1,n:'Claude Orkestrator',r:'Mengatur alur',s:'ask',p:'tanya kamu',a:'Menunggu jawaban: paket langganan?',tk:'1,16M',t:'5m 43s',ic:'spark',m:'opus-5-5'},
+ {id:'prd',c:1,y:0,n:'Penulis PRD',r:'Spesifikasi',s:'done',p:'selesai',a:'Menulis <code>PRD.md</code>',tk:'386k',t:'12m',ic:'doc',m:'opus-5-5'},
+ {id:'ux',c:1,y:1,n:'Perancang UX',r:'Spesifikasi',s:'done',p:'selesai',a:'Alur layar disetujui',tk:'210k',t:'5m',ic:'flow',m:'opus-5-5'},
+ {id:'be',c:2,y:0,n:'Backend Engineer',r:'Bangun',s:'run',p:'berjalan',a:'Menjalankan <code>npm test</code>',tk:'1,54M',t:'5m 42s',ic:'db',m:'opus-5-5'},
+ {id:'ui',c:2,y:1,n:'Desainer UI',r:'Bangun',s:'run',p:'berjalan',a:'Menulis <code>login.html</code>',tk:'2,31M',t:'5m 43s',ic:'pal',m:'sonnet-5-5'},
+ {id:'fe',c:2,y:2,n:'Frontend Engineer',r:'Bangun',s:'wait',p:'menunggu',a:'Menunggu Desainer UI',tk:'—',t:'—',ic:'code',m:'sonnet-5-5'},
+ {id:'qa',c:3,y:0,n:'Penguji QA',r:'Verifikasi',s:'wait',p:'menunggu',a:'Belum dijalankan',tk:'—',t:'—',ic:'check',m:'haiku'},
+ {id:'cr',c:3,y:1,n:'Kritikus UI',r:'Verifikasi',s:'wait',p:'menunggu',a:'Belum dijalankan',tk:'—',t:'—',ic:'eye',m:'opus'},
+ {id:'au',c:3,y:2,n:'Auditor Keamanan',r:'Verifikasi',s:'wait',p:'menunggu',a:'Belum dijalankan',tk:'—',t:'—',ic:'shield',m:'opus'}];
+const E=[['in','or'],['or','prd'],['or','ux'],['prd','be'],['ux','ui'],['ux','be'],['ui','fe'],['be','qa'],['ui','cr'],['fe','au']];
+let COL=['Input','Spesifikasi','Bangun','Verifikasi'];
+const cv=document.getElementById('cv'),CW=210,GX=96,GY=44,NH=176;
+let WW=4*CW+3*GX,HH=34+3*(NH+GY)-20;const TS=88;
+const RC={in:'#78716c',or:'#0f766e',prd:'#b45309',ux:'#0891b2',be:'#15803d',ui:'#db2777',fe:'#2563eb',qa:'#4d7c0f',cr:'#ea580c',au:'#dc2626',ar:'#0e7490',ba:'#d97706',ia:'#2563eb',dk:'#a16207',rl:'#15803d'};
+const PT={done:'✓ selesai',run:'● berjalan',ask:'? tanya kamu',fail:'✕ gagal',skip:'– dilewati',wait:'○ menunggu'};
+const SBI={done:'✓',run:'↻',ask:'!',fail:'×',skip:'–',wait:''};
+const A0=JSON.parse(JSON.stringify(A));
+E.forEach(e=>{});
+E[3][2]='PRD.md';E[4][2]='UX.md';E[5][2]='UX.md';E[6][2]='login.html';
+function strip(h){return h.replace(/<[^>]+>/g,'')}
+function draw(){
+ const mc=Math.max(...A.map(a=>a.c))+1,my=Math.max(...A.map(a=>a.y))+1;WW=mc*CW+(mc-1)*GX;HH=34+my*(NH+GY)-20;
+ const hasIn=new Set(E.map(e=>e[1])),hasOut=new Set(E.map(e=>e[0]));
+ let h='<svg id="ed"></svg>';
+ COL.forEach((c,i)=>h+=`<div class="col" style="left:${i*(CW+GX)}px;width:${CW}px;text-align:center"><h4>${c}</h4></div>`);
+ A.forEach(a=>{const sk=CUR=='done'?2:(CUR=='empty'?0:(a.id=='or'?0:0));
+ h+=`<div class="node ${a.s}${a.id==selId?' sel':''}" id="n-${a.id}" data-id="${a.id}" style="left:${a.c*(CW+GX)}px;top:${34+a.y*(NH+GY)}px;width:${CW}px">
+ <div class="tile" style="--rc:${RC[a.id]}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${IC[a.ic]}</svg><b class="sb ${a.s}">${SBI[a.s]}</b>${hasIn.has(a.id)?'<i class="port l"></i>':''}${hasOut.has(a.id)?'<i class="port r"></i>':''}</div>
+ <div class="lb"><div class="n">${a.n}</div><div class="s ${a.s}">${PT[a.s]}${a.t&&a.t!='—'?' · '+a.t:''}${a.rd?' · '+a.rd+' putaran':''}</div><div class="a mono">${strip(a.a)}</div>${a.m||a.tk!='—'?`<div class="cp">${a.m?`<span class="ch m">${a.m}</span>`:''}${a.tk!='—'?`<span class="ch">${a.tk} token</span>`:''}</div>`:''}</div></div>`});
+ // kartu sesi utama (orkestrator)
+ const o=A.find(x=>x.id=='or');
+ const SM={running:{sk:'0',skd:'belum ada yang dipanggil',tl:'1',tld:'AskUserQuestion ×1',ctx:48,tn:31,tk:'1,16M'},failed:{sk:'0',skd:'belum ada yang dipanggil',tl:'5',tld:'Agent ×4 · AskUserQuestion ×1',ctx:52,tn:36,tk:'1,2M'},done:{sk:'2',skd:'project-context, antislop',tl:'12',tld:'Agent ×9 · AskUserQuestion ×2 · Write ×1',ctx:71,tn:58,tk:'1,4M'},empty:{sk:'—',skd:'menunggu prompt',tl:'—',tld:'belum ada',ctx:0,tn:'—',tk:'—'}}[CUR=='banyak'?'running':CUR];
+ const ci=p=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+ h+=`<div class="sm" data-id="or" style="left:${o.c*(CW+GX)}px;top:${34+(o.y+1)*(NH+GY)-10}px;width:${CW}px"><div class="smh">Sesi utama · Claude</div>
+  <div class="smr"><span class="oc">${ci('<rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/>')}</span><div><b>${o.m||'—'}</b><small>model · giliran ${SM.tn} · konteks ${SM.ctx}%</small><div class="mb"><i style="width:${SM.ctx}%"></i></div></div></div>
+  <div class="smr"><span class="oc">${ci(ICN.skill)}</span><div><b>${SM.sk} skill dipanggil</b><small>${SM.skd}</small></div></div>
+  <div class="smr"><span class="oc">${ci('<path d="M14 6l4 4-9 9H5v-4zM13 7l4 4"/>')}</span><div><b>${SM.tl} tool dipakai</b><small>${SM.tld}</small></div></div></div>`;
+ cv.innerHTML=h;cv.style.width=WW+'px';cv.style.height=HH+'px';edges();}
+function edges(){const s=document.getElementById('ed');s.setAttribute('width',WW);s.setAttribute('height',HH);
+ let d='<defs><marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,1 L9,5 L0,9z" style="fill:var(--edge)"/></marker><marker id="arA" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,1 L9,5 L0,9z" style="fill:var(--acc)"/></marker></defs>';
+ E.forEach(([f,t,lb])=>{const F=A.find(x=>x.id==f),T=A.find(x=>x.id==t);
+  const x1=F.c*(CW+GX)+(CW+TS)/2+6,y1=34+F.y*(NH+GY)+TS/2,x2=T.c*(CW+GX)+(CW-TS)/2-7,y2=34+T.y*(NH+GY)+TS/2,mx=(x1+x2)/2;
+  const live=(T.s=='run'&&(F.s=='done'||F.s=='run'||F.s=='ask'));
+  const same=F.c==T.c;const vx=F.c*(CW+GX)+CW/2,vy1=34+F.y*(NH+GY)+NH-4,vy2=34+T.y*(NH+GY)-4;
+  d+=`<path class="${live?'live':''}" d="${same?`M${vx},${vy1} L${vx},${vy2-2}`:`M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`}" fill="none" stroke="var(--edge)" stroke-width="1.7" marker-end="url(#${live?'arA':'ar'})"/>`;
+  if(lb&&F.s!='wait'){if(same)return;const w=lb.length*6.4+14,cx=mx,cy=(y1+y2)/2;d+=`<rect x="${cx-w/2}" y="${cy-9}" width="${w}" height="18" rx="9" fill="var(--card)" stroke="var(--line)"/><text x="${cx}" y="${cy+4}" text-anchor="middle" font-size="10.5" fill="var(--ink3)">${lb}</text>`}});
+ s.innerHTML=d}
+// zoom
+let Z=1,PX=0,PY=0;const st=document.getElementById('stage');
+function ap(){cv.style.transform=`translate(${PX}px,${PY}px) scale(${Z})`}
+function fit(){const w=st.clientWidth-48,h=st.clientHeight-130;Z=Math.max(.75,Math.min(1,w/WW,h/HH));PX=WW*Z<=st.clientWidth-24?(st.clientWidth-WW*Z)/2:24;PY=HH*Z<=h?56+(h-HH*Z)/2+10:60;ap()}
+zf.onclick=fit;zi.onclick=()=>{Z=Math.min(1.6,Z*1.15);ap()};zo.onclick=()=>{Z=Math.max(.4,Z/1.15);ap()};
+window.addEventListener('resize',fit);
+// geser kanvas: seret latar, gulir; Ctrl+gulir untuk zoom
+let drag=null;
+st.addEventListener('mousedown',e=>{if(e.target.closest('.node,.sm,.stsw,.zoom,.legend'))return;drag={x:e.clientX,y:e.clientY,px:PX,py:PY};st.style.cursor='grabbing'});
+window.addEventListener('mousemove',e=>{if(!drag)return;PX=drag.px+e.clientX-drag.x;PY=drag.py+e.clientY-drag.y;ap()});
+window.addEventListener('mouseup',()=>{drag=null;st.style.cursor=''});
+st.addEventListener('wheel',e=>{e.preventDefault();if(e.ctrlKey){Z=Math.min(1.6,Math.max(.4,Z*(e.deltaY<0?1.08:.93)))}else{PX-=e.deltaX;PY-=e.deltaY}ap()},{passive:false});
+
+// sidebar: rel ikon + panel yang keluar saat ikon ditekan
+const side=document.getElementById('side'),rail=document.getElementById('rail'),pan=document.getElementById('pan'),pi=document.getElementById('pi');
+let selId='ui',cur=null;
+const TK=[
+ {n:'Desainer UI',c:'#db2777',eq:'521k',p:26,m:'sonnet-5-5',i:'38k',o:'41k',cr:'2,1M',cc:'180k',tn:42,ctx:'61%'},
+ {n:'Claude Orkestrator',c:'#0f766e',eq:'400k',p:20,m:'opus-5-5',i:'22k',o:'18k',cr:'1,4M',cc:'95k',tn:31,ctx:'48%'},
+ {n:'Backend Engineer',c:'#15803d',eq:'347k',p:17,m:'opus-5-5',i:'30k',o:'27k',cr:'1,2M',cc:'88k',tn:29,ctx:'44%'},
+ {n:'Pengatur Backlog',c:'#d97706',eq:'347k',p:17,m:'sonnet-5-5',i:'25k',o:'21k',cr:'1,1M',cc:'70k',tn:24,ctx:'39%'},
+ {n:'Penulis PRD',c:'#0891b2',eq:'386k',p:20,m:'opus-5-5',i:'27k',o:'30k',cr:'0,9M',cc:'64k',tn:19,ctx:'35%'}];
+const ICN={hist:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',chat:IC.chat,back:'<path d="M9 6h11M9 12h11M9 18h11M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/>',file:'<path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>',skill:'<path d="M5 4h11a3 3 0 013 3v13H8a3 3 0 01-3-3zM5 17a3 3 0 013-3h11"/>',tok:'<path d="M4 17a8 8 0 1116 0M12 17l4-6"/>',sel:'<circle cx="12" cy="8" r="4"/><path d="M4 21c1-5 15-5 16 0"/>',log:'<path d="M4 6h16M4 12h10M4 18h13"/>'};
+const svg=p=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+const LBL={chat:'Tanya',back:'Backlog',file:'File',skill:'Skill',tok:'Token',sel:'Agent',hist:'Riwayat',log:'Log'};
+function rl(){const r=CUR=='running'||CUR=='banyak';return [['chat','Percakapan &amp; pertanyaan (butuh jawabanmu)',r?'1':'',r?'w':''],['back','Progres &amp; backlog (jumlah item)','7'],['file','File diubah',CUR=='empty'?'':'5'],['skill','Skill',CUR=='empty'?'':'1'],['tok','Token',''],['sel','Agent terpilih',''],['hist','Riwayat run (jumlah run)','12'],['log','Log kejadian','']]}
+const SEC=(t,inner,extra='')=>`<div class="hs">${t}${extra}</div>${inner}`;
+const CH=(t,c)=>`<span class="ch ${c||''}">${t}</span>`;
+const BL=[
+ ['k','Pilih penyedia login','keputusan',null,'perlu keputusan kamu','Claude',''],
+ ['b','API autentikasi','be','Backend Engineer','gagal: 2 tes merah (auth.test.js:41)','be',''],
+ ['r','Layar masuk','ui','Desainer UI','siap, tidak ada yang menghalangi','',''],
+ ['r','Layar beranda','ui','Desainer UI','menunggu: layar masuk','',''],
+ ['w','Sambungan login ke API','fe','Frontend Engineer','menunggu: layar masuk, API autentikasi','',''],
+ ['w','Kritik layar masuk','review','Kritikus UI','menunggu: layar masuk','',''],
+ ['d','Skema pengguna','be','Backend Engineer','selesai · bukti: 6 tes lulus','','']];
+const stc=x=>({k:'var(--warn)',b:'var(--bad)',r:'var(--acc)',w:'var(--wait)',d:'var(--ok)'}[x]);
+function body(k){
+ const a=A.find(x=>x.id==selId);
+ if(k=='chat')return ['Percakapan','cermin dari Claude Code, hanya baca',
+  `<div class="box q"><small>Butuh jawabanmu · 08.03</small><b>Pembahasan soal gratis atau khusus langganan?</b>
+   <div class="opt">Semua pengguna</div><div class="opt">Hanya berlangganan</div>
+   <div class="sub" style="margin:8px 0 0">Jawab di terminal Claude Code. Viewer tidak bisa mengirim jawaban.</div></div>`
+  +SEC('Hari ini',`<div class="msg u"><div class="w">Kamu · 07.57</div><div class="t">/fullstack-dev:build login pelanggan</div></div>
+   <div class="msg"><div class="w">Claude · 07.58</div>Saya mulai dari PRD dan alur layar, lalu bangun backend dan UI paralel.</div>
+   <div class="msg tl"><div class="w">Claude · 08.01 · memanggil Penulis PRD → selesai (12m, 386k token)</div></div>
+   <div class="msg tl"><div class="w">Claude · 08.04 · memanggil Perancang UX → selesai (5m, 210k)</div></div>
+   <div class="msg"><div class="w">Claude · 08.05</div>UX disetujui. Backend Engineer dan Desainer UI jalan bersamaan.</div>
+   <div class="msg"><div class="w">Claude · 08.03</div>Ada satu keputusan yang memengaruhi skema data: paket langganan. Pembahasan soal gratis atau khusus langganan?</div>`)];
+ if(k=='back')return ['Progres & backlog','1 dari 7 selesai · 14% berbobot',
+  `<div class="tb" style="height:8px"><i style="width:14%;background:var(--ok)"></i><i style="width:14%;background:var(--acc)"></i><i style="width:14%;background:var(--bad)"></i></div>
+   <div class="chs">${CH('ui 1/3')}${CH('be 1/2')}${CH('fe 0/1')}${CH('review 0/1')}${CH('keputusan 0/1','w')}</div>`
+  +['k','b','r','w','d'].map(st=>{const L=BL.filter(x=>x[0]==st);if(!L.length)return'';const T={k:'Nunggu kamu',b:'Gagal',r:'Siap / lagi jalan',w:'Menunggu giliran',d:'Selesai'}[st];
+   return SEC(T+` <small>${L.length}</small>`,L.map(x=>`<div class="bi"><i class="dt" style="background:${stc(st)}"></i><div><b>${x[1]}</b><div class="d2">${x[3]?x[3]+' · ':''}${x[4]}</div></div>${CH(x[2])}</div>`).join(''))}).join('')];
+ if(k=='file')return ['File diubah','5 file · +212 −0',
+  `<div class="chs">${CH('4 baru','ok')}${CH('1 diubah')}</div>`
+  +SEC('Terbaru',[
+   ['login.html','baru','Desainer UI','+214','08.06','Wrote'],['server/auth.js','baru','Backend Engineer','+96','08.05','Wrote'],['test/auth.test.js','diubah','Backend Engineer','+31 −0','08.05','Edit'],['docs/UX.md','baru','Perancang UX','+142','08.04','Wrote'],['docs/PRD.md','baru','Penulis PRD','+188','08.01','Wrote']
+  ].map(x=>`<div class="bi"><i class="dt" style="background:${x[1]=='baru'?'var(--ok)':'var(--acc)'}"></i><div><b class="mono">${x[0]}</b><div class="d2">${x[2]} · ${x[5]} · ${x[4]}</div></div><span class="r">${x[3]}</span></div>`).join(''))
+  +`<div class="note">Preload skill: 0/20 terbukti. Gambar dibaca: 3 (1 duplikat).</div>`];
+ if(k=='skill')return ['Skill','1 terpanggil · 3 agent belum terbukti',
+  SEC('Terbukti dipanggil',`<div class="bi"><i class="dt" style="background:var(--ok)"></i><div><b>antislop</b><div class="d2">Desainer UI · 6 mnt lalu · 2×</div></div></div>`)
+  +SEC('Belum terbukti',[['Penulis PRD','prd, prd-review, project-context'],['Perancang UX','project-context, ux-designer, ux-review, a11y'],['Arsitek Sistem','project-context, codebase-design, adr'],['Backend Engineer','belum memanggil skill apa pun']].map(x=>`<div class="bi"><i class="dt" style="background:var(--warn)"></i><div><b>${x[0]}</b><div class="d2">${x[1]}</div></div></div>`).join(''))
+  +`<div class="note">"Belum terbukti" = tercantum di definisi agent, tapi tidak ada pemanggilan Skill yang tercatat.</div>`];
+ if(k=='tok')return ['Token','setara input',
+  `<div class="big">2,0M<span>mentah 8,87M</span></div><div class="tb" style="height:10px">${TK.map(x=>`<i style="width:${x.p}%;background:${x.c}"></i>`).join('')}</div>
+   <div class="chs">${CH('cache baca 95% dari mentah')}${CH('3 gambar dibaca')}${CH('1 baca ganda','w')}</div>`
+  +TK.map(x=>`<div class="ag"><div class="l"><i class="dt" style="background:${x.c}"></i>${x.n}<span class="r">${x.eq} · ${x.p}%</span></div><div class="pb"><i style="width:${x.p*3.4}%;background:${x.c}"></i></div><div class="m">${x.m} · ${x.tn} giliran · konteks ${x.ctx}</div><div class="m">masuk ${x.i} · keluar ${x.o} · cache ${x.cr} baca / ${x.cc} tulis</div></div>`).join('')
+  +`<div class="note">Setara input = masuk + 1,25×cache tulis + 0,1×cache baca + 5×keluar. Estimasi, bukan tagihan dan bukan kuota langgananmu.</div>`];
+ if(k=='sel'){const T=TK.find(x=>x.n==a.n)||{};return [a.n,a.p,
+  `<div class="chs">${CH(a.r)}${CH(a.m||'—')}${a.s=='run'?CH('berjalan','acc'):CH(a.p)}</div>
+   <div class="box"><small>Sedang apa</small>${a.a}</div>
+   <div class="grid2"><div class="box"><small>Token</small><b>${a.tk}</b></div><div class="box"><small>Waktu</small><b>${a.t}</b></div><div class="box"><small>Giliran</small><b>${T.tn||'—'}</b></div><div class="box"><small>Konteks</small><b>${T.ctx||'—'}</b></div></div>`
+  +SEC('Aktivitas terakhir',`<div class="tlx"><div><span class="mono">08.06</span> Write <b class="mono">login.html</b></div><div><span class="mono">08.05</span> Read <b class="mono">docs/UX.md</b></div><div><span class="mono">08.05</span> Skill <b>antislop</b></div><div><span class="mono">08.05</span> Mulai dipanggil Claude</div></div>`)
+  +SEC('Alur',`<div class="kv"><span>Menerima dari</span><b>Perancang UX</b></div><div class="kv"><span>Menyerahkan ke</span><b>Frontend Engineer, Kritikus UI</b></div>`)
+  +SEC('Hasil terakhir',`<div class="box"><span class="mono">Wrote login.html (214 baris). Tema terang/gelap diterapkan ke 6 komponen.</span></div>`)]}
+ return ['Log kejadian','tersaring: semua',
+  `<div class="chs">${CH('semua','acc')}${CH('agent')}${CH('skill')}${CH('file')}${CH('pertanyaan')}</div>`
+  +`<div class="tlx lg2">`+[['08.06','file','Desainer UI menulis login.html'],['08.05','skill','Desainer UI memanggil skill antislop'],['08.05','agent','Backend Engineer mulai'],['08.05','agent','Desainer UI mulai'],['08.05','file','Backend Engineer menulis server/auth.js'],['08.04','agent','Perancang UX selesai · 5m · 210k'],['08.03','tanya','Claude bertanya: paket langganan?'],['08.01','agent','Penulis PRD selesai · 12m · 386k'],['07.58','agent','Penulis PRD mulai'],['07.57','input','Prompt: /fullstack-dev:build login pelanggan']].map(x=>`<div><span class="mono">${x[0]}</span> ${CH(x[1])} ${x[2]}</div>`).join('')+`</div>`];
+}
+function drawRail(){rail.innerHTML=rl().map(([k,t,n,w],i)=>`${i==4?'<span class="ln"></span>':''}<button data-r="${k}" class="${cur==k?'on':''}" title="${t}">${svg(ICN[k])}<span class="rl2">${LBL[k]}</span>${n?`<em class="${w||''}">${n}</em>`:''}</button>`).join('')}
+function show(k){cur=k;drawRail();if(!k){pan.classList.remove('open');setTimeout(fit,230);return}
+ const [t,sm,h]=body(k);pi.innerHTML=`<h2>${t}<small>${sm}</small><button id="px" title="Tutup">×</button></h2><div style="height:12px"></div>${h}`;
+ pan.classList.add('open');setTimeout(fit,230)}
+document.getElementById('tkov').innerHTML=`<div class="k">Beban token per agent</div><div class="v"><b>2,00M</b>setara input · mentah 8,87M</div><div class="bar2">${TK.map(x=>`<i style="width:${x.p}%;background:${x.c}" title="${x.n} ${x.eq}"></i>`).join('')}</div><div class="lg">${TK.map(x=>`<span><i style="background:${x.c}"></i>${x.n.replace('Claude ','').replace('Pengatur ','').replace('Penulis ','')} ${x.p}%</span>`).join('')}</div>`;
+tkov.onclick=()=>show('tok');
+rail.onclick=e=>{const b=e.target.closest('button');if(!b)return;const k=b.dataset.r;show(cur==k?null:k)};
+pi.onclick=e=>{if(e.target.id=='px')show(null)};
+function sel(id){selId=id;document.querySelectorAll('.node').forEach(n=>n.classList.toggle('sel',n.dataset.id==id))}
+cv.addEventListener('click',e=>{const n=e.target.closest('.node,.sm');if(!n)return;sel(n.dataset.id);show('sel')});
+th.onclick=()=>{const d=document.documentElement,x=d.dataset.theme=='dark'?'light':'dark';d.dataset.theme=x;th.textContent=x=='dark'?'Terang':'Gelap';try{localStorage.setItem('fv2-theme',x)}catch(e){}};
+if(document.documentElement.dataset.theme=='dark')th.textContent='Terang';
+
+// ===== keadaan contoh, header dinamis, popover, ringkasan, riwayat =====
+let CUR='running',SOUND=true,DESK=false,RST=0,CMP=new Set(),ALLP=false;
+const STT={banyak:'(1) Butuh input · ryama-kit',running:'(1) Butuh input · ryama-kit',failed:'(1) Agent gagal · ryama-kit',done:'(✓) Run selesai · ryama-kit',empty:'Flow Viewer · ryama-kit'};
+const HD={
+ banyak:{n:3,names:'Backend Engineer, Desainer UI, Integrator API',pg:'4 dari 13',pct:31,pd:'3 jalan · 1 tanya · 5 menunggu',dur:'5m 43s',dd:'',tok:'2,00M',raw:'mentah 8,87M',dl:'▲ 12% dari run lalu',up:1,need:'1 butuh jawaban',nc:''},
+ running:{n:2,names:'Backend Engineer, Desainer UI',pg:'2 dari 9',pct:22,pd:'2 jalan · 1 tanya · 4 menunggu',dur:'5m 43s',dd:'terlama: Penulis PRD 12m',tok:'2,00M',raw:'mentah 8,87M',dl:'▲ 12% dari run lalu',up:1,need:'1 butuh jawaban',nc:''},
+ failed:{n:1,names:'Desainer UI',pg:'2 dari 9',pct:22,pd:'1 jalan · 1 gagal · 1 tanya · 4 menunggu',dur:'6m 20s',dd:'terlama: Penulis PRD 12m',tok:'2,31M',raw:'mentah 9,4M',dl:'▲ 24% dari run lalu',up:1,need:'1 agent gagal',nc:'bad'},
+ done:{n:0,names:'tidak ada agent yang berjalan',pg:'9 dari 9',pct:100,pd:'8 selesai · 1 dilewati',dur:'23m 10s',dd:'terlama: Backend Engineer 7m',tok:'3,41M',raw:'mentah 14,2M',dl:'▼ 8% dari run lalu',up:0,need:'Selesai · lihat ringkasan',nc:'ok'},
+ empty:{n:0,names:'belum ada run',pg:'—',pct:0,pd:'kirim prompt di Claude',dur:'—',dd:'',tok:'—',raw:'menunggu data',dl:'',up:0,need:'',nc:'hide'}};
+const OV={
+ failed:{be:{s:'fail',a:'<code>npm test</code>: 2 tes gagal (auth.test.js:41)',tk:'1,6M',t:'6m 10s',rd:2},or:{s:'run',a:'Menunggu hasil agent',tk:'1,2M',t:'6m 20s'},ui:{}},
+ done:{in:{s:'done'},or:{s:'done',a:'Alur selesai, ringkasan siap',tk:'1,4M',t:'23m'},be:{s:'done',a:'Menulis server/auth.js',tk:'1,9M',t:'7m',rd:2},ui:{s:'done',a:'Menulis login.html',tk:'2,6M',t:'6m'},fe:{s:'done',a:'Menyambung login ke API',tk:'1,1M',t:'4m',m:'sonnet-5-5'},qa:{s:'done',a:'14 tes lulus',tk:'420k',t:'2m'},cr:{s:'skip',a:'Dilewati: tidak ada perubahan tampilan baru',tk:'—',t:'—'},au:{s:'done',a:'Tidak ada temuan kritis',tk:'610k',t:'3m'}},
+ empty:{in:{s:'wait',a:'Belum ada prompt',t:'—'},prd:{s:'wait',a:'Belum dijalankan',tk:'—',t:'—'},ux:{s:'wait',a:'Belum dijalankan',tk:'—',t:'—'},or:{s:'wait',a:'Menunggu prompt',tk:'—',t:'—'},be:{s:'wait',a:'Belum dijalankan',tk:'—',t:'—'},ui:{s:'wait',a:'Belum dijalankan',tk:'—',t:'—'}}};
+function hdr(){const h=HD[CUR];
+ document.getElementById('hb-run').innerHTML=`<div class="k">Berjalan</div><div class="v"><b>${h.n}</b> agent</div><div class="d">${h.names}</div>`;
+ document.getElementById('hb-prog').innerHTML=`<div class="k">Progres alur</div><div class="v"><b>${h.pg}</b> agent selesai</div><div class="bar" style="width:100%;margin-top:5px"><i style="width:${h.pct}%"></i></div><div class="d" style="margin-top:3px">durasi ${h.dur} · ${h.pd}</div>`;
+ const pc=CUR=='empty'?[]:TK;
+ tkov.innerHTML=`<div class="k">Beban token per agent</div><div class="v"><b>${h.tok}</b>setara input<span class="rawt"> · ${h.raw}</span>${h.dl?`<span class="dl ${h.up?'up':''}">${h.dl}</span>`:''}</div><div class="bar2">${pc.map(x=>`<i style="width:${x.p}%;background:${x.c}" title="${x.n} ${x.eq}"></i>`).join('')}</div>`;tkov.title=pc.map(x=>x.n+" "+x.p+"%").join(" · ")||"Belum ada data";
+ need.className='need '+(h.nc||'on');need.className='need on '+h.nc;need.textContent=h.need;need.style.display=h.nc=='hide'?'none':'';
+ stsw.innerHTML='<span>Contoh keadaan (hanya mockup):</span>'+[['running','Berjalan'],['failed','Gagal'],['done','Selesai'],['empty','Kosong'],['banyak','13 agent']].map(([k,t])=>`<button data-st="${k}" class="${CUR==k?'on':''}">${t}</button>`).join('')+`<span class="tt" title="Judul tab browser">Tab: ${STT[CUR]}</span>`;
+ document.title=STT[CUR];}
+const EXA=[{id:'ar',c:1,y:2,n:'Arsitek Sistem',r:'Spesifikasi',s:'done',a:'Write ARCHITECT.md',tk:'1,16M',t:'9m',ic:'flow',m:'opus-5-5'},{id:'ba',c:1,y:3,n:'Pengatur Backlog',r:'Spesifikasi',s:'done',a:'Write BACKLOG.md',tk:'1,54M',t:'8m',ic:'doc',m:'opus-5-5'},{id:'ia',c:2,y:3,n:'Integrator API',r:'Bangun',s:'run',a:'Menjalankan npm run build',tk:'820k',t:'3m 10s',ic:'code',m:'sonnet-5-5'},{id:'dk',c:4,y:0,n:'Penulis Dokumen',r:'Rilis',s:'wait',a:'Belum dijalankan',tk:'—',t:'—',ic:'doc',m:'haiku'},{id:'rl',c:4,y:1,n:'Perilis',r:'Rilis',s:'wait',a:'Belum dijalankan',tk:'—',t:'—',ic:'check',m:'sonnet-5-5'}];
+const EXE=[['ux','ar'],['ar','ia'],['ar','ba'],['qa','dk'],['au','rl'],['dk','rl']];
+function applyState(n){CUR=n;A.splice(10);E.splice(10);COL=['Input','Spesifikasi','Bangun','Verifikasi'];if(n=='banyak'){EXA.forEach(x=>{A.push(JSON.parse(JSON.stringify(x)));A0.push(JSON.parse(JSON.stringify(x)))});EXE.forEach(x=>E.push(x));COL=COL.concat(['Rilis'])}A0.splice(10);if(n=='banyak')EXA.forEach(x=>A0.push(JSON.parse(JSON.stringify(x))));A.forEach(a=>{const id=a.id;Object.keys(a).forEach(k=>delete a[k]);Object.assign(a,JSON.parse(JSON.stringify(A0.find(x=>x.id==id))),(OV[n]||{})[id]||{})});
+ if(n=='failed'){const u=A.find(x=>x.id=='or');}
+ A.forEach(a=>{a.p=PT[a.s]});
+ if(n=='failed')selId='be';else if(selId=='be'&&(n=='running'||n=='banyak'))selId='ui';
+ draw();hdr();if(cur)show(cur);else drawRail();fit();if(n=='done')summary();else closeModal();}
+stsw.onclick=e=>{const b=e.target.closest('button[data-st]');if(b)applyState(b.dataset.st)};
+// popover
+const pop=document.getElementById('pop');
+function popAt(el,html){const r=el.getBoundingClientRect();pop.innerHTML=html;pop.style.top=(r.bottom+8)+'px';pop.style.left=Math.max(8,Math.min(innerWidth-290,r.left))+'px';pop.classList.add('on')}
+document.addEventListener('click',e=>{if(!e.target.closest('#pop,#proj,#set'))pop.classList.remove('on')});
+proj.onclick=e=>{e.stopPropagation();popAt(proj,`<div class="hd">Proyek aktif</div><div class="it"><i class="dt" style="background:var(--acc)"></i><b>ryama-kit</b><small>2 agent berjalan</small></div><div class="it"><i class="dt" style="background:var(--warn)"></i><b>tryout</b><small>butuh input</small></div><div class="it"><i class="dt" style="background:var(--wait)"></i><b>revenue-app</b><small>sepi 6 jam</small></div><hr><div class="hd">Satu jendela per proyek</div><div class="it" style="color:var(--ink3);cursor:default">Tiap proyek dibuka di tab sendiri: <span class="mono">/?p=nama-proyek</span></div>`)};
+function setPop(){popAt(set,`<div class="hd">Pemberitahuan</div><div class="it" data-a="snd"><span>Bunyi singkat</span><span class="sw ${SOUND?'on':''}"></span></div><div class="it" data-a="dsk"><span>Notifikasi desktop</span><span class="sw ${DESK?'on':''}"></span></div><div class="it" style="color:var(--ink3);cursor:default;font-size:12px">Judul tab berkedip selalu aktif. Jika izin ditolak, bunyi dan judul tab tetap bekerja.</div><hr><div class="it" data-a="rst" style="color:var(--bad)">${RST?'Yakin? Klik sekali lagi untuk reset':'Reset run'}</div>`)}
+set.onclick=e=>{e.stopPropagation();RST=0;setPop()};
+pop.onclick=e=>{const it=e.target.closest('[data-a]');if(!it)return;const a=it.dataset.a;
+ if(a=='snd')SOUND=!SOUND;if(a=='dsk')DESK=!DESK;
+ if(a=='rst'){if(!RST){RST=1;setTimeout(()=>{RST=0},3000)}else{RST=0;pop.classList.remove('on');applyState('empty');return}}
+ setPop()};
+// ringkasan
+const modal=document.getElementById('modal'),mc=document.getElementById('mc');
+function closeModal(){modal.classList.remove('on')}
+function summary(){mc.innerHTML=`<h2>Run selesai <span class="ch ok">✓ 8 selesai</span><span class="ch">– 1 dilewati</span></h2><div class="sub">/fullstack-dev:build · login pelanggan · ryama-kit · 23m 10s</div>
+ <div class="box q"><small>Masih menunggu kamu</small><b>Pilih penyedia login</b><div class="d2">Item backlog perlu keputusan · jawab di Claude Code</div></div>
+ <div class="g3"><div class="box"><small>Token</small><b>3,41M</b><div class="d2">▼ 8% dari run lalu</div></div><div class="box"><small>Durasi</small><b>23m 10s</b><div class="d2">run lalu 25m</div></div><div class="box"><small>File</small><b>12</b><div class="d2">+612 −48</div></div></div>
+ <div class="hs">Dilewati</div><div class="bi"><i class="dt" style="background:var(--wait)"></i><div><b>Kritikus UI</b><div class="d2">tidak ada perubahan tampilan baru</div></div></div>
+ <div class="hs">File berubah</div><div class="d2" style="line-height:1.8"><span class="mono">login.html, server/auth.js, test/auth.test.js, docs/PRD.md, docs/UX.md, +7 lainnya</span></div>
+ <div style="display:flex;gap:8px;margin-top:18px"><button class="ib on" id="mx">Tutup</button><button class="ib" disabled style="opacity:.5" title="Fitur nanti (F10)">Ekspor teks · nanti</button></div>`;modal.classList.add('on');mx.onclick=closeModal}
+modal.onclick=e=>{if(e.target==modal)closeModal()};
+need.onclick=()=>{if(CUR=='running'||CUR=='banyak')show('chat');else if(CUR=='failed'){sel('be');show('sel')}else if(CUR=='done')summary()};
+// riwayat
+const RUNS=[[12,'login pelanggan','build','ryama-kit','3,41M','23m','✓'],[11,'login pelanggan','build','ryama-kit','3,05M','25m','✓'],[10,'perbaiki header','start','ryama-kit','1,22M','9m','✓'],[9,'halaman tagihan','build','tryout','2,80M','18m','✕']];
+function histHtml(){const L=RUNS.filter(r=>ALLP||r[3]=='ryama-kit');const sel2=[...CMP];let cmp='';
+ if(sel2.length==2){const a=RUNS.find(r=>r[0]==sel2[0]),b=RUNS.find(r=>r[0]==sel2[1]),va=parseFloat(a[4].replace(',','.')),vb=parseFloat(b[4].replace(',','.'));const d=Math.round((va-vb)/vb*100);
+  cmp=`<div class="box"><small>Banding token</small><b>#${a[0]} ${a[4]} vs #${b[0]} ${b[4]}</b><div class="d2">selisih ${d>0?'+':''}${d}%${a[2]!=b[2]?' · peringatan: flow berbeda, banding mungkin tidak setara':''}</div></div>`}
+ return `<div class="ck" style="border:0"><span>Semua proyek</span><span class="sw ${ALLP?'on':''}" id="allp" style="cursor:pointer"></span></div>${cmp||'<div class="d2" style="margin:0 0 6px">Centang dua run untuk membandingkan token.</div>'}`
+ +L.map(r=>`<label class="ck"><input type="checkbox" data-run="${r[0]}" ${CMP.has(r[0])?'checked':''}><div><b>#${r[0]} ${r[1]}</b><div class="d2">${r[2]} · ${r[3]}</div></div><div class="r">${r[4]}<br>${r[5]} · ${r[6]}</div></label>`).join('')+`<div class="note">Run lama dibuka hanya baca. Hapus dan lihat ringkasan ada di menu tiap run (tidak digambar di mockup).</div>`}
+pi.addEventListener('change',e=>{const c=e.target.closest('[data-run]');if(!c)return;const id=+c.dataset.run;if(c.checked){if(CMP.size>=2)CMP.delete([...CMP][0]);CMP.add(id)}else CMP.delete(id);show('hist')});
+pi.addEventListener('click',e=>{if(e.target.id=='allp'){ALLP=!ALLP;show('hist')}});
+
+// ===== token: rincian isi konteks per agent =====
+const CAT={msg:['Pesan','#3b82f6'],res:['Hasil tool &amp; file dibaca','#f97316'],sys:['Tool sistem','#64748b'],mcp:['Tool MCP','#65a30d'],prm:['Prompt agent','#f59e0b'],skl:['Skill terdeklarasi','#e11d48'],mem:['File memori','#9ca3af']};
+const AG={
+ 'Desainer UI':{win:200,p:{msg:36,res:42,sys:19.8,mcp:8.4,prm:6.2,skl:9.9,mem:.1},prmf:'ui-designer.md',skills:[['antislop',3.1,1],['taste-skill',3.4,0],['web-design-guidelines',2.2,0],['awesome-design-md',1.2,0]],tools:[['Read',9],['Write',6],['Bash',4],['Playwright',3]],mcpn:'Playwright (8,4k)',top:[['Baca gambar ×3 (1 duplikat)',24],['Read docs/UX.md ×2',9],['Write login.html',7]]},
+ 'Claude Orkestrator':{win:200,p:{msg:28,res:12,sys:19.8,mcp:14.9,prm:8,skl:13.2,mem:.1},prmf:'sesi utama (CLAUDE.md + kit)',skills:[['project-context',2.4,0],['prd',3.9,0],['ux-designer',3.2,0],['backlog',3.7,0]],tools:[['Agent',9],['AskUserQuestion',1],['Read',5],['Write',1]],mcpn:'4 server (14,9k)',top:[['Hasil 9 pemanggilan agent',9],['Read docs/BACKLOG.md',4],['Percakapan dengan kamu',28]]},
+ 'Backend Engineer':{win:200,p:{msg:24,res:22,sys:19.8,mcp:0,prm:7.4,skl:14.7,mem:.1},prmf:'be.md',skills:[['project-context',2.4,0],['tdd',4.1,0],['api-design',3.8,0],['security-basics',4.4,0]],tools:[['Read',12],['Write',5],['Edit',7],['Bash',8]],mcpn:'tidak ada',top:[['Bash npm test ×4 (keluaran panjang)',11],['Read server/*.js ×12',8],['Edit auth.js ×7',3]]},
+ 'Pengatur Backlog':{win:200,p:{msg:20,res:18,sys:19.8,mcp:0,prm:5.6,skl:14.5,mem:.1},prmf:'backlog.md',skills:[['backlog',5.1,1],['project-context',2.4,0],['dependency-mapping',3.6,0],['estimation',3.4,0]],tools:[['Read',8],['Write',3],['Bash',2]],mcpn:'tidak ada',top:[['Read docs/PRD.md',7],['Read docs/ARCHITECTURE.md',6],['Write docs/backlog.json',5]]},
+ 'Penulis PRD':{win:200,p:{msg:22,res:11,sys:19.8,mcp:0,prm:6.1,skl:10.9,mem:.1},prmf:'prd-writer.md',skills:[['prd',3.9,0],['prd-review',3.5,0],['project-context',2.4,0],['interview',1.1,0]],tools:[['AskUserQuestion',3],['Read',4],['Write',2]],mcpn:'tidak ada',top:[['Percakapan wawancara',22],['Read referensi',7],['Write docs/PRD.md',4]]}};
+let EXP=new Set(['Desainer UI']);
+const fk=v=>v>=1000?(v/1000).toFixed(1).replace('.',',')+'M':(v%1?v.toFixed(1).replace('.',','):v)+'k';
+function agBlock(x){const d=AG[x.n];const open=EXP.has(x.n);let h=`<div class="agx ${open?'open':''}"><div class="agh" data-ag="${x.n}"><i class="dt" style="background:${x.c}"></i><b>${x.n}</b><span class="r">${x.eq} · ${x.p}%</span><i class="chev"></i></div>`;
+ if(!d)return h+'</div>';
+ const used=Object.values(d.p).reduce((a,b)=>a+b,0),pct=Math.round(used/d.win*100);
+ h+=`<div class="pb"><i style="width:${x.p*3.4}%;background:${x.c}"></i></div><div class="m">${x.m} · ${x.tn} giliran · cache ${x.cr} baca / ${x.cc} tulis</div>`;
+ if(open){
+  h+=`<div class="ctxb"><div class="ctxh"><b>${pct}% konteks terpakai</b><span>${fk(used)} / ${d.win}k</span></div><div class="tb ctxbar">${Object.keys(CAT).map(k=>`<i style="width:${d.p[k]/d.win*100}%;background:${CAT[k][1]}" title="${CAT[k][0]}"></i>`).join('')}</div>`
+  +Object.keys(CAT).map(k=>`<div class="crow"><i class="sq" style="background:${CAT[k][1]}"></i><span>${CAT[k][0]}</span><b>${fk(d.p[k])}</b><em>${(d.p[k]/d.win*100).toFixed(1).replace('.',',')}%</em></div>`).join('')
+  +`<div class="crow"><i class="sq" style="background:var(--waitbg)"></i><span>Ruang kosong</span><b>${fk(d.win-used)}</b><em>${(100-used/d.win*100).toFixed(1).replace('.',',')}%</em></div></div>`
+  +`<div class="hs" style="margin-top:12px">Isi agent</div>`
+  +`<div class="crow"><i class="sq" style="background:${CAT.prm[1]}"></i><span class="mono">${d.prmf}</span><b>${fk(d.p.prm)}</b><em>prompt</em></div>`
+  +d.skills.map(k=>`<div class="crow"><i class="sq" style="background:${CAT.skl[1]}"></i><span>skill <b style="font-weight:600">${k[0]}</b></span><b>${fk(k[1])}</b><em style="color:${k[2]?'var(--ok)':'var(--warn)'}">${k[2]?'terpanggil':'belum'}</em></div>`).join('')
+  +`<div class="crow"><i class="sq" style="background:${CAT.mcp[1]}"></i><span>MCP: ${d.mcpn}</span><b></b><em></em></div>`
+  +`<div class="chs" style="margin:8px 0 0">${d.tools.map(t=>`<span class="ch">${t[0]} ×${t[1]}</span>`).join('')}</div>`
+  +`<div class="hs" style="margin-top:12px">Penyumbang terbesar</div>`+d.top.map(t=>`<div class="crow"><i class="sq" style="background:var(--ink3)"></i><span>${t[0]}</span><b>${fk(t[1])}</b><em></em></div>`).join('');}
+ return h+'</div>'}
+function tokPanel(){return ['Token','setara input',`<div class="big">2,0M<span>mentah 8,87M</span></div><div class="tb" style="height:10px">${TK.map(x=>`<i style="width:${x.p}%;background:${x.c}"></i>`).join('')}</div>
+ <div class="chs">${CH('cache baca 95% dari mentah')}${CH('3 gambar dibaca')}${CH('1 baca ganda','w')}</div>`
+ +TK.map(agBlock).join('')+`<div class="note">Setara input = masuk + 1,25×cache tulis + 0,1×cache baca + 5×keluar. Estimasi, bukan tagihan dan bukan kuota langgananmu. Rincian isi konteks adalah perkiraan dari definisi agent dan transkrip.</div>`]}
+pi.addEventListener('click',e=>{const g=e.target.closest('[data-ag]');if(!g)return;const n=g.dataset.ag;EXP.has(n)?EXP.delete(n):EXP.add(n);show('tok')});
+
+// pembungkus body
+const _body=body;
+body=function(k){
+ if(k=='tok')return tokPanel();
+ if(k=='hist')return ['Riwayat run',ALLP?'semua proyek':'ryama-kit',histHtml()];
+ const r=_body(k),a=A.find(x=>x.id==selId);
+ if(k=='chat'&&CUR!='running'&&CUR!='banyak')r[2]=r[2].replace(/<div class="box q">.*?<\/div><\/div>/s,'<div class="box"><small>Pertanyaan</small>Tidak ada yang menunggu jawabanmu.</div>');
+ if(k=='sel'){
+  if(a.s=='fail')r[2]=`<div class="box" style="background:var(--badbg);border-color:var(--bad)"><small>Gagal</small><b>${a.a}</b><div class="d2">Alasan singkat dari hasil tes terakhir.</div></div>`+r[2];
+  if(a.s=='wait'||a.s=='skip')r[2]=`<div class="box"><small>Definisi agent</small>Peran: ${a.r}<br>Model terdeklarasi: ${a.m||'—'}<br>Skill terdeklarasi: project-context, ${a.id=='fe'?'frontend-design':'review'}</div>`+r[2];
+  r[2]=r[2].replace('<div class="chs">',`<div class="chs">${a.m?CH('model terdeklarasi '+a.m)+CH('terbukti '+a.m,'ok'):''}`);
+  r[2]+=SEC('Skill &amp; tool',`<div class="kv"><span>Dimuat</span><b>project-context</b></div><div class="kv"><span>Dipanggil</span><b>antislop</b></div><div class="kv"><span>Belum terbukti</span><b style="color:var(--warn)">ux-designer</b></div><div class="kv"><span>Tool call</span><b class="mono">Write ×3 · Read ×4 · Bash ×1</b></div>`);}
+ return r};
+document.addEventListener('keydown',e=>{if(e.key=='Escape'){if(modal.classList.contains('on'))closeModal();else if(cur)show(null);pop.classList.remove('on')}});
+
+applyState('running');
+</script>
+</body>
+</html>

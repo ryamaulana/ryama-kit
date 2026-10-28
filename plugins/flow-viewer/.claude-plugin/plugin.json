@@ -1,6 +1,8 @@
 {
   "name": "flow-viewer",
-  "version": "0.1.0",
+  "version": "1.7.1",
   "description": "Live n8n-style graph of which agents and skills actually ran, compared with the flow each command is supposed to run. Local only (127.0.0.1).",
-  "author": { "name": "ryama" }
+  "author": {
+    "name": "ryama"
+  }
 }

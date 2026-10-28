@@ -14,7 +14,7 @@
         "role": "ARCHITECTURE + TASKS",
         "optional": true,
         "col": 1,
-        "row": 1
+        "row": 3
       },
       {
         "id": "ui-designer",
@@ -57,19 +57,37 @@
         "optional": true,
         "col": 3,
         "row": 2
+      },
+      {
+        "id": "ux",
+        "role": "alur dan langkah (UX)",
+        "optional": true,
+        "col": 1,
+        "row": 2
+      },
+      {
+        "id": "backlog",
+        "role": "urutan kerja berdependensi",
+        "optional": true,
+        "col": 1,
+        "row": 4
       }
     ],
     "edges": [
       [
         "prd",
+        "ux"
+      ],
+      [
+        "ux",
         "architect"
       ],
       [
-        "architect",
+        "ux",
         "ui-designer"
       ],
       [
-        "ui-designer",
+        "architect",
         "be"
       ],
       [
@@ -228,6 +246,10 @@
     "title": "all",
     "nodes": [
       {
+        "id": "ux",
+        "role": "alur dan langkah (UX)"
+      },
+      {
         "id": "architect",
         "role": "ARCHITECTURE + TASKS"
       },
@@ -258,6 +280,10 @@
     ],
     "edges": [
       [
+        "ux",
+        "architect"
+      ],
+      [
         "architect",
         "ui-designer"
       ],
@@ -286,5 +312,256 @@
         "cyber"
       ]
     ]
+  },
+  "ui-direction": {
+    "title": "ui-direction",
+    "nodes": [
+      {
+        "id": "ui-designer",
+        "role": "3 arah desain, 2 layar kunci"
+      },
+      {
+        "id": "ui-critic",
+        "role": "audit terukur + uji generik"
+      }
+    ],
+    "edges": [
+      [
+        "ui-designer",
+        "ui-critic"
+      ]
+    ]
+  },
+  "start": {
+    "title": "start",
+    "nodes": [
+      {
+        "id": "prd",
+        "role": "PRD"
+      },
+      {
+        "id": "ux",
+        "role": "alur dan langkah (UX)"
+      },
+      {
+        "id": "ui-designer",
+        "role": "arah desain dan visual"
+      },
+      {
+        "id": "architect",
+        "role": "arsitektur dan keputusan"
+      },
+      {
+        "id": "backlog",
+        "role": "urutan kerja berdependensi"
+      },
+      {
+        "id": "be",
+        "role": "API, DB, logic"
+      },
+      {
+        "id": "fe",
+        "role": "wiring dan logic"
+      },
+      {
+        "id": "ui-critic",
+        "role": "review screenshot"
+      },
+      {
+        "id": "qa",
+        "role": "tes acceptance"
+      },
+      {
+        "id": "cyber",
+        "role": "review keamanan"
+      }
+    ],
+    "edges": [
+      [
+        "prd",
+        "ux"
+      ],
+      [
+        "ux",
+        "ui-designer"
+      ],
+      [
+        "ux",
+        "architect"
+      ],
+      [
+        "architect",
+        "backlog"
+      ],
+      [
+        "ui-designer",
+        "backlog"
+      ],
+      [
+        "backlog",
+        "be"
+      ],
+      [
+        "backlog",
+        "fe"
+      ],
+      [
+        "be",
+        "ui-critic"
+      ],
+      [
+        "fe",
+        "ui-critic"
+      ],
+      [
+        "ui-critic",
+        "qa"
+      ],
+      [
+        "qa",
+        "cyber"
+      ]
+    ]
+  },
+  "backlog": {
+    "title": "backlog",
+    "nodes": [
+      {
+        "id": "backlog",
+        "role": "susun dan atur antrean"
+      }
+    ],
+    "edges": []
+  },
+  "run": {
+    "title": "run",
+    "nodes": [
+      {
+        "id": "backlog",
+        "role": "antrean item siap"
+      },
+      {
+        "id": "ui-designer",
+        "role": "visual layar",
+        "optional": true
+      },
+      {
+        "id": "fe",
+        "role": "wiring",
+        "optional": true
+      },
+      {
+        "id": "be",
+        "role": "API, DB",
+        "optional": true
+      },
+      {
+        "id": "ui-critic",
+        "role": "review screenshot",
+        "optional": true
+      },
+      {
+        "id": "qa",
+        "role": "tes acceptance",
+        "optional": true
+      },
+      {
+        "id": "cyber",
+        "role": "review keamanan",
+        "optional": true
+      }
+    ],
+    "edges": [
+      [
+        "backlog",
+        "ui-designer"
+      ],
+      [
+        "backlog",
+        "fe"
+      ],
+      [
+        "backlog",
+        "be"
+      ],
+      [
+        "backlog",
+        "ui-critic"
+      ],
+      [
+        "backlog",
+        "qa"
+      ],
+      [
+        "backlog",
+        "cyber"
+      ]
+    ]
+  },
+  "agents": {
+    "prd": {
+      "label": "Penulis PRD",
+      "role": "Menulis spesifikasi produk dan kriteria penerimaan yang bisa diuji.",
+      "icon": "<path d=\"M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z\"/><path d=\"M14 3v5h5M9 13h6M9 17h6\"/>"
+    },
+    "ux": {
+      "label": "Perancang UX",
+      "role": "Merancang alur pemakaian: langkah paling sedikit, pola modal atau panel, navigasi, dan state.",
+      "icon": "<rect x=\"3\" y=\"4\" width=\"7\" height=\"6\" rx=\"1.5\"/><rect x=\"14\" y=\"14\" width=\"7\" height=\"6\" rx=\"1.5\"/><path d=\"M10 7h4a3 3 0 0 1 3 3v4\"/>"
+    },
+    "backlog": {
+      "label": "Pengatur Backlog",
+      "role": "Menyusun urutan kerja berdependensi dan menjaga antrean tetap sesuai PRD.",
+      "icon": "<path d=\"M8 6h12M8 12h12M8 18h12\"/><path d=\"m3 6 1 1 2-2M3 12l1 1 2-2M3 18l1 1 2-2\"/>"
+    },
+    "architect": {
+      "label": "Arsitek Sistem",
+      "role": "Merancang arsitektur dan memecah pekerjaan jadi tugas berurutan.",
+      "icon": "<path d=\"m12 3-9 5 9 5 9-5z\"/><path d=\"m3 13 9 5 9-5\"/>"
+    },
+    "ui-designer": {
+      "label": "Desainer UI",
+      "role": "Riset referensi, menetapkan DESIGN.md, lalu membuat mockup.",
+      "icon": "<path d=\"M12 3a9 9 0 1 0 0 18c1.1 0 1.5-.8 1.2-1.6-.4-1 .2-2.4 1.6-2.4H17a4 4 0 0 0 4-4c0-5-4-10-9-10z\"/><circle cx=\"7.5\" cy=\"11\" r=\"1\"/><circle cx=\"11\" cy=\"7\" r=\"1\"/><circle cx=\"16\" cy=\"8\" r=\"1\"/>"
+    },
+    "be": {
+      "label": "Backend Engineer",
+      "role": "Membangun API, database, dan logika sisi server.",
+      "icon": "<ellipse cx=\"12\" cy=\"5\" rx=\"8\" ry=\"3\"/><path d=\"M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6\"/>"
+    },
+    "fe": {
+      "label": "Frontend Engineer",
+      "role": "Menyambungkan tampilan ke logika dan data.",
+      "icon": "<path d=\"m8 8-5 4 5 4M16 8l5 4-5 4M14 5l-4 14\"/>"
+    },
+    "ui-critic": {
+      "label": "Kritikus UI",
+      "role": "Menilai hasil visual dengan prinsip desain dan audit terukur.",
+      "icon": "<path d=\"M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/>"
+    },
+    "qa": {
+      "label": "Penguji QA",
+      "role": "Menguji kriteria penerimaan dengan Playwright.",
+      "icon": "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"m8 12 3 3 5-6\"/>"
+    },
+    "cyber": {
+      "label": "Auditor Keamanan",
+      "role": "Memeriksa celah keamanan sebelum rilis.",
+      "icon": "<path d=\"M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z\"/><path d=\"m9 12 2 2 4-4\"/>"
+    },
+    "__main": {
+      "label": "Claude (Orkestrator)",
+      "icon": "<path d=\"M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M18 6l-2.5 2.5M8.5 15.5 6 18\"/>"
+    },
+    "__prompt": {
+      "label": "Prompt kamu",
+      "icon": "<path d=\"M4 5h16v11H9l-5 4z\"/>"
+    },
+    "__all": {
+      "icon": "<path d=\"M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z\"/><path d=\"M14 3v5h5\"/>"
+    },
+    "_def": {
+      "icon": "<rect x=\"6\" y=\"6\" width=\"12\" height=\"12\" rx=\"2\"/><path d=\"M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4\"/>"
+    }
   }
 }

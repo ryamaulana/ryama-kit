@@ -1,0 +1,1966 @@
+{
+  "version": 1,
+  "project": "Flow Viewer v2",
+  "items": [
+    {
+      "status": "done",
+      "needs": [],
+      "criteria": [
+        "F5-3",
+        "F6-1"
+      ],
+      "context": [
+        "docs/KEPUTUSAN.md#Perlu jawabanmu (ya/tidak)"
+      ],
+      "id": "k-run-baru-per-prompt",
+      "title": "Prompt baru setelah run selesai dihitung sebagai run baru",
+      "phase": "0 Keputusan",
+      "type": "keputusan",
+      "agent": "architect",
+      "value": "high",
+      "size": "s",
+      "checkpoint": "Prompt baru setelah run selesai = run baru? (rekomendasi: ya)",
+      "done": "Jawaban pemilik tercatat",
+      "evidence": "Keputusan pemilik: ya (rekomendasi), disetujui pemilik 2026-10-27",
+      "finishedAt": "2026-10-27T07:32:24.860Z"
+    },
+    {
+      "status": "done",
+      "needs": [],
+      "criteria": [
+        "F8-1"
+      ],
+      "context": [
+        "docs/KEPUTUSAN.md#Perlu jawabanmu (ya/tidak)"
+      ],
+      "id": "k-riwayat-200",
+      "title": "Riwayat menyimpan 200 run per proyek",
+      "phase": "0 Keputusan",
+      "type": "keputusan",
+      "agent": "architect",
+      "value": "high",
+      "size": "s",
+      "checkpoint": "Riwayat 200 run per proyek (bukan total)? (rekomendasi: ya)",
+      "done": "Jawaban pemilik tercatat",
+      "evidence": "Keputusan pemilik: ya (rekomendasi), disetujui pemilik 2026-10-27",
+      "finishedAt": "2026-10-27T07:32:24.932Z"
+    },
+    {
+      "status": "done",
+      "needs": [],
+      "criteria": [
+        "F5-1",
+        "F6-1"
+      ],
+      "context": [
+        "docs/KEPUTUSAN.md#Perlu jawabanmu (ya/tidak)"
+      ],
+      "id": "k-butuh-input-tengah-flow",
+      "title": "Claude berhenti dengan pertanyaan atau di tengah flow = Butuh input, bukan Selesai",
+      "phase": "0 Keputusan",
+      "type": "keputusan",
+      "agent": "architect",
+      "value": "high",
+      "size": "s",
+      "checkpoint": "Berhenti dengan pertanyaan atau di tengah flow = Butuh input? (rekomendasi: ya)",
+      "done": "Jawaban pemilik tercatat",
+      "evidence": "Keputusan pemilik: ya (rekomendasi), disetujui pemilik 2026-10-27",
+      "finishedAt": "2026-10-27T07:32:24.997Z"
+    },
+    {
+      "status": "done",
+      "needs": [],
+      "criteria": [
+        "PRD-8"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#2. Struktur folder",
+        "docs/ARCHITECTURE.md#1. Stack",
+        "docs/TASKS.md#Fondasi"
+      ],
+      "id": "t01-fondasi",
+      "title": "Siapkan fondasi plugin: build-id, .gitignore, folder uji",
+      "phase": "1 Fondasi",
+      "type": "be",
+      "agent": "be",
+      "slice": "fondasi",
+      "value": "high",
+      "size": "s",
+      "done": ".gitignore plugin; server/build-id.js dipakai /health dan start-server.js; folder test/unit, test/http, test/fixtures; `node --test` hijau (1 uji build-id); git status tidak menampilkan *.db saat FLOW_VIEWER_DIR di dalam repo. Bukti: output node --test + git status.",
+      "attempts": 1,
+      "startedAt": "2026-10-27T07:38:19.200Z",
+      "evidence": "node --test: 1 pass 0 fail; .gitignore + server/build-id.js ada; data dalam repo tidak tampil di git status (diperiksa orkestrator)",
+      "finishedAt": "2026-10-27T07:39:54.303Z"
+    },
+    {
+      "status": "done",
+      "needs": [
+        "t01-fondasi"
+      ],
+      "criteria": [
+        "F2-2",
+        "F4"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#5.7 Agent dikenali dari folder + flows.json",
+        "docs/ARCHITECTURE.md#3. Module dan seam"
+      ],
+      "id": "t02-agents",
+      "title": "Server mengenali agent dari folder agent dan flows.json (bukan kode)",
+      "phase": "2 Server",
+      "type": "be",
+      "agent": "be",
+      "slice": "server",
+      "value": "high",
+      "size": "m",
+      "done": "agents.js: katalog per proyek (plugin ryama-kit, ~/.claude/agents, <key>/.claude/agents), frontmatter inline dan daftar YAML, cache mtime, pindai ulang saat SessionStart; flows.json.agents (label, peran, ikon) dipindah dari index.html. Uji unit: agent baru di folder sementara muncul di crew; be.md terbaca 5 skill.",
+      "attempts": 1,
+      "startedAt": "2026-10-27T07:40:26.257Z",
+      "evidence": "node --test test/unit/agents.test.js: 6 pass; seluruh suite unit 30/30 lulus (diperiksa orkestrator); flows.json valid; server/agents.js baru, belum tersambung ke server.js",
+      "finishedAt": "2026-10-27T07:45:50.137Z"
+    },
+    {
+      "status": "done",
+      "needs": [
+        "t01-fondasi"
+      ],
+      "criteria": [
+        "F3-3"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#8.2 Threat model",
+        "docs/ARCHITECTURE.md#9. Performa (12 agent",
+        "3 proyek)"
+      ],
+      "id": "t03-usage",
+      "title": "Server membaca token dari transkrip secara inkremental dan aman",
+      "phase": "2 Server",
+      "type": "be",
+      "agent": "be",
+      "slice": "server",
+      "value": "high",
+      "size": "m",
+      "done": "usage.js: parseUsage/agentUsage dipindah, baca per offset, path transkrip dibatasi ~/.claude + .jsonl. Uji unit: dua kali baca file yang bertambah = total benar; path di luar ditolak.",
+      "attempts": 1,
+      "startedAt": "2026-10-27T07:40:26.323Z",
+      "evidence": "node --test test/unit/usage.test.js: 4 pass 0 fail (diperiksa orkestrator); server/usage.js baru; penyambungan ke server.js belum, dicatat untuk item wiring",
+      "finishedAt": "2026-10-27T07:43:25.957Z"
+    },
+    {
+      "status": "done",
+      "needs": [
+        "t01-fondasi"
+      ],
+      "criteria": [
+        "F3-2",
+        "F5-1"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#5.4 Progres (indikator b)",
+        "docs/PRD.md#F3. Tiga indikator besar"
+      ],
+      "id": "t04-backlog-ringkas",
+      "title": "Server meringkas backlog proyek (persen berbobot, item keputusan)",
+      "phase": "2 Server",
+      "type": "be",
+      "agent": "be",
+      "slice": "server",
+      "value": "high",
+      "size": "s",
+      "done": "backlog.js server: ringkasan per kunci proyek, cache mtime, bobot s1/m2/l4, parked dan rejected tidak dihitung, maks 2 MB, daftar item keputusan. Uji unit dengan backlog fixture: pct sama dengan hitungan manual.",
+      "attempts": 1,
+      "startedAt": "2026-10-27T07:40:26.389Z",
+      "evidence": "node --test test/unit/backlog-summary.test.js: 8 pass 0 fail (diperiksa orkestrator); pct berbobot 45% sama hitungan manual fixture; server/backlog-summary.js baru, belum tersambung; catatan: perintah suite unit pakai glob node --test \"test/unit/*.test.js\" (ARCHITECTURE s11 perlu diperbarui)",
+      "finishedAt": "2026-10-27T07:44:18.998Z"
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "t02-agents",
+        "t03-usage"
+      ],
+      "criteria": [
+        "F2-1",
+        "F4-3"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#3. Module dan seam",
+        "docs/ARCHITECTURE.md#4.1 Entitas (memori server",
+        "kecuali Run tersimpan)",
+        "docs/ARCHITECTURE.md#10.1 Endpoint"
+      ],
+      "id": "t05a-run-pabrik",
+      "title": "Pindahkan state run ke pabrik per run (tanpa variabel global)",
+      "phase": "2 Server",
+      "type": "be",
+      "agent": "be",
+      "slice": "server",
+      "value": "high",
+      "size": "l",
+      "done": "run.js: pabrik per run, handle dan state dari server.js, snapshot superset 1.7.1. Uji unit: fixture feed.js lama menghasilkan snapshot dengan semua field 1.7.1."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "t05a-run-pabrik"
+      ],
+      "criteria": [
+        "F9-1"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#3. Module dan seam",
+        "docs/ARCHITECTURE.md#10.1 Endpoint"
+      ],
+      "id": "t05b-run-detail-percakapan",
+      "title": "Pindahkan detail, percakapan, dan laporan lama ke run.js",
+      "phase": "2 Server",
+      "type": "be",
+      "agent": "be",
+      "slice": "server",
+      "value": "high",
+      "size": "m",
+      "done": "detail, convo, report per run; pending jadi daftar per pengirim; endpoint /detail dan /report tetap jalan. Uji unit atas fixture lama."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "t05b-run-detail-percakapan",
+        "k-run-baru-per-prompt",
+        "k-butuh-input-tengah-flow"
+      ],
+      "criteria": [
+        "F5-3",
+        "F6-1",
+        "F1"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#5.1 Batas run dan fase",
+        "docs/adr/0001-batas-run.md",
+        "docs/ARCHITECTURE.md#11. Strategi uji"
+      ],
+      "id": "t06a-fase-run",
+      "title": "Aturan fase run: berjalan, jeda, selesai, run baru per prompt",
+      "phase": "2 Server",
+      "type": "be",
+      "agent": "be",
+      "slice": "server",
+      "value": "high",
+      "size": "l",
+      "done": "Fase running/paused/finished, debounce 2 dtk, background_tasks, run baru per prompt setelah finished, sesi baru = run baru; Stop dengan langkah wajib tersisa atau pesan terakhir berupa pertanyaan = jeda (Butuh input). Uji unit per aturan dengan jam palsu, termasuk Stop saat background_tasks berjalan."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "t06a-fase-run",
+        "t04-backlog-ringkas"
+      ],
+      "criteria": [
+        "F5-4",
+        "F6"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#5.2 Gagal",
+        "docs/ARCHITECTURE.md#5.6 Ringkasan run"
+      ],
+      "id": "t06b-gagal-ringkasan",
+      "title": "Aturan gagal dan data Ringkasan run",
+      "phase": "2 Server",
+      "type": "be",
+      "agent": "be",
+      "slice": "server",
+      "value": "high",
+      "size": "m",
+      "done": "Status Gagal (Agent error, backlog failed) dan objek summary (langkah selesai/dilewati, token, durasi, file, keputusan tersisa; summary.auto hanya bila ada agent atau file berubah, PRD v1.1). Uji unit tiap kasus."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "t04-backlog-ringkas",
+        "t06b-gagal-ringkasan"
+      ],
+      "criteria": [
+        "F5-1",
+        "F5-2",
+        "F5-3",
+        "F5-5"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#5.3 Item pemberitahuan (`attention.js`)",
+        "docs/PRD.md#F5. Pemberitahuan saat butuh perhatian"
+      ],
+      "id": "t07-attention",
+      "title": "Server menghitung item pemberitahuan (pertanyaan, izin, keputusan, gagal, selesai)",
+      "phase": "2 Server",
+      "type": "be",
+      "agent": "be",
+      "slice": "server",
+      "value": "high",
+      "size": "m",
+      "done": "attention.js fungsi murni: jenis, kunci stabil, teks, pilihan jawaban, waktu, kapan hilang; beberapa pemicu bersamaan. Uji unit tiap jenis dan kunci tidak berubah antar snapshot."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "t01-fondasi",
+        "k-riwayat-200"
+      ],
+      "criteria": [
+        "F3-3",
+        "F8-1",
+        "F8-2"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#4.2 Skema SQLite (tetap)",
+        "docs/ARCHITECTURE.md#5.5 Token (indikator c) dan pembanding",
+        "docs/PRD.md#F8. Riwayat dan banding token",
+        "per proyek"
+      ],
+      "id": "t08-store",
+      "title": "Riwayat tersimpan per proyek, 200 run per proyek",
+      "phase": "2 Server",
+      "type": "be",
+      "agent": "be",
+      "slice": "server",
+      "value": "high",
+      "size": "m",
+      "done": "store.js: previous(), projects(), prune 200 per proyek + 1.000 total, indeks (project, flow, started_at), runId monoton. Uji unit SQLite dan JSON (FLOW_VIEWER_STORE=json)."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "t06a-fase-run",
+        "t08-store"
+      ],
+      "criteria": [
+        "F1-1",
+        "F1-2"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#4.3 Kunci dan alamat proyek",
+        "docs/adr/0002-proyek-diikat-sesi.md",
+        "docs/PRD.md#F1. Status terpisah per proyek"
+      ],
+      "id": "t09a-projects-kunci",
+      "title": "Server memisahkan proyek: kunci, ikatan sesi, aktif 6 jam",
+      "phase": "2 Server",
+      "type": "be",
+      "agent": "be",
+      "slice": "server",
+      "value": "high",
+      "size": "m",
+      "done": "projects.js: kunci normal, ikatan sesi, cwd di subfolder tetap proyek induk, tanpa cwd -> terbaru, slug + hash bila kembar, resolve termasuk riwayat, aktif 6 jam, eviksi maks 20. Uji unit: dua sesi folder beda bergantian terpisah; cwd docs/mockups tetap proyek induk."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "t09a-projects-kunci",
+        "t07-attention"
+      ],
+      "criteria": [
+        "F1",
+        "F3-2",
+        "F3-3"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#4.1 Entitas (memori server",
+        "kecuali Run tersimpan)",
+        "docs/ARCHITECTURE.md#5.4 Progres (indikator b)",
+        "docs/ARCHITECTURE.md#5.5 Token (indikator c) dan pembanding",
+        "docs/ARCHITECTURE.md#10.1 Endpoint"
+      ],
+      "id": "t09b-snapshot-proyek",
+      "title": "Snapshot ditambah proyek, progres, token pembanding, pemberitahuan",
+      "phase": "2 Server",
+      "type": "be",
+      "agent": "be",
+      "slice": "server",
+      "value": "high",
+      "size": "m",
+      "done": "Snapshot superset 1.7.1 + project, progress, tokens (pembanding), attention. Uji unit: field baru terisi, field lama tidak berubah."
+    },
+    {
+      "status": "done",
+      "needs": [
+        "t01-fondasi"
+      ],
+      "criteria": [
+        "PRD-8"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#8.1 Permukaan [SEC]",
+        "docs/ARCHITECTURE.md#8.2 Threat model"
+      ],
+      "id": "t10a-guard",
+      "title": "Penjaga keamanan server: Host, Origin, header, CSP, file statis aman",
+      "phase": "2 Server",
+      "type": "be",
+      "agent": "be",
+      "slice": "server",
+      "value": "high",
+      "size": "m",
+      "done": "guard.js: Host/Origin/Sec-Fetch-Site (403 bad_host/bad_origin), validasi p/id, header keamanan + CSP tanpa skrip inline, statis aman (tolak \\0, .., \\, whitelist ekstensi), 413 body > 4 MB. Uji unit guard hijau.",
+      "attempts": 1,
+      "startedAt": "2026-10-27T07:40:26.449Z",
+      "evidence": "node --test test/unit/guard.test.js: 11 pass 0 fail (diperiksa orkestrator); server/guard.js baru, belum tersambung ke server.js; catatan: skrip tema inline di index.html harus dipindah sebelum CSP dipasang (masuk t13a/penyambungan)",
+      "finishedAt": "2026-10-27T07:43:59.479Z"
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "t09b-snapshot-proyek",
+        "t10a-guard"
+      ],
+      "criteria": [
+        "F1-1",
+        "F1-3",
+        "PRD-8"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#6. API",
+        "docs/ARCHITECTURE.md#7.1 Event hook ke layar",
+        "docs/ARCHITECTURE.md#9. Performa (12 agent",
+        "3 proyek)",
+        "docs/ARCHITECTURE.md#10.1 Endpoint"
+      ],
+      "id": "t10b-server-endpoint",
+      "title": "Server melayani banyak proyek: /projects, ?p=, stream lama, batas koneksi",
+      "phase": "2 Server",
+      "type": "be",
+      "agent": "be",
+      "slice": "server",
+      "value": "high",
+      "size": "l",
+      "done": "server.js memakai guard; /projects; ?p= di semua endpoint; /stream dan /state tanpa ?p= ikut proyek terbaru + event: projects; throttle 250 ms; maks 50 SSE; rotasi events.jsonl 20 MB. Semua endpoint 1.7.1 tetap. Bukti: server hidup dan curl /health, /projects, /state?p=."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "t10b-server-endpoint"
+      ],
+      "criteria": [
+        "F1-1",
+        "F1-3"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#11. Strategi uji",
+        "docs/ARCHITECTURE.md#8.2 Threat model",
+        "docs/PRD.md#F1. Status terpisah per proyek"
+      ],
+      "id": "t11-uji-http",
+      "title": "Uji HTTP: proyek terisolasi, alamat lama, serangan umum",
+      "phase": "2 Server",
+      "type": "qa",
+      "agent": "qa",
+      "slice": "server",
+      "value": "high",
+      "size": "m",
+      "done": "`node --test test/http` hijau: isolasi dua proyek bergantian, /state dan /stream lama ikut terbaru, Host jahat, Origin jahat, %2e%2e, ?p=../x, transkrip di luar ~/.claude, body 5 MB (413), 51 stream. Bukti: output tes."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "t10b-server-endpoint"
+      ],
+      "criteria": [
+        "F5-3",
+        "F6-1"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#5.1 Batas run dan fase",
+        "docs/ARCHITECTURE.md#11. Strategi uji",
+        "docs/KEPUTUSAN.md#Risiko utama"
+      ],
+      "id": "t12-replay-nyata",
+      "title": "Replay event nyata (73 Stop) sebelum layar dibangun",
+      "phase": "2 Server",
+      "type": "qa",
+      "agent": "qa",
+      "slice": "server",
+      "value": "high",
+      "size": "m",
+      "done": "test/replay.js memutar ~/.claude/flow-viewer/events.jsonl (3.428 event, 73 Stop); tabel klasifikasi tiap Stop (selesai/jeda/berjalan) vs penilaian manual; cek dukungan StopFailure/PostToolUseFailure; aturan t06a disesuaikan bila salah > 10%, bila tetap > 10% fail dan lapor pemilik; fixture event tersamar (path, isi prompt) di test/fixtures/events/. Bukti: tabel hasil dan persen salah.",
+      "notes": "Pintu masuk Tahap A: tidak ada layar dibangun sebelum item ini selesai."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "t12-replay-nyata"
+      ],
+      "criteria": [
+        "F5-3"
+      ],
+      "context": [
+        "docs/KEPUTUSAN.md#Risiko utama"
+      ],
+      "id": "k-ambang-selesai",
+      "title": "Seberapa ketat tanda \"Selesai\" setelah hasil replay nyata",
+      "phase": "2 Server",
+      "type": "keputusan",
+      "agent": "architect",
+      "slice": "server",
+      "value": "high",
+      "size": "s",
+      "checkpoint": "Hasil replay 73 kejadian berhenti: sebutkan berapa persen \"Selesai\" meleset. Pilih: (a) terima, notifikasi Selesai tetap; (b) ketatkan: kurangi notifikasi palsu dengan risiko Selesai terlambat. (rekomendasi: ikuti angka replay; terima bila meleset <= 10%)",
+      "done": "Jawaban pemilik tercatat; bila (b), agent backlog menambah item be penyesuaian aturan t06a",
+      "notes": "needs-decision. Menghalangi notifikasi Selesai di layar (t20b)."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "t11-uji-http",
+        "t10b-server-endpoint"
+      ],
+      "criteria": [
+        "PRD-8"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#8.1 Permukaan [SEC]",
+        "docs/ARCHITECTURE.md#8.2 Threat model",
+        "docs/KEPUTUSAN.md#Keputusan utama"
+      ],
+      "id": "sec-server-hardening",
+      "title": "Cyber: hardening server (Host/Origin, CSP, path traversal, batas ukuran)",
+      "phase": "2 Server",
+      "type": "sec",
+      "agent": "cyber",
+      "slice": "server",
+      "value": "high",
+      "size": "m",
+      "done": "Review atas semua permukaan [SEC] server + hasil t11, uji tembus manual (DNS rebinding Host, Origin palsu POST /event /reset /quit, traversal statis dan ?p=, transkrip di luar ~/.claude, payload besar). Daftar temuan dengan tingkat; tidak ada temuan tinggi terbuka; temuan menengah dijadikan item oleh agent backlog. Bukti: daftar temuan + perintah uji."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "t10b-server-endpoint",
+        "t09b-snapshot-proyek",
+        "t07-attention"
+      ],
+      "criteria": [],
+      "context": [
+        "docs/ARCHITECTURE.md#3. Module dan seam",
+        "docs/ARCHITECTURE.md#9. Performa (12 agent",
+        "3 proyek)"
+      ],
+      "id": "review-kode-server",
+      "title": "Cyber: review kode kelompok server (run, projects, attention, server)",
+      "phase": "2 Server",
+      "type": "review-kode",
+      "agent": "cyber",
+      "slice": "server",
+      "value": "mid",
+      "size": "m",
+      "done": "Skill ponytail-review atas server/*.js baru (run, projects, attention, store, usage, agents, guard, server): daftar temuan; tidak ada temuan tinggi terbuka. Bukti: ringkasan review."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "t01-fondasi"
+      ],
+      "criteria": [
+        "PRD-8",
+        "F7"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#2. Struktur folder",
+        "docs/ARCHITECTURE.md#10.2 Id elemen dan selector skrip uji",
+        "docs/UX.md#8. Asumsi dan pertanyaan terbuka",
+        "docs/mockups/arah-a/README.md"
+      ],
+      "id": "t13a-kerangka-html",
+      "title": "Pecah index.html: kerangka markup semua id, huruf, boot.js",
+      "phase": "3 Kerangka tampilan",
+      "type": "fe",
+      "agent": "fe",
+      "slice": "kerangka",
+      "value": "high",
+      "size": "m",
+      "done": "index.html berisi kerangka markup dengan semua id 1.7.1 dan id baru (A§10.2), boot.js, css/fonts.css + fonts/ (dari mockup arah-a), css/tokens.css dan css/app.css kosong, js/* modul kosong. Halaman termuat tanpa error konsol dan tanpa pelanggaran CSP (screenshot + konsol bersih)."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "t13a-kerangka-html"
+      ],
+      "criteria": [
+        "F1-4"
+      ],
+      "context": [
+        "docs/UX.md#3. Peta layar dan navigasi",
+        "docs/ARCHITECTURE.md#7.2 Membuka viewer"
+      ],
+      "id": "t13b-rute-app",
+      "title": "Rute halaman: daftar proyek, tampilan proyek, Riwayat, buka otomatis bila satu proyek",
+      "phase": "3 Kerangka tampilan",
+      "type": "fe",
+      "agent": "fe",
+      "slice": "kerangka",
+      "value": "high",
+      "size": "s",
+      "done": "app.js: rute ?p, v=riwayat, daftar vs proyek, buka otomatis bila tepat satu proyek aktif; migrasi kunci fv-view lama. Bukti: Playwright atau screenshot tiap rute tanpa error konsol."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "t13a-kerangka-html"
+      ],
+      "criteria": [
+        "PRD-8"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#8.2 Threat model",
+        "docs/ARCHITECTURE.md#3. Module dan seam",
+        "docs/DESIGN.md#3. Bahasa status"
+      ],
+      "id": "t14a-dom-format",
+      "title": "Dasar tampilan aman: dom.js (escape otomatis), format, ikon",
+      "phase": "3 Kerangka tampilan",
+      "type": "fe",
+      "agent": "fe",
+      "slice": "kerangka",
+      "value": "high",
+      "size": "s",
+      "done": "dom.js (tag html escape otomatis, raw, patch), format.js (durasi \"N mnt N dtk\", token), icons.js (enam status). Uji unit: <img onerror> jadi teks; grep innerHTML di luar dom.js = 0. Bukti: output node --test + hasil grep."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "t14a-dom-format"
+      ],
+      "criteria": [
+        "F2-1"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#6. API",
+        "docs/UX.md#6. State per layar"
+      ],
+      "id": "t14b-api-sse",
+      "title": "Klien data live: SSE, sambung ulang, bilah terputus dengan jam pembaruan",
+      "phase": "3 Kerangka tampilan",
+      "type": "fe",
+      "agent": "fe",
+      "slice": "kerangka",
+      "value": "high",
+      "size": "m",
+      "done": "api.js: SSE per ?p=, sambung ulang otomatis, bilah terputus (ikon + teks) dengan \"diperbarui HH.MM\", hilang saat tersambung; bilah #offline tetap terlihat di file:// (modul ES tidak termuat). Bukti: Playwright putus-sambung server."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "t13a-kerangka-html"
+      ],
+      "criteria": [
+        "F7-1"
+      ],
+      "context": [
+        "docs/DESIGN.md#2. Token",
+        "docs/DESIGN.md#3. Bahasa status",
+        "docs/mockups/arah-a/arah.css"
+      ],
+      "id": "t15a-tokens-tema",
+      "title": "Token desain Gading: huruf, warna, bayangan, dua tema",
+      "phase": "3 Kerangka tampilan",
+      "type": "ui",
+      "agent": "ui-designer",
+      "slice": "kerangka",
+      "value": "high",
+      "size": "m",
+      "done": "css/tokens.css lengkap terang dan gelap sesuai DESIGN §2; --warn-line diperbaiki agar border putus-putus node Butuh input >= 3:1 di terang dan gelap (kini 2,70:1, masalah ui-critic #2). Bukti: tabel rasio kontras terukur >= AA dan >= 3:1 untuk garis grafis."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "t15a-tokens-tema"
+      ],
+      "criteria": [
+        "F2-4",
+        "F7-1"
+      ],
+      "context": [
+        "docs/DESIGN.md#4. Aturan komponen",
+        "docs/DESIGN.md#3. Bahasa status",
+        "docs/DESIGN.md#5. Perilaku per lebar",
+        "docs/mockups/arah-a/live.html"
+      ],
+      "id": "t15b-komponen-dasar",
+      "title": "Komponen dasar: bilah atas, pita, kotak, panel, rel, node, tab",
+      "phase": "3 Kerangka tampilan",
+      "type": "ui",
+      "agent": "ui-designer",
+      "slice": "kerangka",
+      "value": "high",
+      "size": "l",
+      "done": "css/app.css: bilah atas, pita KPI, kotak pemberitahuan (border 1 px --warn-line, kartu Gagal border 1 px --bad-line), panel dan rel, node penuh/ringkas, enam status ikon + teks, tombol. Tab terpilih: latar --accent-soft, teks --accent (masalah #7). Rel max-height:100% overflow-y:auto (masalah #1). Bukti: screenshot 1440x900 dan 900x780 terang/gelap + audit kontras AA."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "t14a-dom-format",
+        "t15b-komponen-dasar",
+        "t10b-server-endpoint",
+        "t12-replay-nyata"
+      ],
+      "criteria": [
+        "F2-1",
+        "F2-3",
+        "F2-4"
+      ],
+      "context": [
+        "docs/DESIGN.md#4. Aturan komponen",
+        "docs/UX.md#4. Pola per tugas",
+        "docs/PRD.md#F2. Workflow live bergaya n8n",
+        "docs/ARCHITECTURE.md#5.7 Agent dikenali dari folder + flows.json"
+      ],
+      "id": "t16a-graph-layout",
+      "title": "Grafik workflow live: layout node, konektor, crew bawaan",
+      "phase": "4 Live (Tahap A)",
+      "type": "fe",
+      "agent": "fe",
+      "slice": "live",
+      "screen": "Tampilan proyek (live)",
+      "value": "high",
+      "size": "l",
+      "done": "graph.js: layout dari crewMeta (kolom per fase), node penuh dan ringkas, konektor kurva, pembaruan berkunci tanda tangan, crew bawaan Menunggu + teks panduan saat belum ada run, jumlah putaran. Playwright: 14 node (12 agent) tanpa tumpang tindih, teks node terkecil >= 12 px di 900 dan 1440; node diperbarui < 1 dtk saat event datang. Bukti: hasil Playwright + screenshot."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "t16a-graph-layout"
+      ],
+      "criteria": [
+        "F2-3",
+        "F4-2"
+      ],
+      "context": [
+        "docs/DESIGN.md#4. Aturan komponen",
+        "docs/DESIGN.md#Masalah terbuka dari review ui-critic putaran 2",
+        "docs/UX.md#5. Alur utama"
+      ],
+      "id": "t16b-graph-zoom",
+      "title": "Zoom, pan, pas layar, seleksi, dan keyboard pada grafik",
+      "phase": "4 Live (Tahap A)",
+      "type": "fe",
+      "agent": "fe",
+      "slice": "live",
+      "screen": "Tampilan proyek (live)",
+      "value": "high",
+      "size": "m",
+      "done": "Zoom/pan/pas layar/Ctrl+scroll/klik dua kali; batas zoom minimum 74% sama dengan Pas layar (masalah #3); kontrol zoom tidak menutupi node, sisakan 48 px di bawah area pas layar (masalah #4); node fokus Tab, Enter membuka, seleksi outline ink 3 px. Bukti: Playwright ukur teks node dan jarak kontrol-ke-node."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "t16b-graph-zoom"
+      ],
+      "criteria": [
+        "F3-4",
+        "F2-3"
+      ],
+      "context": [
+        "docs/DESIGN.md#Masalah terbuka dari review ui-critic putaran 2",
+        "docs/DESIGN.md#5. Perilaku per lebar",
+        "docs/UX.md#3. Peta layar dan navigasi"
+      ],
+      "id": "t16c-live-tinggi-laptop",
+      "title": "Tampilan Live muat di layar laptop nyata (tinggi pendek)",
+      "phase": "4 Live (Tahap A)",
+      "type": "fe",
+      "agent": "fe",
+      "slice": "live",
+      "screen": "Tampilan proyek (live)",
+      "value": "high",
+      "size": "m",
+      "done": "Masalah #1: tinggi baris minmax(0,1fr), rel max-height:100% overflow-y:auto, kotak Butuh input maks 30% tinggi dengan gulir di dalamnya; grafik tidak terpotong dan kontrol zoom terjangkau di 1366x657, 1440x780, 900x780, 1440x900; Live tidak menggulung sebagai halaman. Bukti: screenshot dan ukur bounding box Playwright di keempat tinggi."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "t16b-graph-zoom",
+        "t14b-api-sse"
+      ],
+      "criteria": [
+        "F3-1",
+        "F3-2",
+        "F3-3",
+        "F3-4"
+      ],
+      "context": [
+        "docs/DESIGN.md#4. Aturan komponen",
+        "docs/UX.md#4. Pola per tugas",
+        "docs/PRD.md#F3. Tiga indikator besar"
+      ],
+      "id": "t17-indikator",
+      "title": "Tiga indikator besar: siapa kerja, progres, token (menempel)",
+      "phase": "4 Live (Tahap A)",
+      "type": "fe",
+      "agent": "fe",
+      "slice": "live",
+      "screen": "Tampilan proyek (live)",
+      "value": "high",
+      "size": "m",
+      "done": "indicators.js: Siapa kerja (copy \"Tidak ada agent yang berjalan.\" dan \"Agent be berhenti di putaran 2.\"), Progres (backlog atau langkah wajib atau \"-\"), Token + selisih netral (\"menunggu data\" bila belum terbaca), angka pembanding white-space:nowrap (masalah #7), pita menempel, jalan pintas ke tab. Playwright: pita tetap terlihat saat panel digulung dan detail terbuka."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "t16b-graph-zoom",
+        "t14b-api-sse"
+      ],
+      "criteria": [
+        "F9-1"
+      ],
+      "context": [
+        "docs/DESIGN.md#4. Aturan komponen",
+        "docs/DESIGN.md#Masalah terbuka dari review ui-critic putaran 2",
+        "docs/UX.md#4. Pola per tugas",
+        "docs/UX.md#5. Alur utama"
+      ],
+      "id": "t18a-panel-rel-percakapan-backlog",
+      "title": "Panel samping dan rel + tab Percakapan dan Backlog",
+      "phase": "4 Live (Tahap A)",
+      "type": "fe",
+      "agent": "fe",
+      "slice": "live",
+      "screen": "Tampilan proyek (live)",
+      "value": "high",
+      "size": "m",
+      "done": "panel.js: rel + lencana (warn hanya Percakapan bertanya dan Backlog keputusan), lebar diingat, tertutup default 900-1199 dan mendorong grafik; masalah #5: node terpilih di-scroll ke terlihat, baris tab nowrap padding 8 px, ubin detail 2 kolom; tab Percakapan dan Backlog dengan data 1.7.1 (#chat, #blist, #bbar). Bukti: Playwright 900 dan 1440, daftar data 1.7.1 vs klik (UX §5) dicentang untuk dua tab ini."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "t18a-panel-rel-percakapan-backlog"
+      ],
+      "criteria": [
+        "F4-1",
+        "F4-2"
+      ],
+      "context": [
+        "docs/DESIGN.md#Masalah terbuka dari review ui-critic putaran 2",
+        "docs/UX.md#5. Alur utama",
+        "docs/PRD.md#F4. Detail node tanpa kehilangan workflow"
+      ],
+      "id": "t19a-detail-mode",
+      "title": "Detail node di panel: mode detail, tab diingat, Esc tidak menggeser grafik",
+      "phase": "4 Live (Tahap A)",
+      "type": "fe",
+      "agent": "fe",
+      "slice": "detail-node",
+      "screen": "Detail node",
+      "value": "high",
+      "size": "m",
+      "done": "detail.js: mode detail di #side, tab Ringkasan/Aktivitas/File/Hasil dengan tab diingat antar node dan isi diperbarui saat run berlanjut; masalah #6: Esc di 1200+ kembali ke tab data terakhir (bukan menutup panel), di 900-1199 posisi dan zoom grafik disimpan lalu dipakai ulang. Playwright: zoom dan posisi grafik sama sebelum dan sesudah Esc.",
+      "notes": "Isi lengkap tab dan state (agent belum jalan, gagal muat) dikerjakan di t19b setelah desain Tahap B."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "t17-indikator"
+      ],
+      "criteria": [
+        "F7-1",
+        "F7-2",
+        "F9-1"
+      ],
+      "context": [
+        "docs/DESIGN.md#Masalah terbuka dari review ui-critic putaran 2",
+        "docs/PRD.md#F7. Tema terang dan gelap",
+        "docs/PRD.md#F10. Ekspor laporan teks"
+      ],
+      "id": "t24-tema-menu-lainnya",
+      "title": "Tema dan menu Lainnya (Reset run dua langkah); Laporan teks dihapus",
+      "phase": "4 Live (Tahap A)",
+      "type": "fe",
+      "agent": "fe",
+      "slice": "tema",
+      "screen": "Bilah atas",
+      "value": "mid",
+      "size": "s",
+      "done": "theme.js: tema (ikut sistem, diingat), menu Lainnya hanya berisi Reset run dua langkah (\"Yakin? Klik lagi\", 3 dtk); tautan \"Laporan teks\" DIHAPUS dari UI (masalah #9, PRD F10 = Nanti; endpoint /report tetap ada tanpa menu); #theme, #more, #pmenu, #reset tetap ada. Playwright: ganti tema tidak mengubah zoom dan detail terbuka; menu tidak berisi Laporan teks.",
+      "notes": "Penyesuaian dari TASKS T24: Laporan teks dihapus."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "t17-indikator",
+        "t07-attention",
+        "t12-replay-nyata"
+      ],
+      "criteria": [
+        "F5-2",
+        "F5-3",
+        "F5-5"
+      ],
+      "context": [
+        "docs/DESIGN.md#4. Aturan komponen",
+        "docs/DESIGN.md#Masalah terbuka dari review ui-critic putaran 2",
+        "docs/UX.md#4. Pola per tugas",
+        "docs/PRD.md#F5. Pemberitahuan saat butuh perhatian"
+      ],
+      "id": "t20a-kotak-pemberitahuan",
+      "title": "Kotak Butuh input dan Gagal di Live, lengkap dengan pilihan jawaban",
+      "phase": "4 Live (Tahap A)",
+      "type": "fe",
+      "agent": "fe",
+      "slice": "pemberitahuan",
+      "screen": "Tampilan proyek (live)",
+      "value": "high",
+      "size": "l",
+      "done": "alerts.js: kotak per pemicu, terbaru di atas, maks 2 lalu \"+N lainnya\", dedupe kunci, hilang saat terjawab, node terkait bertanda; masalah #2: kartu Gagal border 1 px --bad-line, kotak border 1 px --warn-line, judul pertanyaan 28 px dan angka KPI 24 px selama kotak terbuka; masalah #8: pilihan jawaban keputusan backlog tampil di Live (F5 AC5); copy \"Butuh input (2)\". Playwright dengan fixture butuh input dan gagal."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "t20a-kotak-pemberitahuan",
+        "k-ambang-selesai"
+      ],
+      "criteria": [
+        "F5-1",
+        "F5-2",
+        "F5-3",
+        "F5-4"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#7.3 Pemberitahuan (klien",
+        "`notify.js`)",
+        "docs/PRD.md#F5. Pemberitahuan saat butuh perhatian",
+        "docs/UX.md#6. State per layar"
+      ],
+      "id": "t20b-notifikasi-bunyi",
+      "title": "Judul tab berkedip, bunyi, dan notifikasi desktop",
+      "phase": "4 Live (Tahap A)",
+      "type": "fe",
+      "agent": "fe",
+      "slice": "pemberitahuan",
+      "screen": "Bilah atas",
+      "value": "high",
+      "size": "m",
+      "done": "notify.js: judul \"(n) Butuh input · <proyek>\" berkedip, bunyi WebAudio dilewati bila autoplay diblokir, tombol senyap diingat, tombol aktifkan notifikasi + tawaran sekali, tidak diulang bila pemicu sama, penanda hilang saat dijawab, tanda proyek lain di pengalih; teks lewat textContent/Notification biasa. Playwright dengan stub Notification, AudioContext, visibilityState."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "t20a-kotak-pemberitahuan"
+      ],
+      "criteria": [
+        "F6-1",
+        "F6-2",
+        "F6-3"
+      ],
+      "context": [
+        "docs/DESIGN.md#4. Aturan komponen",
+        "docs/DESIGN.md#Masalah terbuka dari review ui-critic putaran 2",
+        "docs/UX.md#5. Alur utama",
+        "docs/mockups/arah-a/ringkasan.html"
+      ],
+      "id": "t21-ringkasan-run",
+      "title": "Ringkasan run otomatis dan lewat tombol \"Ringkasan\"",
+      "phase": "4 Live (Tahap A)",
+      "type": "fe",
+      "agent": "fe",
+      "slice": "ringkasan",
+      "screen": "Ringkasan akhir",
+      "value": "high",
+      "size": "m",
+      "done": "summary.js: lapisan Ringkasan otomatis sekali bila summary.auto (PRD v1.1: ada agent atau file berubah), tombol \"Ringkasan\" di sel Siapa kerja, Esc menutup, keputusan tersisa di atas, langkah dilewati bernama, \"Tidak ada perubahan file.\", \"Run baru sudah berjalan\"; copy \"Agent be berhenti di putaran 2.\". Playwright: run tanpa agent tidak membuka otomatis, run dengan agent membuka sekali."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "t16c-live-tinggi-laptop",
+        "t17-indikator",
+        "t18a-panel-rel-percakapan-backlog",
+        "t19a-detail-mode",
+        "t24-tema-menu-lainnya"
+      ],
+      "criteria": [],
+      "context": [
+        "docs/DESIGN.md#1. Arah dan ide",
+        "docs/DESIGN.md#Masalah terbuka dari review ui-critic putaran 2",
+        "docs/UX.md#3. Peta layar dan navigasi"
+      ],
+      "id": "critic-live-r1",
+      "title": "Kritik tampilan Live nyata (putaran 1)",
+      "phase": "4 Live (Tahap A)",
+      "type": "review",
+      "agent": "ui-critic",
+      "slice": "live",
+      "screen": "Tampilan proyek (live)",
+      "value": "high",
+      "size": "s",
+      "done": "Review ui-critic atas layar nyata (screenshot Playwright 1440x900 dan 900x780, terang dan gelap), bukan mockup. Putaran maksimal 2 per kelompok. Periksa sembilan masalah dari putaran mockup (#1-#9) sudah beres di layar nyata. Bukti: daftar temuan (wajib/saran) + path screenshot."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "critic-live-r1"
+      ],
+      "criteria": [],
+      "context": [
+        "docs/DESIGN.md#4. Aturan komponen"
+      ],
+      "id": "fix-live",
+      "title": "Perbaiki temuan wajib kritikus Live",
+      "phase": "4 Live (Tahap A)",
+      "type": "fe",
+      "agent": "fe",
+      "slice": "live",
+      "screen": "Tampilan proyek (live)",
+      "value": "high",
+      "size": "s",
+      "done": "Semua temuan wajib putaran 1 ditutup. Bukti: tiap temuan -> commit/perubahan + screenshot sesudah.",
+      "notes": "Agent backlog merinci item ini dari temuan putaran 1 (boleh dipecah)."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "fix-live"
+      ],
+      "criteria": [],
+      "context": [
+        "docs/DESIGN.md#Masalah terbuka dari review ui-critic putaran 2"
+      ],
+      "id": "critic-live-r2",
+      "title": "Kritik tampilan Live nyata (putaran 2, terakhir)",
+      "phase": "4 Live (Tahap A)",
+      "type": "review",
+      "agent": "ui-critic",
+      "slice": "live",
+      "screen": "Tampilan proyek (live)",
+      "value": "high",
+      "size": "s",
+      "done": "Review ui-critic atas layar nyata (screenshot Playwright 1440x900 dan 900x780, terang dan gelap), bukan mockup. Putaran maksimal 2 per kelompok. Tidak ada temuan wajib terbuka; sisanya saran dicatat. Bila masih ada temuan wajib: berhenti dan laporkan ke pemilik, tidak ada putaran ke-3."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "t20a-kotak-pemberitahuan",
+        "t20b-notifikasi-bunyi",
+        "t21-ringkasan-run"
+      ],
+      "criteria": [],
+      "context": [
+        "docs/DESIGN.md#4. Aturan komponen",
+        "docs/DESIGN.md#Masalah terbuka dari review ui-critic putaran 2"
+      ],
+      "id": "critic-notif-r1",
+      "title": "Kritik kotak pemberitahuan dan Ringkasan run nyata (putaran 1)",
+      "phase": "4 Live (Tahap A)",
+      "type": "review",
+      "agent": "ui-critic",
+      "slice": "pemberitahuan",
+      "screen": "Kotak pemberitahuan, Ringkasan akhir",
+      "value": "high",
+      "size": "s",
+      "done": "Review ui-critic atas layar nyata (screenshot Playwright 1440x900 dan 900x780, terang dan gelap), bukan mockup. Putaran maksimal 2 per kelompok. Fokus: kotak Butuh input adalah elemen terberat; copy; hierarki Ringkasan. Bukti: daftar temuan + path screenshot."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "critic-notif-r1"
+      ],
+      "criteria": [],
+      "context": [
+        "docs/DESIGN.md#4. Aturan komponen"
+      ],
+      "id": "fix-notif",
+      "title": "Perbaiki temuan wajib kritikus pemberitahuan dan Ringkasan",
+      "phase": "4 Live (Tahap A)",
+      "type": "fe",
+      "agent": "fe",
+      "slice": "pemberitahuan",
+      "value": "high",
+      "size": "s",
+      "done": "Semua temuan wajib putaran 1 ditutup. Bukti: tiap temuan -> perubahan + screenshot sesudah.",
+      "notes": "Agent backlog merinci dari temuan putaran 1."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "fix-notif"
+      ],
+      "criteria": [],
+      "context": [
+        "docs/DESIGN.md#4. Aturan komponen"
+      ],
+      "id": "critic-notif-r2",
+      "title": "Kritik kotak pemberitahuan dan Ringkasan (putaran 2, terakhir)",
+      "phase": "4 Live (Tahap A)",
+      "type": "review",
+      "agent": "ui-critic",
+      "slice": "pemberitahuan",
+      "screen": "Kotak pemberitahuan, Ringkasan akhir",
+      "value": "high",
+      "size": "s",
+      "done": "Review ui-critic atas layar nyata (screenshot Playwright 1440x900 dan 900x780, terang dan gelap), bukan mockup. Putaran maksimal 2 per kelompok. Tidak ada temuan wajib terbuka; bila masih ada, berhenti dan laporkan ke pemilik."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "critic-live-r2",
+        "critic-notif-r2"
+      ],
+      "criteria": [
+        "PRD-8"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#10.2 Id elemen dan selector skrip uji",
+        "docs/ARCHITECTURE.md#11. Strategi uji",
+        "docs/PROJECT.md#Catatan"
+      ],
+      "id": "qa-a-fixture-feed",
+      "title": "Uji UI: fixture feed.js dan skrip tes lama dipindah ke test/ui/",
+      "phase": "4 Live (Tahap A)",
+      "type": "qa",
+      "agent": "qa",
+      "slice": "kualitas",
+      "value": "high",
+      "size": "m",
+      "done": "Skrip uji lama (scratchpad sesi b840ce3e: shots, r2run, states, probe, skip, mob) dipindah ke test/ui/ dengan selector baru (A§10.2) yang berlaku untuk layar Tahap A; test/fixtures/feed.js dengan skenario: kosong, berjalan, butuh input, gagal, selesai, dua proyek, 12 agent. Skrip untuk layar Tahap B ditandai skip sampai item qa-b-acceptance. Bukti: output run tanpa error konsol."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "qa-a-fixture-feed"
+      ],
+      "criteria": [
+        "F2-1",
+        "F2-2",
+        "F2-3",
+        "F2-4",
+        "F3-1",
+        "F3-2",
+        "F3-3",
+        "F3-4",
+        "F4-1",
+        "F4-2",
+        "F4-3",
+        "F5-1",
+        "F5-2",
+        "F5-3",
+        "F5-4",
+        "F5-5",
+        "F6-1",
+        "F6-2",
+        "F6-3",
+        "F7-1",
+        "F7-2"
+      ],
+      "context": [
+        "docs/PRD.md#5. Fitur",
+        "docs/DESIGN.md#Masalah terbuka dari review ui-critic putaran 2",
+        "docs/ARCHITECTURE.md#11. Strategi uji"
+      ],
+      "id": "qa-a-acceptance",
+      "title": "Uji penerimaan layar Live: F2, F3, F4, F5, F6, F7 + tinggi laptop",
+      "phase": "4 Live (Tahap A)",
+      "type": "qa",
+      "agent": "qa",
+      "slice": "kualitas",
+      "value": "high",
+      "size": "l",
+      "done": "Playwright test/ui/*.mjs per kriteria PRD F2-F7 (update < 1 dtk, 12 agent tanpa tumpang tindih, teks node >= 12 px di 900 dan 1440, status ikon + teks, judul/bunyi/notifikasi dengan stub, Esc dan tema tidak mengubah zoom); tes viewport tinggi 1366x657, 1440x780, 900x780 (grafik tidak terpotong, kontrol zoom terjangkau, kotak <= 30% tinggi; masalah #1). Bukti: laporan lulus/gagal per AC + path screenshot."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "t16b-graph-zoom",
+        "t18a-panel-rel-percakapan-backlog",
+        "t19a-detail-mode",
+        "t20b-notifikasi-bunyi",
+        "t21-ringkasan-run"
+      ],
+      "criteria": [],
+      "context": [
+        "docs/ARCHITECTURE.md#8.2 Threat model",
+        "docs/ARCHITECTURE.md#3. Module dan seam"
+      ],
+      "id": "review-kode-klien",
+      "title": "Cyber: review kode klien Tahap A (graph, panel, alerts, notify, summary)",
+      "phase": "4 Live (Tahap A)",
+      "type": "review-kode",
+      "agent": "cyber",
+      "slice": "kualitas",
+      "value": "mid",
+      "size": "m",
+      "done": "Skill ponytail-review atas public/js: daftar temuan, tidak ada temuan tinggi terbuka (XSS lewat teks agent/diff/judul backlog, penanganan Notification, memori klien). Bukti: ringkasan review."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "critic-live-r2",
+        "critic-notif-r2"
+      ],
+      "criteria": [
+        "F1-2",
+        "F1-4"
+      ],
+      "context": [
+        "docs/DESIGN.md#8. Tahap B: layar sisanya",
+        "docs/UX.md#6. State per layar",
+        "docs/UX.md#4. Pola per tugas"
+      ],
+      "id": "ui-b-daftar-proyek",
+      "title": "Desain Daftar proyek (/), keadaan kosong, memuat, terputus",
+      "phase": "5 Tahap B",
+      "type": "ui",
+      "agent": "ui-designer",
+      "slice": "proyek",
+      "screen": "Daftar proyek",
+      "value": "high",
+      "size": "s",
+      "done": "Mockup HTML + screenshot di docs/mockups/tahap-b/ per layar dan state (terang dan gelap, 900 dan 1440), token DESIGN tanpa pelanggaran baru; audit ui-craft --lang id. Bukti: path screenshot dan hasil audit. Mencakup baris per proyek urut butuh input dulu, path singkat bila nama kembar."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "critic-live-r2",
+        "critic-notif-r2"
+      ],
+      "criteria": [
+        "F8-1",
+        "F8-2"
+      ],
+      "context": [
+        "docs/DESIGN.md#8. Tahap B: layar sisanya",
+        "docs/UX.md#5. Alur utama",
+        "docs/UX.md#6. State per layar"
+      ],
+      "id": "ui-b-riwayat-runlama",
+      "title": "Desain Riwayat dan tampilan run lama",
+      "phase": "5 Tahap B",
+      "type": "ui",
+      "agent": "ui-designer",
+      "slice": "riwayat",
+      "screen": "Riwayat, Run lama",
+      "value": "high",
+      "size": "m",
+      "done": "Mockup HTML + screenshot di docs/mockups/tahap-b/ per layar dan state (terang dan gelap, 900 dan 1440), token DESIGN tanpa pelanggaran baru; audit ui-craft --lang id. Bukti: path screenshot dan hasil audit. Mencakup tabel run, tren token 12 run, banding dua run dengan peringatan flow berbeda, Hapus dua langkah, run live tanpa Hapus, bilah \"Kembali ke live\", state kosong/memuat/galat."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "critic-live-r2",
+        "critic-notif-r2"
+      ],
+      "criteria": [
+        "F9-1"
+      ],
+      "context": [
+        "docs/DESIGN.md#8. Tahap B: layar sisanya",
+        "docs/UX.md#6. State per layar",
+        "docs/UX.md#5. Alur utama"
+      ],
+      "id": "ui-b-tab-data",
+      "title": "Desain tab File (diff), Skill, dan state lengkap Percakapan/Backlog",
+      "phase": "5 Tahap B",
+      "type": "ui",
+      "agent": "ui-designer",
+      "slice": "data-panel",
+      "screen": "Tab panel data",
+      "value": "mid",
+      "size": "m",
+      "done": "Mockup HTML + screenshot di docs/mockups/tahap-b/ per layar dan state (terang dan gelap, 900 dan 1440), token DESIGN tanpa pelanggaran baru; audit ui-craft --lang id. Bukti: path screenshot dan hasil audit."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "critic-live-r2",
+        "critic-notif-r2"
+      ],
+      "criteria": [
+        "F9-1",
+        "F3-3"
+      ],
+      "context": [
+        "docs/DESIGN.md#8. Tahap B: layar sisanya",
+        "docs/UX.md#6. State per layar"
+      ],
+      "id": "ui-b-tab-token-log",
+      "title": "Desain tab Token (tabel per agent) dan Log (linimasa)",
+      "phase": "5 Tahap B",
+      "type": "ui",
+      "agent": "ui-designer",
+      "slice": "data-panel",
+      "screen": "Tab panel data",
+      "value": "mid",
+      "size": "m",
+      "done": "Mockup HTML + screenshot di docs/mockups/tahap-b/ per layar dan state (terang dan gelap, 900 dan 1440), token DESIGN tanpa pelanggaran baru; audit ui-craft --lang id. Bukti: path screenshot dan hasil audit."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "critic-live-r2",
+        "critic-notif-r2"
+      ],
+      "criteria": [
+        "F4-3",
+        "F2-4"
+      ],
+      "context": [
+        "docs/DESIGN.md#8. Tahap B: layar sisanya",
+        "docs/UX.md#6. State per layar",
+        "docs/PRD.md#F4. Detail node tanpa kehilangan workflow"
+      ],
+      "id": "ui-b-detail-state",
+      "title": "Desain detail node tersisa dan agent di luar flow",
+      "phase": "5 Tahap B",
+      "type": "ui",
+      "agent": "ui-designer",
+      "slice": "detail-node",
+      "screen": "Detail node",
+      "value": "mid",
+      "size": "m",
+      "done": "Mockup HTML + screenshot di docs/mockups/tahap-b/ per layar dan state (terang dan gelap, 900 dan 1440), token DESIGN tanpa pelanggaran baru; audit ui-craft --lang id. Bukti: path screenshot dan hasil audit. Mencakup tab Aktivitas dan Hasil penuh, agent belum jalan (definisi), gagal dimuat + Coba lagi, node \"tidak dipakai di flow ini\" dan \"di luar flow\"."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "critic-live-r2",
+        "critic-notif-r2"
+      ],
+      "criteria": [
+        "F5-4",
+        "F2"
+      ],
+      "context": [
+        "docs/DESIGN.md#8. Tahap B: layar sisanya",
+        "docs/UX.md#6. State per layar"
+      ],
+      "id": "ui-b-state-global",
+      "title": "Desain state global: kosong, memuat, terputus, tanpa flow, notifikasi diblokir",
+      "phase": "5 Tahap B",
+      "type": "ui",
+      "agent": "ui-designer",
+      "slice": "state",
+      "screen": "Global",
+      "value": "mid",
+      "size": "s",
+      "done": "Mockup HTML + screenshot di docs/mockups/tahap-b/ per layar dan state (terang dan gelap, 900 dan 1440), token DESIGN tanpa pelanggaran baru; audit ui-craft --lang id. Bukti: path screenshot dan hasil audit. Mencakup bilah terputus dengan jam pembaruan terakhir, kerangka memuat, \"Tanpa flow\", tombol \"Notifikasi diblokir\" + petunjuk, tawaran notifikasi sekali."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "critic-live-r2",
+        "critic-notif-r2"
+      ],
+      "criteria": [
+        "PRD-3"
+      ],
+      "context": [
+        "docs/DESIGN.md#5. Perilaku per lebar",
+        "docs/UX.md#3. Peta layar dan navigasi"
+      ],
+      "id": "ui-b-sempit",
+      "title": "Desain tampilan di bawah 900 px: daftar kartu agent dan lapisan panel",
+      "phase": "5 Tahap B",
+      "type": "ui",
+      "agent": "ui-designer",
+      "slice": "sempit",
+      "screen": "Live < 900 px",
+      "value": "low",
+      "size": "m",
+      "done": "Mockup HTML + screenshot di docs/mockups/tahap-b/ per layar dan state (terang dan gelap, 900 dan 1440), token DESIGN tanpa pelanggaran baru; audit ui-craft --lang id. Bukti: path screenshot dan hasil audit. Daftar kartu agent vertikal memakai kelas node, panel jadi lapisan penuh dari baris tab di bawah pita."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "ui-b-daftar-proyek",
+        "t14b-api-sse",
+        "t13b-rute-app",
+        "t10b-server-endpoint"
+      ],
+      "criteria": [
+        "F1-2",
+        "F1-4"
+      ],
+      "context": [
+        "docs/PRD.md#F1. Status terpisah per proyek",
+        "docs/UX.md#6. State per layar",
+        "docs/ARCHITECTURE.md#6. API"
+      ],
+      "id": "t22-daftar-proyek",
+      "title": "Bangun Daftar proyek, pengalih proyek, judul tab",
+      "phase": "5 Tahap B",
+      "type": "fe",
+      "agent": "fe",
+      "slice": "proyek",
+      "screen": "Daftar proyek",
+      "value": "high",
+      "size": "m",
+      "done": "projects.js: Daftar proyek (butuh input dulu, path singkat bila kembar, kosong), pengalih proyek di bilah atas, judul tab memuat nama proyek; proyek tanpa event 6 jam tidak tampil. Playwright dengan fixture dua proyek: daftar dan pengalih benar."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "ui-b-riwayat-runlama",
+        "t21-ringkasan-run",
+        "t10b-server-endpoint"
+      ],
+      "criteria": [
+        "F8-1",
+        "F8-2"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#7.5 Riwayat",
+        "docs/PRD.md#F8. Riwayat dan banding token",
+        "per proyek",
+        "docs/UX.md#5. Alur utama"
+      ],
+      "id": "t23a-riwayat",
+      "title": "Bangun Riwayat: tabel, tren, banding dua run, hapus",
+      "phase": "5 Tahap B",
+      "type": "fe",
+      "agent": "fe",
+      "slice": "riwayat",
+      "screen": "Riwayat",
+      "value": "high",
+      "size": "m",
+      "done": "history.js: Riwayat per proyek + \"Semua proyek\", tren 12 run, banding dua run + peringatan flow berbeda, aksi \"Ringkasan\" (U5), Hapus dua langkah, run live tanpa Hapus; id #pg-history/#hist/#hall/#hcmp/#hback tetap. Playwright: run proyek A tidak tampil di Riwayat B."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "t23a-riwayat",
+        "t19a-detail-mode"
+      ],
+      "criteria": [
+        "F8-1"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#7.5 Riwayat",
+        "docs/UX.md#6. State per layar",
+        "docs/UX.md#8. Asumsi dan pertanyaan terbuka"
+      ],
+      "id": "t23b-run-lama",
+      "title": "Bangun tampilan run lama (hanya baca)",
+      "phase": "5 Tahap B",
+      "type": "fe",
+      "agent": "fe",
+      "slice": "riwayat",
+      "screen": "Run lama",
+      "value": "high",
+      "size": "m",
+      "done": "Tata letak Live dari state tersimpan, bilah #histbar \"Kembali ke live\", aksi tulis disembunyikan, pita tetap live (U4), \"Tidak disimpan di Riwayat.\" untuk bagian tak tersimpan, \"Run ini gagal dibuka.\" bila gagal. Playwright: buka run lama dan kembali."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "ui-b-tab-data",
+        "t18a-panel-rel-percakapan-backlog"
+      ],
+      "criteria": [
+        "F9-1"
+      ],
+      "context": [
+        "docs/UX.md#5. Alur utama",
+        "docs/UX.md#6. State per layar",
+        "docs/PRD.md#F9. Fitur yang dipertahankan"
+      ],
+      "id": "t18b-tab-file-skill-state",
+      "title": "Bangun tab File (diff di tempat), Skill, dan state lengkap Percakapan/Backlog",
+      "phase": "5 Tahap B",
+      "type": "fe",
+      "agent": "fe",
+      "slice": "data-panel",
+      "screen": "Tab panel data",
+      "value": "mid",
+      "size": "m",
+      "done": "tabs File (+diff), Skill (dipanggil/termuat/belum terbukti), lencana, state kosong/memuat/galat tiap tab sesuai UX §6; id #flist, #sklist tetap. Bukti: daftar data 1.7.1 vs klik (UX §5) dicentang, maks 2 klik."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "ui-b-tab-token-log",
+        "t18a-panel-rel-percakapan-backlog"
+      ],
+      "criteria": [
+        "F9-1",
+        "F3-3"
+      ],
+      "context": [
+        "docs/UX.md#5. Alur utama",
+        "docs/UX.md#6. State per layar",
+        "docs/ARCHITECTURE.md#5.5 Token (indikator c) dan pembanding"
+      ],
+      "id": "t18c-tab-token-log",
+      "title": "Bangun tab Token (tabel per agent) dan Log (linimasa)",
+      "phase": "5 Tahap B",
+      "type": "fe",
+      "agent": "fe",
+      "slice": "data-panel",
+      "screen": "Tab panel data",
+      "value": "mid",
+      "size": "m",
+      "done": "tabs Token dan Log + linimasa hasil (#results/#rlist), state tiap tab; id #tokbox, #logd, #log tetap. Bukti: data 1.7.1 vs klik dicentang."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "ui-b-detail-state",
+        "t19a-detail-mode"
+      ],
+      "criteria": [
+        "F4-1",
+        "F4-3"
+      ],
+      "context": [
+        "docs/UX.md#6. State per layar",
+        "docs/PRD.md#F4. Detail node tanpa kehilangan workflow"
+      ],
+      "id": "t19b-detail-lengkap",
+      "title": "Bangun detail node lengkap: Aktivitas, Hasil penuh, agent belum jalan, gagal muat",
+      "phase": "5 Tahap B",
+      "type": "fe",
+      "agent": "fe",
+      "slice": "detail-node",
+      "screen": "Detail node",
+      "value": "mid",
+      "size": "m",
+      "done": "Semua isi laci 1.7.1 tersedia; agent belum jalan menampilkan definisi (peran, model, skill); \"Detail gagal dimuat.\" + Coba lagi; run lama \"Tidak disimpan di Riwayat.\". Playwright."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "ui-b-state-global",
+        "t14b-api-sse",
+        "t20b-notifikasi-bunyi"
+      ],
+      "criteria": [
+        "F5-4",
+        "F2"
+      ],
+      "context": [
+        "docs/UX.md#6. State per layar"
+      ],
+      "id": "t25a-state-global",
+      "title": "Bangun state global: kosong, memuat, terputus, tanpa flow, notifikasi diblokir",
+      "phase": "5 Tahap B",
+      "type": "fe",
+      "agent": "fe",
+      "slice": "state",
+      "screen": "Global",
+      "value": "mid",
+      "size": "m",
+      "done": "State sesuai UX §6 untuk layar Live (kerangka setelah 300 ms, terputus + jam, notifikasi diblokir + petunjuk). Playwright: state tiap layar terlihat."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "ui-b-detail-state",
+        "t16a-graph-layout"
+      ],
+      "criteria": [
+        "F2-4"
+      ],
+      "context": [
+        "docs/PRD.md#F2. Workflow live bergaya n8n",
+        "docs/DESIGN.md#3. Bahasa status"
+      ],
+      "id": "t25b-agent-luar-flow",
+      "title": "Bangun penandaan agent di luar flow",
+      "phase": "5 Tahap B",
+      "type": "fe",
+      "agent": "fe",
+      "slice": "detail-node",
+      "screen": "Tampilan proyek (live)",
+      "value": "low",
+      "size": "s",
+      "done": "Node di luar flow redup \"tidak dipakai di flow ini\", agent tanpa command flow \"di luar flow\", tetap terlihat. Playwright dengan fixture."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "ui-b-sempit",
+        "t18a-panel-rel-percakapan-backlog",
+        "t19a-detail-mode",
+        "t16b-graph-zoom"
+      ],
+      "criteria": [
+        "PRD-3"
+      ],
+      "context": [
+        "docs/DESIGN.md#5. Perilaku per lebar",
+        "docs/UX.md#3. Peta layar dan navigasi"
+      ],
+      "id": "t25c-sempit",
+      "title": "Bangun tampilan di bawah 900 px",
+      "phase": "5 Tahap B",
+      "type": "fe",
+      "agent": "fe",
+      "slice": "sempit",
+      "screen": "Live < 900 px",
+      "value": "low",
+      "size": "l",
+      "done": "Daftar kartu agent (kelas node) dan panel lapisan penuh di bawah 900 px; tidak ada error konsol di 800 dan 600 px. Bukti: screenshot dan Playwright."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "t22-daftar-proyek",
+        "t23a-riwayat",
+        "t23b-run-lama"
+      ],
+      "criteria": [],
+      "context": [
+        "docs/DESIGN.md#8. Tahap B: layar sisanya",
+        "docs/DESIGN.md#1. Arah dan ide"
+      ],
+      "id": "critic-b1-r1",
+      "title": "Kritik Daftar proyek, Riwayat, dan run lama (putaran 1)",
+      "phase": "5 Tahap B",
+      "type": "review",
+      "agent": "ui-critic",
+      "slice": "proyek",
+      "screen": "Daftar proyek, Riwayat, Run lama",
+      "value": "high",
+      "size": "s",
+      "done": "Review ui-critic atas layar nyata (screenshot Playwright 1440x900 dan 900x780, terang dan gelap), bukan mockup. Putaran maksimal 2 per kelompok. Bukti: daftar temuan + path screenshot."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "critic-b1-r1"
+      ],
+      "criteria": [],
+      "context": [
+        "docs/DESIGN.md#4. Aturan komponen"
+      ],
+      "id": "fix-b1",
+      "title": "Perbaiki temuan wajib kritikus: proyek, Riwayat, run lama",
+      "phase": "5 Tahap B",
+      "type": "fe",
+      "agent": "fe",
+      "slice": "proyek",
+      "value": "high",
+      "size": "s",
+      "done": "Semua temuan wajib putaran 1 ditutup. Bukti: tiap temuan -> perubahan + screenshot sesudah.",
+      "notes": "Agent backlog merinci dari temuan putaran 1."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "fix-b1"
+      ],
+      "criteria": [],
+      "context": [
+        "docs/DESIGN.md#8. Tahap B: layar sisanya"
+      ],
+      "id": "critic-b1-r2",
+      "title": "Kritik Daftar proyek, Riwayat, run lama (putaran 2, terakhir)",
+      "phase": "5 Tahap B",
+      "type": "review",
+      "agent": "ui-critic",
+      "slice": "proyek",
+      "screen": "Daftar proyek, Riwayat, Run lama",
+      "value": "high",
+      "size": "s",
+      "done": "Review ui-critic atas layar nyata (screenshot Playwright 1440x900 dan 900x780, terang dan gelap), bukan mockup. Putaran maksimal 2 per kelompok. Tidak ada temuan wajib terbuka; bila masih, berhenti dan lapor pemilik."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "t18b-tab-file-skill-state",
+        "t18c-tab-token-log",
+        "t19b-detail-lengkap",
+        "t25a-state-global",
+        "t25b-agent-luar-flow",
+        "t25c-sempit"
+      ],
+      "criteria": [],
+      "context": [
+        "docs/DESIGN.md#8. Tahap B: layar sisanya",
+        "docs/DESIGN.md#1. Arah dan ide"
+      ],
+      "id": "critic-b2-r1",
+      "title": "Kritik tab data, detail node, state, di luar flow, < 900 px (putaran 1)",
+      "phase": "5 Tahap B",
+      "type": "review",
+      "agent": "ui-critic",
+      "slice": "data-panel",
+      "screen": "Tab panel data, Detail node, State, Live < 900 px",
+      "value": "high",
+      "size": "m",
+      "done": "Review ui-critic atas layar nyata (screenshot Playwright 1440x900 dan 900x780, terang dan gelap), bukan mockup. Putaran maksimal 2 per kelompok. Termasuk 800 dan 600 px. Bukti: daftar temuan + path screenshot."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "critic-b2-r1"
+      ],
+      "criteria": [],
+      "context": [
+        "docs/DESIGN.md#4. Aturan komponen"
+      ],
+      "id": "fix-b2",
+      "title": "Perbaiki temuan wajib kritikus: tab data, detail, state, sempit",
+      "phase": "5 Tahap B",
+      "type": "fe",
+      "agent": "fe",
+      "slice": "data-panel",
+      "value": "high",
+      "size": "s",
+      "done": "Semua temuan wajib putaran 1 ditutup. Bukti: tiap temuan -> perubahan + screenshot sesudah.",
+      "notes": "Agent backlog merinci dari temuan putaran 1."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "fix-b2"
+      ],
+      "criteria": [],
+      "context": [
+        "docs/DESIGN.md#8. Tahap B: layar sisanya"
+      ],
+      "id": "critic-b2-r2",
+      "title": "Kritik tab data, detail, state, sempit (putaran 2, terakhir)",
+      "phase": "5 Tahap B",
+      "type": "review",
+      "agent": "ui-critic",
+      "slice": "data-panel",
+      "screen": "Tab panel data, Detail node, State, Live < 900 px",
+      "value": "high",
+      "size": "s",
+      "done": "Review ui-critic atas layar nyata (screenshot Playwright 1440x900 dan 900x780, terang dan gelap), bukan mockup. Putaran maksimal 2 per kelompok. Tidak ada temuan wajib terbuka; bila masih, berhenti dan lapor pemilik."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "critic-b1-r2",
+        "critic-b2-r2",
+        "qa-a-acceptance"
+      ],
+      "criteria": [
+        "F1-1",
+        "F1-2",
+        "F1-3",
+        "F1-4",
+        "F8-1",
+        "F8-2",
+        "F9-1",
+        "PRD-8"
+      ],
+      "context": [
+        "docs/PRD.md#5. Fitur",
+        "docs/ARCHITECTURE.md#10.2 Id elemen dan selector skrip uji",
+        "docs/ARCHITECTURE.md#11. Strategi uji"
+      ],
+      "id": "qa-b-acceptance",
+      "title": "Uji penerimaan Tahap B: F1, F8, F9, state, < 900 px; skrip lama semua jalan",
+      "phase": "6 Verifikasi dan rilis",
+      "type": "qa",
+      "agent": "qa",
+      "slice": "kualitas",
+      "value": "high",
+      "size": "l",
+      "done": "Playwright F1 (dua proyek terisolasi, daftar, 6 jam, alamat lama, judul tab), F8 (Riwayat per proyek, banding, hapus), F9 (semua data 1.7.1 maks 2 klik), state UX §6; semua skrip lama di test/ui/ jalan tanpa error konsol (tes bertanda skip diaktifkan). Bukti: laporan lulus/gagal per AC + path screenshot."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "qa-b-acceptance"
+      ],
+      "criteria": [
+        "F7-1",
+        "F2-4"
+      ],
+      "context": [
+        "docs/DESIGN.md#7. Pelanggaran disengaja",
+        "docs/DESIGN.md#4. Aturan komponen"
+      ],
+      "id": "qa-audit-visual",
+      "title": "Audit visual ui-craft 900/1440 terang/gelap dan ukuran teks node",
+      "phase": "6 Verifikasi dan rilis",
+      "type": "qa",
+      "agent": "qa",
+      "slice": "kualitas",
+      "value": "mid",
+      "size": "s",
+      "done": "Audit ui-craft --lang id di 900 dan 1440, terang dan gelap, semua layar; kontras AA; teks node terkecil >= 12 px; hanya pelanggaran yang tercatat di DESIGN §7. Bukti: output audit + path screenshot."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "qa-a-fixture-feed",
+        "t10b-server-endpoint"
+      ],
+      "criteria": [
+        "F2-1",
+        "PRD-8"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#9. Performa (12 agent",
+        "3 proyek)"
+      ],
+      "id": "qa-perf",
+      "title": "Uji beban: 3 proyek x 12 agent x 30 event/dtk selama 60 dtk",
+      "phase": "6 Verifikasi dan rilis",
+      "type": "qa",
+      "agent": "qa",
+      "slice": "kualitas",
+      "value": "mid",
+      "size": "m",
+      "done": "test/perf.mjs: p95 event ke DOM < 1 dtk, render satu pembaruan < 50 ms di 1440 px, RSS server < 200 MB. Bukti: angka terukur."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "qa-b-acceptance",
+        "t14a-dom-format",
+        "sec-server-hardening"
+      ],
+      "criteria": [
+        "PRD-8"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#8.1 Permukaan [SEC]",
+        "docs/ARCHITECTURE.md#8.2 Threat model"
+      ],
+      "id": "sec-klien-xss",
+      "title": "Cyber: keamanan klien akhir (XSS, CSP, judul tab, notifikasi)",
+      "phase": "6 Verifikasi dan rilis",
+      "type": "sec",
+      "agent": "cyber",
+      "slice": "kualitas",
+      "value": "high",
+      "size": "m",
+      "done": "Uji tembus klien: payload HTML/skrip lewat teks agent, percakapan, diff, nama file, judul backlog (fixture berbahaya); grep innerHTML di luar dom.js = 0; CSP tanpa pelanggaran di semua layar; judul tab dan Notification teks biasa. Tidak ada temuan tinggi terbuka. Bukti: daftar temuan + hasil uji."
+    },
+    {
+      "status": "done",
+      "needs": [
+        "t12-replay-nyata"
+      ],
+      "criteria": [
+        "F1"
+      ],
+      "context": [
+        "docs/KEPUTUSAN.md#Risiko utama",
+        "docs/PRD.md#F1. Status terpisah per proyek"
+      ],
+      "id": "k-pulihkan-run",
+      "title": "Perlukah run yang sedang jalan dipulihkan bila server diganti di tengah?",
+      "phase": "6 Verifikasi dan rilis",
+      "type": "keputusan",
+      "agent": "architect",
+      "slice": "server",
+      "value": "low",
+      "size": "s",
+      "checkpoint": "Bila server viewer diperbarui saat run berjalan, progres flow terputus. Pulihkan otomatis (tambah pekerjaan, tidak di PRD) atau terima? (rekomendasi: terima dulu; PRD hanya menjamin Riwayat utuh)",
+      "done": "Jawaban pemilik tercatat; bila \"terima\", item t31-pulihkan-run ditolak (reject)",
+      "notes": "needs-decision. Di luar PRD F1 edge restart (hanya Riwayat utuh).",
+      "evidence": "Keputusan pemilik: tidak (T31 ditolak)",
+      "finishedAt": "2026-10-27T07:38:19.122Z"
+    },
+    {
+      "status": "rejected",
+      "needs": [
+        "k-pulihkan-run"
+      ],
+      "criteria": [
+        "F1"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#4.3 Kunci dan alamat proyek",
+        "docs/ARCHITECTURE.md#7.5 Riwayat",
+        "docs/KEPUTUSAN.md#Risiko utama"
+      ],
+      "id": "t31-pulihkan-run",
+      "title": "Pulihkan run belum selesai dari Riwayat bila server diganti < 15 menit",
+      "phase": "6 Verifikasi dan rilis",
+      "type": "be",
+      "agent": "be",
+      "slice": "server",
+      "value": "low",
+      "size": "m",
+      "done": "Uji HTTP: restart di tengah flow, progres flow tetap. Bukti: output node --test test/http.",
+      "notes": "Opsional; dikerjakan hanya bila pemilik menjawab pulihkan. Bila ya, agent backlog menambahkan item ini ke needs audit-akhir.",
+      "reason": ""
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "t11-uji-http",
+        "qa-b-acceptance",
+        "qa-audit-visual",
+        "qa-perf",
+        "sec-klien-xss",
+        "review-kode-server",
+        "review-kode-klien"
+      ],
+      "criteria": [],
+      "context": [
+        "docs/PROJECT.md#Flow Viewer v2"
+      ],
+      "id": "t30-rilis",
+      "title": "Rilis v2.0.0: README, versi, status proyek",
+      "phase": "6 Verifikasi dan rilis",
+      "type": "be",
+      "agent": "be",
+      "slice": "kualitas",
+      "value": "mid",
+      "size": "s",
+      "done": "README plugin dan GLOSSARY dimutakhirkan, versi 2.0.0 di plugin.json; /health melaporkan 2.0.0; docs/PROJECT.md tahap build. Bukti: output /health."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "t30-rilis"
+      ],
+      "criteria": [],
+      "context": [
+        "docs/ARCHITECTURE.md#8. Keamanan",
+        "docs/ARCHITECTURE.md#9. Performa (12 agent",
+        "3 proyek)"
+      ],
+      "id": "audit-akhir",
+      "title": "Cyber: audit akhir seluruh kode v2",
+      "phase": "6 Verifikasi dan rilis",
+      "type": "audit-akhir",
+      "agent": "cyber",
+      "slice": "kualitas",
+      "value": "high",
+      "size": "m",
+      "done": "Skill ponytail-audit atas seluruh plugin: laporan temuan, tidak ada temuan tinggi terbuka. Bukti: ringkasan audit."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "audit-akhir"
+      ],
+      "criteria": [
+        "F5-1",
+        "F3-1"
+      ],
+      "context": [
+        "docs/PRD.md#1. Masalah & tujuan"
+      ],
+      "id": "k-terima-rilis",
+      "title": "Pemilik menerima v2.0.0 setelah mencoba dengan pekerjaan nyata",
+      "phase": "6 Verifikasi dan rilis",
+      "type": "keputusan",
+      "agent": "architect",
+      "slice": "kualitas",
+      "value": "high",
+      "size": "s",
+      "checkpoint": "Coba viewer v2 dengan satu prompt nyata: apakah \"siapa kerja, sampai mana, berapa token\" terbaca sekali lirik dan Butuh input tidak terlewat? Terima rilis 2.0.0 atau minta perbaikan? (rekomendasi: terima setelah satu sesi nyata)",
+      "done": "Jawaban pemilik tercatat",
+      "notes": "needs-decision. Penerimaan akhir."
+    },
+    {
+      "id": "ekspor-laporan-teks",
+      "title": "Ekspor laporan teks markdown dari Ringkasan run",
+      "type": "fe",
+      "agent": "fe",
+      "status": "parked",
+      "needs": [],
+      "criteria": [
+        "F10"
+      ],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "PRD F10 = Nanti. Asal: T24 TASKS dihapus dari UI v2; endpoint /report tetap ada tanpa menu. Keluarkan bila pemilik menyetujui (agent prd perlu menaikkan prioritas F10)"
+    }
+  ],
+  "updatedAt": "2026-10-27T07:45:50.191Z"
+}

@@ -1,5 +1,5 @@
 ---
-description: "Frontend only: wiring by fe, visuals by ui-designer, review by ui-critic (max 2 rounds)."
+description: "Frontend only: wiring by fe, visuals by ui-designer, review by ui-critic for new screens or layout changes (max 2 rounds)."
 argument-hint: "[which screens or notes]"
 ---
 

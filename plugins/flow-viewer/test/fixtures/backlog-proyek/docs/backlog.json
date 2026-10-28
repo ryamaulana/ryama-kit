@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "project": "Proyek fixture",
+  "items": [
+    { "id": "a1", "title": "Selesai kecil", "type": "fondasi", "status": "done", "size": "s", "needs": [], "evidence": "tes lulus" },
+    { "id": "a2", "title": "Selesai sedang", "type": "fondasi", "status": "done", "size": "m", "needs": [] },
+    { "id": "a3", "title": "Selesai besar", "type": "fitur", "status": "done", "size": "l", "needs": [] },
+    { "id": "a4", "title": "Siap tanpa ukuran (default m)", "type": "fitur", "status": "todo", "needs": ["a1"] },
+    { "id": "a5", "title": "Berjalan besar", "type": "fitur", "status": "running", "size": "l", "needs": [] },
+    { "id": "a6", "title": "Diparkir besar", "type": "fitur", "status": "parked", "size": "l", "needs": [] },
+    { "id": "a7", "title": "Ditolak sedang", "type": "fitur", "status": "rejected", "size": "m", "needs": [] },
+    { "id": "a8", "title": "Gagal kecil", "type": "fitur", "status": "failed", "size": "s", "needs": [], "lastFailure": "port bentrok" },
+    { "id": "d1", "title": "Keputusan siap", "type": "keputusan", "status": "todo", "size": "s", "needs": [], "checkpoint": "Pakai tema gelap default?" },
+    { "id": "d2", "title": "Keputusan menunggu", "type": "keputusan", "status": "todo", "size": "m", "needs": ["a4"], "checkpoint": "Rilis minggu ini?" },
+    { "id": "d3", "title": "Keputusan berjalan", "type": "keputusan", "status": "running", "size": "s", "needs": [], "checkpoint": "Simpan riwayat 200 run?" },
+    { "id": "d4", "title": "Keputusan selesai", "type": "keputusan", "status": "done", "size": "m", "needs": [], "checkpoint": "Sudah dijawab" },
+    { "id": "d5", "title": "Keputusan diparkir", "type": "keputusan", "status": "parked", "size": "s", "needs": [], "checkpoint": "Nanti saja" }
+  ]
+}

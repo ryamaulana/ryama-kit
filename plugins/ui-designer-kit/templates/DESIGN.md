@@ -3,14 +3,30 @@
 > Sumber kebenaran visual project ini. Ditulis oleh agent ui-designer dari referensi,
 > disetujui user. Semua UI wajib mengikuti file ini. Ubah di sini dulu, baru di kode.
 
+Status: Draft | Approved (tanggal)
+Token mesin: `docs/design-tokens.css` (semua halaman hanya memakai `var(--...)` dari file ini)
+
+## Kesan (3 kata dari pemilik)
+<!-- contoh: tenang, tegas, jujur. Tandai "(asumsi)" bila diturunkan agent dan belum dikonfirmasi. -->
+
+## Konsep (1 kalimat)
+<!-- "<produk> terasa seperti <metafora/suasana> karena <tugas utama pengguna>; ini terlihat dari <2-3 keputusan visual>."
+     Kalau kalimatnya cocok untuk produk apa pun, tulis ulang. -->
+
 ## Referensi
-| File / link | Yang diambil | Yang TIDAK diambil |
+| File / link | Prinsip yang diambil | Yang TIDAK diambil |
 |---|---|---|
 | docs/references/ref-1.png | | |
-| docs/references/ref-2.png | | |
 
-## Arah gaya (2-3 kalimat)
-<!-- contoh: Editorial dan tenang, banyak ruang kosong, kontras rendah, aksen satu warna. -->
+## Rancangan layar
+<!-- Ditulis SEBELUM kode, maks 8 baris per layar. -->
+### <nama layar>
+- Tugas pengguna:
+- Titik fokus (satu) dan alasannya:
+- Urutan baca: 1. 2. 3.
+- Blok dari atas ke bawah (+ alasan satu frasa):
+- Konsep terlihat di:
+- Sengaja tidak ada:
 
 ## Dial taste (1-10)
 - DESIGN_VARIANCE:
@@ -63,8 +79,15 @@
 - Yang dianimasikan:
 - Yang TIDAK dianimasikan:
 
+## Istilah & nada (maks 10 baris)
+-
+
 ## Larangan khusus project ini
 -
+
+## Pelanggaran disengaja
+| Temuan audit | Di mana | Alasan |
+|---|---|---|
 
 ## Decision log
 | Tanggal | Perubahan | Alasan |

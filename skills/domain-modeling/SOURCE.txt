@@ -1,0 +1,1 @@
+Sumber: https://github.com/mattpocock/skills (MIT, commit 5beb35b), folder skills/engineering/domain-modeling. Disalin apa adanya tanpa ubahan (file agents/openai.yaml tidak ikut). Adaptasi untuk subagent kit ada di agent yang memakainya (architect, be): tanpa wawancara atau konfirmasi ke pemilik.

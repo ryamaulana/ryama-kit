@@ -31,3 +31,10 @@ PostToolUse sekarang dipasang untuk semua tool (untuk hasil dan durasi), jadi ad
 - Status error belum ada: hook subagent tidak membawa status gagal, jadi agent yang berhenti dianggap "selesai".
 - Nama field di payload hook (`agent_type`, `tool_input.subagent_type`) bisa beda antar versi Claude Code. Server membaca beberapa jalur (SubagentStart/Stop dan PreToolUse/PostToolUse Agent). Kalau node nggak nyala, lihat `~/.claude/flow-viewer/events.jsonl` untuk melihat payload asli dan sesuaikan `server/server.js`.
 - Butuh `node` saja (hook ditulis dengan Node supaya jalan di Windows tanpa bash/jq). Ganti port dengan env `FLOW_VIEWER_PORT`.
+
+## Dibaca Claude lain (pemantau lewat browser)
+
+- `http://localhost:4777/report` : teks polos, auto-refresh 4 detik. STATUS (BEKERJA / MENUNGGU KAMU / IDLE), pertanyaan yang menunggu beserta pilihannya, tabel agent, file diubah, error, 14 percakapan terakhir.
+- `http://localhost:4777/report.md` : isi yang sama tanpa HTML.
+- Tombol **Percakapan** di viewer: semua prompt, jawaban Claude, pertanyaan, izin, error. Banner kuning muncul saat Claude menunggu kamu.
+- Catatan: ini ringkasan dari hook, bukan salinan terminal persis.

@@ -1,0 +1,1 @@
+Sumber: https://github.com/DietrichGebert/ponytail (MIT, plugin v5.3.2, commit 09c434a). Disalin apa adanya tanpa ubahan, hanya folder skills/ponytail-audit. Hook, ledger, dan webhook milik plugin aslinya sengaja TIDAK ikut. Dipakai terbatas oleh agent fe/be/cyber (lihat README kit).

@@ -1,7 +1,7 @@
 {
   "name": "ui-designer-kit",
-  "version": "0.1.0",
-  "description": "Agent ui-designer: referensi -> DESIGN.md -> build -> cek Playwright -> review guidelines.",
+  "version": "1.9.0",
+  "description": "Agent ui-designer: konsep -> rancangan layar -> token -> bangun sekali -> satu audit + satu batch perbaikan; jalur cepat untuk edit kecil.",
   "author": {
     "name": "ryama"
   }

@@ -1,0 +1,1 @@
+Sumber: https://github.com/miqdadbadjuber/anti-slop (MIT, commit 5ca57fe). Disalin apa adanya tanpa ubahan, hanya folder skills/antislop. Dipakai terbatas oleh agent ui-designer pada tahap review (lihat adaptasi di plugins/ui-designer-kit/agents/ui-designer.md). Installer npx, wizard, dan penyimpanan pengaturan milik aslinya tidak dipakai.

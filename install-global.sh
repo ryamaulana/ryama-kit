@@ -14,8 +14,15 @@ npx -y skills add https://github.com/vercel-labs/agent-skills \
 echo "==> 2/4 Design library (~/.claude/design-library/)"
 bash "$KIT_DIR/setup-library.sh"
 
-echo "==> 3/4 Browser Playwright"
-npx -y playwright install chromium
+echo "==> 3/4 Playwright untuk audit ui-craft (sekali, di folder skill)"
+(cd "$KIT_DIR/skills/ui-craft" && npm install --no-audit --no-fund && npx playwright install chromium)
+
+echo "==> Skill milik kit -> ~/.claude/skills (symlink)"
+mkdir -p "$HOME/.claude/skills"
+for d in "$KIT_DIR"/skills/*/; do
+  n=$(basename "$d")
+  [ -e "$HOME/.claude/skills/$n" ] || ln -s "$d" "$HOME/.claude/skills/$n"
+done
 
 echo "==> 4/4 Marketplace + plugins (scope user = global)"
 claude plugin marketplace add "$KIT_DIR" || echo "   (marketplace sudah terdaftar, lanjut)"

@@ -1,0 +1,8 @@
+{
+  "name": "ui-craft-audit",
+  "private": true,
+  "description": "Dependensi skrip audit ui-craft. Pasang sekali: npm install && npx playwright install chromium (di folder ini).",
+  "dependencies": {
+    "playwright": "^1.49.0"
+  }
+}

@@ -1,0 +1,18 @@
+---
+description: "Pilih arah desain SEBELUM membuat layar: brief selera, 3 konsep berbeda pada 1 layar kunci, kamu pilih satu. Usage: /fullstack-dev:ui-direction [referensi / catatan]"
+argument-hint: "[URL atau screenshot referensi, hal yang tidak disukai, catatan]"
+---
+
+Catatan dari user: $ARGUMENTS
+
+Tujuan: revisi termurah ada di sini (memilih 1 dari 3), bukan setelah puluhan layar jadi. Orkestrator hanya kurir: kata-kata pemilik dikirim apa adanya, keputusan visual milik `ui-designer`. Jangan membuat layar lain, versi mobile, atau memanggil kritikus sebelum user memilih.
+
+Konteks bersih: baca HANYA PRD (cari lewat skill `project-context`) dan `docs/UX.md` bila ada. Jangan membuka `docs/DESIGN.md` lama, folder arsip, audit, atau mockup sebelumnya, kecuali user memintanya. Kalau PRD tidak ditemukan, berhenti dan minta jalankan agent `prd`.
+
+1. **Brief selera.** Kalau catatan di atas belum cukup, tanya user lewat AskUserQuestion (maksimal 4 pertanyaan, sertakan satu opsi "(rekomendasi)"): kesan yang diinginkan (3 kata), 2-3 referensi yang disukai (URL atau file di `docs/referensi/`) dan apa yang disukai dari tiap referensi, hal yang TIDAK disukai, perangkat utama pemakai. Referensi dari user dianalisis dari tampilannya (screenshot lewat Playwright), bukan hanya disebut namanya.
+2. **Layar kunci.** Dari PRD pilih (a) layar tugas utama yang paling sering dipakai dan (b) layar momen penting (hasil, konfirmasi, atau dashboard utama). Untuk landing page: halaman itu sendiri.
+3. **Tiga konsep (satu desainer, teks saja).** Delegasikan ke SATU `ui-designer` dengan mode `konsep-3`: kirim jawaban brief pemilik apa adanya (kutip), path PRD/UX, dan layar (a). Desainer menulis tiga arah di `docs/mockups/arah-a/DESIGN.md`, `arah-b/DESIGN.md`, `arah-c/DESIGN.md` (template DESIGN.md: kesan, konsep, referensi, rancangan per bagian, token) plus `tokens.css` di tiap folder, tanpa HTML. Desainer yang memastikan ketiganya berbeda (minimal empat dari enam aspek: struktur layout, pasangan huruf, suhu warna, kepadatan, pendekatan gambar/grafis, bentuk) dan TIAP arah menjawab SEMUA kesan pemilik dengan cara berbeda; jangan membagi kesan per arah. Orkestrator TIDAK menentukan gaya, aspek, atau pembagian arah.
+3b. **Bangun paralel.** Tiga `ui-designer` paralel, masing-masing dengan tugas: "Bangun arah X dari `docs/mockups/arah-X/DESIGN.md`" + path PRD/UX. Tanpa catatan gaya tambahan. HANYA layar (a), HANYA desktop 1440, HTML statis di folder arahnya. Tiap arah: satu kali audit (`--widths 1440 --tokens docs/mockups/arah-X/tokens.css`), 0 temuan tinggi, satu putaran perbaikan. Tidak ada mobile, layar (b), atau kritikus pada tahap ini.
+4. **Pilih.** Tampilkan tabel singkat (konsep tiap arah, kesan, kelebihan, risiko, kandidat fokus vs fokus rancangan, hasil audit) dan path screenshot. Minta user memilih satu (boleh campuran, sebutkan apa dari mana) dengan AskUserQuestion, lalu tunggu.
+5. **Lengkapi arah terpilih.** `ui-designer` menambah layar (b) dan versi 375 untuk arah terpilih (jalur penuh, maks 2 putaran). Lalu `ui-critic` SEKALI pada arah terpilih (konsep vs hasil, uji tutup-logo dan satu-fokus). Perbaikan dari kritikus: satu putaran oleh `ui-designer`.
+6. **Kunci.** Minta persetujuan akhir user, lalu salin `docs/mockups/arah-X/DESIGN.md` terpilih ke `docs/DESIGN.md` (status Approved, konsep, rancangan, token + `docs/design-tokens.css`, "Pelanggaran disengaja"), pindahkan dua arah lain ke `docs/mockups/_arah-ditolak/`. Layar sisanya dibuat SETELAH ini (Tahap B, jalur cepat bila tata letaknya mengikuti layar inti): lewat backlog (`/fullstack-dev:backlog` lalu `/fullstack-dev:run`) atau `/fullstack-dev:build ui-only`.

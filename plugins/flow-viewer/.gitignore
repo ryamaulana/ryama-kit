@@ -1,0 +1,7 @@
+# Runtime data (only lands here if FLOW_VIEWER_DIR points inside the repo); may contain prompts and paths.
+*.db
+*.db-*
+events*.jsonl
+history/
+server.log
+test/.tmp/

@@ -12,8 +12,9 @@ const FLOWS = JSON.parse(fs.readFileSync(path.join(__dirname, 'flows.json'), 'ut
 const PUBLIC = path.join(__dirname, 'public');
 fs.mkdirSync(DIR, { recursive: true });
 const LOG_FILE = path.join(DIR, 'events.jsonl');
+const store = require('./store').open(DIR); // riwayat run (SQLite, atau JSON kalau node:sqlite tidak ada)
 
-const FLOW_CMD = /\/(?:fullstack-dev:)?(build|boilerplate|ui-only|fe-only|prd-check)\b[ \t]*([\w-]*)/;
+const FLOW_CMD = /\/(?:fullstack-dev:)?(build|start|run|backlog|boilerplate|ui-only|fe-only|prd-check|ui-direction)\b[ \t]*([\w-]*)/;
 const norm = (n) => String(n || '').split(':').pop().trim();
 const base = (p) => String(p || '').split(/[\\/]/).pop();
 const MAIN = '__main';
@@ -24,6 +25,8 @@ let lifecycleSeen = false; // true once any SubagentStart/Stop arrives; then Pos
 let details = {};   // key (agent id or __main) -> { events, files, task, result, agentIds }
 let evIndex = {};   // tool_use_id -> { key, rec }
 let usageAt = {};   // key -> last usage refresh time
+let convo = [];     // percakapan: prompt user, jawaban Claude, pertanyaan, izin, error
+let pending = null; // sesuatu yang sedang menunggu user: { kind: question|permission|idle, text, at }
 const clients = new Set();
 
 // ---------- agent definitions (model, tools, skills) read from agents/*.md ----------
@@ -37,7 +40,7 @@ function parseAgentFile(file) {
   const get = (k) => { const r = new RegExp(`^${k}:[ \\t]*(.*)$`, 'm').exec(m[1]); return r ? r[1].trim().replace(/^["']|["']$/g, '') : ''; };
   const name = get('name') || path.basename(file, '.md');
   const skills = get('skills').replace(/^\[|\]$/g, '').split(',').map((s) => s.trim()).filter(Boolean);
-  return { name, model: get('model'), tools: get('tools'), skills, description: get('description').slice(0, 220) };
+  return { name, model: get('model'), effort: get('effort'), tools: get('tools'), skills, description: get('description').slice(0, 220) };
 }
 function scanAgentDir(dir) {
   if (scannedDirs.has(dir)) return;
@@ -57,8 +60,19 @@ loadAgentDefs();
 function applyDef(n) {
   const d = agentDefs[n.id];
   if (!d) return;
-  n.model = d.model || 'inherit';
+  n.model = d.model || 'inherit'; n.effort = d.effort || '';
   n.desc = d.description; n.toolsAllowed = d.tools; n.skillsDef = d.skills;
+}
+
+const aliasOf = (m) => /opus/i.test(m) ? 'opus' : /sonnet/i.test(m) ? 'sonnet' : /haiku/i.test(m) ? 'haiku' : '';
+// Does the model seen in the agent's own transcript match what its definition asks for?
+function modelCheck(n) {
+  const actual = (n.usage && n.usage.model) || n.resolvedModel;
+  n.modelSrc = n.usage && n.usage.model ? 'transcript' : n.resolvedModel ? 'peluncuran' : '';
+  if (!actual || !n.model) return 'unverified';
+  if (n.model === 'inherit') { const mm = state.main.model; return mm ? (mm === actual ? 'ok' : 'mismatch') : 'unverified'; }
+  if (n.model === actual) return 'ok';
+  return aliasOf(actual) && aliasOf(actual) === aliasOf(n.model) ? 'ok' : 'mismatch';
 }
 
 function mkNode(id, def = {}, extra = false) {
@@ -72,7 +86,31 @@ function mkNode(id, def = {}, extra = false) {
   return n;
 }
 
+const eqOf = (u) => u ? Math.round((u.in || 0) + (u.cc || 0) * 1.25 + (u.cr || 0) * 0.1 + (u.out || 0) * 5) : 0;
+const rawOf = (u) => u ? (u.in || 0) + (u.out || 0) + (u.cr || 0) + (u.cc || 0) : 0;
+let persistT = null;
+function flushRun() {
+  clearTimeout(persistT); persistT = null;
+  try {
+    if (!store || !state) return;
+    const nodes = Object.values(state.nodes);
+    const ran = nodes.filter((n) => n.count > 0).length;
+    if (!state.promptAt && !convo.length && !ran) return; // run kosong tidak disimpan
+    const eq = nodes.reduce((a, n) => a + eqOf(n.usage), 0) + eqOf(state.main.usage);
+    const raw = nodes.reduce((a, n) => a + rawOf(n.usage), 0) + rawOf(state.main.usage);
+    store.save({
+      id: state.runId, project: cwdNow || '', flow: state.flow, title: state.title || '', prompt: String(state.prompt || '').slice(0, 600),
+      started_at: state.startedAt, updated_at: Date.now(), finished: state.finished ? 1 : 0, tokens_eq: eq, tokens_raw: raw, agents_ran: ran,
+      files: (state.fileList || []).length, state: JSON.stringify(state), convo: JSON.stringify(convo.filter((m) => m.t >= state.startedAt - 1000).slice(-300)),
+    });
+  } catch (_) { /* riwayat tidak boleh mengganggu viewer */ }
+}
+function persistSoon() { if (!store || persistT) return; persistT = setTimeout(flushRun, 1500); }
+process.on('exit', () => { try { flushRun(); } catch (_) {} });
+['SIGINT', 'SIGTERM'].forEach((sg) => process.on(sg, () => process.exit(0)));
+
 function newRun(key) {
+  flushRun();
   const k = FLOWS[key] ? key : 'free';
   const f = FLOWS[k];
   const ov = FLOWS.free; // overview = the full crew, always shown so the graph is never empty
@@ -89,7 +127,7 @@ function newRun(key) {
     crew: ov.nodes.map((n) => n.id), crewMeta: ov.nodes.map((n) => ({ id: n.id, col: n.col, row: n.row })), crewEdges: ov.edges,
     prompt: state ? state.prompt : '', promptAt: state ? state.promptAt : null,
     main: { status: 'idle', tools: 0, last: '', recent: [], usage: null, model: '' },
-    log: state ? state.log : [], mainSkills: [],
+    log: state ? state.log : [], mainSkills: [], skillCalls: [],
   };
 }
 
@@ -154,6 +192,8 @@ function skill(name, agent) {
     const n = getNode(agent);
     if (!n.skills.includes(name)) n.skills.push(name);
   } else if (!state.mainSkills.includes(name)) state.mainSkills.push(name);
+  state.skillCalls.unshift({ t: Date.now(), name: String(name).replace(/^.*:/, ''), agent: agent || '' });
+  if (state.skillCalls.length > 40) state.skillCalls.length = 40;
   addLog('skill', `skill ${name}${agent ? ` (oleh ${agent})` : ' (sesi utama)'}`);
 }
 
@@ -187,6 +227,15 @@ const nlines = (s) => (s ? String(s).replace(/\n$/, '').split('\n').length : 0);
 function det(key) {
   return details[key] || (details[key] = { events: [], files: {}, task: '', taskDesc: '', result: '', agentIds: [] });
 }
+
+function say(kind, text, extra) {
+  const t = String(text == null ? '' : text).trim();
+  if (!t && !(extra && extra.questions)) return;
+  convo.push(Object.assign({ t: Date.now(), kind, text: cap(t, kind === 'claude' ? 6000 : 3000) }, extra || {}));
+  if (convo.length > 150) convo.shift();
+}
+const setPending = (kind, text) => { pending = { kind, text: cap(text, 500), at: Date.now() }; };
+const clearPending = () => { pending = null; };
 
 function sanitize(tool, i) {
   switch (tool) {
@@ -252,27 +301,61 @@ function recordPost(ev) {
   rec.status = (r && typeof r === 'object' && (r.is_error || r.error || r.interrupted)) ? 'error' : 'ok';
   rec.ms = Date.now() - rec.t;
   const text = respText(r);
+  if (rec.status === 'error') say('error', `${rec.tool}: ${cap(respText(r), 500)}`, { agent: hit.key === MAIN ? '' : hit.key });
   rec.out = rec.tool === 'Read' ? `${nlines(text)} baris dibaca` : /^(Write|Edit|MultiEdit)$/.test(rec.tool) ? cap(text, 200) : cap(text, 1200);
-  if ((rec.tool === 'Agent' || rec.tool === 'Task') && !rec.input.bg) {
-    const d = det(norm(rec.input.agent));
-    if (!d.result) d.result = cap(text, 6000);
+  if (rec.tool === 'Agent' || rec.tool === 'Task') {
+    let obj = r && typeof r === 'object' ? r : null;
+    if (!obj) { try { obj = JSON.parse(text); } catch (_) { obj = null; } }
+    const aid = norm(rec.input.agent);
+    if (obj && obj.resolvedModel && state.nodes[aid]) state.nodes[aid].resolvedModel = String(obj.resolvedModel);
+    const launch = obj && (obj.isAsync || obj.status === 'async_launched');
+    if (!launch && !rec.input.bg) { const d = det(aid); if (!d.result) d.result = cap(text, 6000); }
+    if (launch) rec.out = 'agent diluncurkan di latar belakang' + (obj.resolvedModel ? ` (model ${obj.resolvedModel})` : '');
   }
 }
 
 // ---------- token usage / actual model from the Claude Code transcript ----------
-function parseUsage(text, filter) {
+function parseUsage(text, filter, names) {
   const byId = new Map();
-  let model = '', last = null;
+  let model = '', last = null, audits = 0;
+  const skillEv = {};
+  const esc = (x) => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const rx = (names || []).map((nm) => ({ nm, load: new RegExp('Base directory for this skill[^"]{0,240}' + esc(nm) + '(?![\\w-])|name: ' + esc(nm) + '\\\\n(?:[^"]{0,40})?description:'), hook: nm === 'caveman' ? /caveman/i : null }));
+  const reads = new Map(), imgPaths = new Map();
   for (const line of text.split('\n')) {
     if (!line) continue;
     let o; try { o = JSON.parse(line); } catch (_) { continue; }
-    if (o.type !== 'assistant' || !o.message || !o.message.usage) continue;
     if (filter && !filter(o)) continue;
+    if (rx.length && o.type !== 'assistant' && !/tool_use_id/.test(line)) {
+      for (const r of rx) {
+        if (skillEv[r.nm]) continue;
+        if (r.load.test(line)) skillEv[r.nm] = 'termuat';
+        else if (r.hook && r.hook.test(line) && /hook|SessionStart|additionalContext|system-reminder/i.test(line)) skillEv[r.nm] = 'hook';
+      }
+    }
+    if (o.type === 'assistant' && o.message && Array.isArray(o.message.content)) {
+      for (const b of o.message.content) if (b && b.type === 'tool_use' && b.name === 'Skill' && b.input) { const sn = String(b.input.skill || b.input.name || '').replace(/^.*:/, ''); if (sn) skillEv[sn] = 'dipanggil'; }
+    }
+    if (o.type === 'assistant' && o.message && Array.isArray(o.message.content)) {
+      for (const b of o.message.content) {
+        if (!b || b.type !== 'tool_use' || !b.input) continue;
+        const fp = b.input.file_path || '';
+        if (b.name === 'Read' && fp) {
+          const k = fp.replace(/\\/g, '/');
+          reads.set(k, (reads.get(k) || 0) + 1);
+          if (/\.(png|jpe?g|webp|gif)$/i.test(k)) imgPaths.set(k, (imgPaths.get(k) || 0) + 1);
+        }
+        if (b.name === 'Bash' && /run-audit\.js/.test(b.input.command || '')) audits++;
+      }
+    }
+    if (o.type !== 'assistant' || !o.message || !o.message.usage) continue;
     byId.set(o.message.id || o.uuid, o.message.usage);
     last = o.message.usage;
     if (o.message.model && o.message.model !== '<synthetic>') model = o.message.model;
   }
-  const u = { in: 0, out: 0, cr: 0, cc: 0, turns: byId.size, model, ctx: 0 };
+  const u = { in: 0, out: 0, cr: 0, cc: 0, turns: byId.size, model, ctx: 0, audits, skillEv, imgReads: 0, imgUniq: imgPaths.size, dupReads: 0 };
+  for (const c of imgPaths.values()) u.imgReads += c;
+  for (const c of reads.values()) if (c > 1) u.dupReads += c - 1;
   for (const x of byId.values()) {
     u.in += x.input_tokens || 0; u.out += x.output_tokens || 0;
     u.cr += x.cache_read_input_tokens || 0; u.cc += x.cache_creation_input_tokens || 0;
@@ -282,7 +365,7 @@ function parseUsage(text, filter) {
 }
 const readText = (f) => fs.promises.readFile(f, 'utf8').catch(() => null);
 
-async function agentUsage(ev, agentId) {
+async function agentUsage(ev, agentId, names) {
   const tp = ev.transcript_path;
   const cands = [];
   if (ev.agent_transcript_path) cands.push(ev.agent_transcript_path);
@@ -292,11 +375,11 @@ async function agentUsage(ev, agentId) {
   }
   for (const f of cands) {
     const t = await readText(f);
-    if (t) { const u = parseUsage(t); if (u.turns) return u; }
+    if (t) { const u = parseUsage(t, null, names); if (u.turns) return u; }
   }
   if (tp && agentId) { // older layout: sidechain messages live inside the main transcript
     const t = await readText(tp);
-    if (t) { const u = parseUsage(t, (o) => o.isSidechain && o.agentId === agentId); if (u.turns) return u; }
+    if (t) { const u = parseUsage(t, (o) => o.isSidechain && o.agentId === agentId, names); if (u.turns) return u; }
   }
   return null;
 }
@@ -310,18 +393,19 @@ async function refreshUsage(key, ev, force) {
     if (key === MAIN) {
       const t = await readText(ev.transcript_path);
       if (!t) return;
-      const u = parseUsage(t, (o) => !o.isSidechain);
+      const allNames = [...new Set([...Object.values(state.nodes).flatMap((x) => x.skillsDef || []), 'caveman'])];
+      const u = parseUsage(t, (o) => !o.isSidechain, allNames);
       if (u.turns) { state.main.usage = u; state.main.model = u.model; }
     } else {
       const n = state.nodes[key], d = details[key];
       if (!n || !d || !d.agentIds.length) return;
-      const sum = { in: 0, out: 0, cr: 0, cc: 0, turns: 0, model: '', ctx: 0 };
+      const sum = { in: 0, out: 0, cr: 0, cc: 0, turns: 0, model: '', ctx: 0, audits: 0, skillEv: {}, imgReads: 0, imgUniq: 0, dupReads: 0 };
       let any = false;
       for (const id of d.agentIds) {
-        const u = await agentUsage(ev, id);
+        const u = await agentUsage(ev, id, [...new Set([...(n.skillsDef || []), 'caveman'])]);
         if (!u) continue;
         any = true;
-        sum.in += u.in; sum.out += u.out; sum.cr += u.cr; sum.cc += u.cc; sum.turns += u.turns;
+        sum.in += u.in; sum.out += u.out; sum.cr += u.cr; sum.cc += u.cc; sum.turns += u.turns; sum.audits += u.audits; Object.assign(sum.skillEv, u.skillEv); sum.imgReads += u.imgReads; sum.imgUniq += u.imgUniq; sum.dupReads += u.dupReads;
         sum.model = u.model || sum.model; sum.ctx = u.ctx;
       }
       if (any) n.usage = sum;
@@ -347,6 +431,7 @@ function handle(ev) {
   const input = ev.tool_input || {};
   const agent = norm(ev.agent_type);
   const key = agent || MAIN;
+  if (ev.cwd) cwdNow = ev.cwd;
   if (ev.cwd && !scannedDirs.has(path.join(ev.cwd, '.claude', 'agents'))) {
     loadAgentDefs(ev.cwd);
     Object.values(state.nodes).forEach((n) => { if (!n.model) applyDef(n); });
@@ -355,12 +440,20 @@ function handle(ev) {
   switch (e) {
     case 'UserPromptSubmit': {
       const text = String(ev.prompt || '').replace(/\s+/g, ' ').trim();
+      if (/^<(agent-message|task-notification|system-reminder)\b/i.test(text)) { // sistem menyuntik pesan (mis. agent latar selesai), bukan ketikan user
+        say('notify', 'notifikasi sistem: ' + cap(text.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim(), 200));
+        addLog('stop', 'notifikasi agent masuk');
+        state.main.status = 'running'; state.finished = false;
+        break;
+      }
       const m = FLOW_CMD.exec(text);
       if (m) {
         const k = m[1] === 'build' ? m[2] : m[1];
-        if (FLOWS[k]) { state.prompt = text; newRun(k); addLog('flow', `flow: ${k}`); }
+        if (FLOWS[k]) { newRun(k); addLog('flow', `flow: ${k}`); }
       }
       state.prompt = text.slice(0, 160); state.promptAt = Date.now();
+      say('user', String(ev.prompt || ''));
+      clearPending();
       state.main.status = 'running'; state.finished = false;
       addLog('prompt', `prompt: ${text.slice(0, 70)}`);
       break;
@@ -374,13 +467,18 @@ function handle(ev) {
       lifecycleSeen = true;
       const id = norm(ev.agent_type);
       if (id && ev.agent_id) { const ids = det(id).agentIds; if (!ids.includes(ev.agent_id)) ids.push(ev.agent_id); }
-      if (id && ev.last_assistant_message) det(id).result = cap(ev.last_assistant_message, 6000);
+      if (id && ev.last_assistant_message) { det(id).result = cap(ev.last_assistant_message, 6000); say('agent', ev.last_assistant_message, { agent: id }); }
       stop(id);
       refreshUsage(id, ev, true);
       break;
     }
     case 'PreToolUse':
       recordTool(key, ev);
+      if (tool === 'AskUserQuestion') {
+        const qs = (input.questions || []).slice(0, 4).map((q) => ({ question: cap(q.question, 400), header: q.header, multi: !!q.multiSelect, options: (q.options || []).slice(0, 6).map((o) => ({ label: cap(o.label, 120), description: cap(o.description, 200) })) }));
+        say('question', qs.map((q) => q.question).join('\n'), { agent: agent || '', questions: qs });
+        setPending('question', qs.length ? qs[0].question : 'Claude bertanya');
+      }
       if (tool === 'Agent' || tool === 'Task') {
         const id = norm(input.subagent_type);
         start(id, { background: !!input.run_in_background });
@@ -392,6 +490,8 @@ function handle(ev) {
       break;
     case 'PostToolUse':
       recordPost(ev);
+      if (tool === 'AskUserQuestion') say('answer', respText(ev.tool_response), { agent: agent || '' });
+      clearPending();
       // For a background agent this fires immediately at launch, so it must NOT mean "finished".
       if ((tool === 'Agent' || tool === 'Task') && !input.run_in_background && !lifecycleSeen) {
         stop(norm(input.subagent_type));
@@ -399,21 +499,64 @@ function handle(ev) {
       break;
     case 'Stop':
       state.main.status = 'idle'; addLog('stop', 'sesi utama selesai giliran'); maybeFinalize();
+      if (ev.last_assistant_message) say('claude', ev.last_assistant_message);
+      clearPending();
       refreshUsage(MAIN, ev, true);
       break;
+    case 'PermissionRequest': {
+      const txt = `${tool || 'tool'}: ${describe(tool || '', input).replace(/^\w+ ?/, '')}`;
+      say('permission', txt, { agent: agent || '' });
+      setPending('permission', `Izin dibutuhkan: ${txt}`);
+      addLog('perm', `menunggu izin: ${txt.slice(0, 60)}`);
+      break;
+    }
+    case 'Notification': {
+      const msg = String(ev.message || ''), nt = String(ev.notification_type || '');
+      say('notify', msg);
+      if (/permission/i.test(nt + msg)) setPending('permission', msg);
+      else if (/idle|waiting/i.test(nt + msg)) setPending('idle', msg);
+      break;
+    }
     case 'SessionStart': addLog('session', 'sesi dimulai'); refreshUsage(MAIN, ev, true); break;
     default: return false;
   }
   return true;
 }
 
+let cwdNow = '', blCache = { key: '', val: null };
+function backlogSummary() {
+  if (!cwdNow) return null;
+  const f = path.join(cwdNow, 'docs', 'backlog.json');
+  try {
+    const st = fs.statSync(f), key = f + ':' + st.mtimeMs;
+    if (blCache.key === key) return blCache.val;
+    const db = JSON.parse(fs.readFileSync(f, 'utf8')), by = Object.fromEntries(db.items.map((i) => [i.id, i]));
+    const items = db.items.map((i) => {
+      const ready = i.status === 'todo' && (i.needs || []).every((n) => by[n] && by[n].status === 'done');
+      return { id: i.id, title: i.title, type: i.type || '', agent: i.agent || '', status: i.status === 'todo' ? (ready ? 'ready' : 'waiting') : i.status, needs: (i.needs || []).filter((n) => by[n] && by[n].status !== 'done'), owner: !!i.checkpoint, evidence: i.evidence || '', size: i.size || 'm', fase: i.type || 'lain', checkpointQ: i.checkpoint || '' };
+    });
+    const c = (s) => items.filter((i) => i.status === s).length;
+    const parked = items.filter((i) => i.status === 'parked'), live = items.filter((i) => i.status !== 'rejected' && i.status !== 'parked'), W = { s: 1, m: 2, l: 4 }, w = (i) => W[i.size] || 2, wTot = live.reduce((a, i) => a + w(i), 0), wDone = live.filter((i) => i.status === 'done').reduce((a, i) => a + w(i), 0), fase = {};
+    live.forEach((i) => { const f = fase[i.fase] || (fase[i.fase] = { nama: i.fase, total: 0, done: 0 }); f.total++; if (i.status === 'done') f.done++; });
+    const val = { pct: wTot ? Math.round(wDone / wTot * 100) : 0, fase: Object.values(fase), project: db.project || '', total: live.length, parked: parked.map((i) => ({ id: i.id, title: i.title })), done: c('done'), running: c('running'), ready: c('ready'), waiting: c('waiting'), failed: c('failed'), items };
+    blCache = { key, val }; return val;
+  } catch (_) { blCache = { key: '', val: null }; return null; }
+}
 function broadcast() {
+  state.backlog = backlogSummary();
   state.updatedAt = Date.now();
+  state.pending = pending; state.convoN = convo.length;
+  const fl = [];
+  Object.entries(details).forEach(([k, d]) => Object.values(d.files || {}).forEach((f) => fl.push({ agent: k, path: f.path, add: f.add, del: f.del, created: !!f.created })));
+  state.fileList = fl.slice(-40);
+  Object.values(state.nodes).forEach((n) => { const d = details[n.id]; n.modelCheck = modelCheck(n); n.snippet = d && d.result ? cap(d.result.replace(/\s+/g, ' '), 240) : ''; });
   const data = `data: ${JSON.stringify(state)}\n\n`;
   for (const c of clients) c.write(data);
+  persistSoon();
 }
 
 function detailFor(id) {
+  if (id === '__convo') return { id, title: 'Percakapan', convo, pending };
   if (id === '__all') {
     const files = [];
     for (const [key, d] of Object.entries(details)) {
@@ -430,13 +573,60 @@ function detailFor(id) {
   const n = id === MAIN ? null : state.nodes[id];
   return {
     id, title: id === MAIN ? 'Claude (sesi utama)' : id,
-    node: n ? { role: n.role, desc: n.desc, model: n.model, toolsAllowed: n.toolsAllowed, skillsDef: n.skillsDef, skills: n.skills, usage: n.usage, status: n.status, count: n.count, ms: n.status === 'running' ? n.ms + (Date.now() - n.startedAt) : n.ms, background: n.background, extra: n.extra } : { role: 'sesi utama (orchestrator)', model: state.main.model, usage: state.main.usage, skills: state.mainSkills, status: state.main.status },
+    mainModel: state.main.model || '', node: n ? { role: n.role, desc: n.desc, model: n.model, effort: n.effort, modelCheck: n.modelCheck, modelSrc: n.modelSrc, resolvedModel: n.resolvedModel, toolsAllowed: n.toolsAllowed, skillsDef: n.skillsDef, skills: n.skills, usage: n.usage, status: n.status, count: n.count, ms: n.status === 'running' ? n.ms + (Date.now() - n.startedAt) : n.ms, background: n.background, extra: n.extra } : { role: 'sesi utama (orchestrator)', model: state.main.model, usage: state.main.usage, skills: state.mainSkills, status: state.main.status },
     task: d.task, taskDesc: d.taskDesc, result: d.result,
     events: d.events, files: Object.values(d.files),
     usageNote: (n ? n.usage : state.main.usage) ? '' : 'Token belum terbaca. Hook belum mengirim transcript_path, atau file transcript agent ini belum ditemukan (cek ~/.claude/flow-viewer/events.jsonl).',
   };
 }
 
+function report() {
+  const hm = (t) => new Date(t).toLocaleTimeString('id-ID', { hour12: false });
+  const nodes = Object.values(state.nodes);
+  const running = nodes.filter((n) => n.status === 'running');
+  const L = [];
+  L.push(`# Laporan Flow Viewer (diperbarui ${hm(Date.now())})`);
+  let st;
+  if (pending) st = `MENUNGGU KAMU (${pending.kind}): ${pending.text}`;
+  else if (running.length) st = `BEKERJA: agent berjalan: ${running.map((n) => n.id).join(', ')}`;
+  else if (state.main.status === 'running') st = 'BEKERJA: sesi utama';
+  else st = 'IDLE: giliran selesai, menunggu prompt berikutnya';
+  L.push(`STATUS: ${st}`);
+  const exp = state.expected.map((i) => state.nodes[i]).filter((n) => n && !n.optional);
+  if (state.expected.length) {
+    const ran = exp.filter((n) => n.count > 0), miss = exp.filter((n) => n.count === 0);
+    L.push(`FLOW: ${state.flow} | langkah wajib jalan ${ran.length}/${exp.length}${state.finished && miss.length ? ' | DILEWATI: ' + miss.map((n) => n.id).join(', ') : ''}`);
+  } else L.push('FLOW: overview (belum ada command flow)');
+  L.push(`PROMPT TERAKHIR: ${state.prompt || '-'}`);
+  if (pending && pending.kind === 'question') {
+    const q = [...convo].reverse().find((c) => c.kind === 'question');
+    if (q && q.questions) {
+      L.push('', '## Pertanyaan yang menunggu jawaban');
+      q.questions.forEach((x, i) => { L.push(`${i + 1}. ${x.question}${x.multi ? ' (boleh pilih lebih dari satu)' : ''}`); x.options.forEach((o) => L.push(`   - ${o.label}${o.description ? ': ' + o.description : ''}`)); });
+    }
+  }
+  L.push('', '## Agent');
+  L.push('nama | status | model dideklarasi | model terbaca di transcript | cek | effort | token | tool | file | aktivitas terakhir');
+  nodes.filter((n) => n.count > 0 || n.status !== 'idle' || n.extra).forEach((n) => {
+    const u = n.usage; const tok = u ? u.in + u.out + u.cr + u.cc : 0;
+    L.push(`${n.id} | ${n.status}${n.background ? ' (BG)' : ''} | ${n.model || '-'} | ${(u && u.model) || 'belum terbaca'} | ${n.modelCheck || modelCheck(n)} | ${n.effort || 'tidak diatur'} | ${tok || '-'} | ${n.tools} | ${n.files} | ${n.last || '-'}`);
+  });
+  if (!nodes.some((n) => n.count > 0)) L.push('(belum ada agent yang jalan)');
+  const u0 = state.main.usage;
+  L.push(`Claude (sesi utama) | ${state.main.status} | ${state.main.model || '-'} | ${u0 ? u0.in + u0.out + u0.cr + u0.cc : '-'} | ${state.main.tools} | - | ${state.main.last || '-'}`);
+  const files = [];
+  for (const [k, d] of Object.entries(details)) Object.values(d.files).forEach((f) => files.push(`${k === MAIN ? 'Claude' : k}: ${f.path} (+${f.add} -${f.del})`));
+  if (files.length) { L.push('', '## File diubah'); files.slice(0, 25).forEach((f) => L.push('- ' + f)); }
+  const errs = convo.filter((c) => c.kind === 'error').slice(-5);
+  if (errs.length) { L.push('', '## Error terbaru'); errs.forEach((c) => L.push(`[${hm(c.t)}] ${c.agent ? c.agent + ': ' : ''}${c.text}`)); }
+  const LBL = { user: 'USER', claude: 'CLAUDE', agent: 'AGENT', question: 'PERTANYAAN', answer: 'JAWABAN USER', permission: 'MINTA IZIN', notify: 'NOTIF', error: 'ERROR' };
+  L.push('', '## Percakapan terakhir (lama ke baru)');
+  convo.slice(-14).forEach((c) => L.push(`[${hm(c.t)}] ${LBL[c.kind] || c.kind}${c.agent ? ' ' + c.agent : ''}: ${cap(c.text, 700).replace(/\n/g, '\n    ')}`));
+  if (!convo.length) L.push('(belum ada)');
+  return L.join('\n');
+}
+
+const BUILD = require('./build-id')();
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css' };
 
 const server = http.createServer((req, res) => {
@@ -455,7 +645,36 @@ const server = http.createServer((req, res) => {
     return;
   }
   if (req.method === 'POST' && url === '/reset') {
-    newRun(state.flow); broadcast(); res.writeHead(204); res.end(); return;
+    newRun(state.flow); convo = []; pending = null; state.prompt = ''; state.promptAt = null; broadcast(); res.writeHead(204); res.end(); return;
+  }
+  if (url === '/report.md') { res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' }); res.end(report()); return; }
+  if (url === '/report') {
+    const esc = (t) => t.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(`<!doctype html><meta charset="utf-8"><meta http-equiv="refresh" content="4"><title>Laporan Flow Viewer</title><body style="font:14px/1.5 ui-monospace,Consolas,monospace;background:#fff;color:#111;padding:16px"><pre style="white-space:pre-wrap;margin:0">${esc(report())}</pre></body>`);
+    return;
+  }
+  if (url === '/history') {
+    const q = new URLSearchParams(req.url.split('?')[1] || '');
+    let rows = [];
+    try { if (store) rows = store.list(q.get('all') === '1' ? '' : cwdNow, 60); } catch (_) {}
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ kind: store ? store.kind : 'none', current: cwdNow || '', liveId: state.runId, rows }));
+    return;
+  }
+  if (url === '/history/get') {
+    const id = Number(new URLSearchParams(req.url.split('?')[1] || '').get('id'));
+    let r = null;
+    try { if (store && id === state.runId) flushRun(); r = store && id ? store.get(id) : null; } catch (_) {}
+    if (!r) { res.writeHead(404); res.end('{}'); return; }
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ id: r.id, project: r.project, state: JSON.parse(r.state), convo: JSON.parse(r.convo || '[]') }));
+    return;
+  }
+  if (req.method === 'POST' && url === '/history/delete') {
+    const id = Number(new URLSearchParams(req.url.split('?')[1] || '').get('id'));
+    try { if (store && id && id !== state.runId) store.remove(id); } catch (_) {}
+    res.writeHead(204); res.end(); return;
   }
   if (url === '/detail') {
     const id = new URLSearchParams(req.url.split('?')[1] || '').get('id') || MAIN;
@@ -471,12 +690,13 @@ const server = http.createServer((req, res) => {
     return;
   }
   if (url === '/state') { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(state)); return; }
-  if (url === '/health') { res.writeHead(200); res.end('ok'); return; }
+  if (url === '/health') { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: true, build: BUILD })); return; }
+  if (req.method === 'POST' && url === '/quit') { res.writeHead(200); res.end('bye'); setTimeout(() => process.exit(0), 100); return; }
   if (req.method === 'GET') {
     const file = url === '/' ? 'index.html' : path.normalize(url).replace(/^([/\\]|\.\.)+/g, '');
     const full = path.join(PUBLIC, file);
     if (full.startsWith(PUBLIC) && fs.existsSync(full) && fs.statSync(full).isFile()) {
-      res.writeHead(200, { 'Content-Type': MIME[path.extname(full)] || 'application/octet-stream' });
+      res.writeHead(200, { 'Content-Type': MIME[path.extname(full)] || 'application/octet-stream', 'Cache-Control': 'no-store' });
       fs.createReadStream(full).pipe(res); return;
     }
   }

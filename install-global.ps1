@@ -35,8 +35,25 @@ Get-ChildItem (Join-Path $RepoDir "design-md") -Directory | ForEach-Object {
 $lines | Set-Content -Encoding UTF8 (Join-Path $LibDir "INDEX.md")
 Write-Host "   $($lines.Count - 7) gaya terindeks"
 
-Write-Host "==> 3/4 Browser Playwright" -ForegroundColor Cyan
-npx -y playwright install chromium
+Write-Host "==> 3/4 Playwright untuk audit ui-craft (sekali, di folder skill)" -ForegroundColor Cyan
+$UiCraft = Join-Path $KitDir "skills\ui-craft"
+Push-Location $UiCraft
+npm install --no-audit --no-fund
+npx playwright install chromium
+Pop-Location
+
+# Skill milik kit (folder skills\) -> ~\.claude\skills lewat junction, supaya semua agent menemukannya dan sumbernya tetap satu (di kit).
+$SkillSrc = Join-Path $KitDir "skills"
+$SkillDst = Join-Path $HOME ".claude\skills"
+New-Item -ItemType Directory -Force -Path $SkillDst | Out-Null
+Get-ChildItem $SkillSrc -Directory | Where-Object { Test-Path (Join-Path $_.FullName "SKILL.md") } | ForEach-Object {
+    $link = Join-Path $SkillDst $_.Name
+    if (Test-Path $link) {
+        $item = Get-Item $link -Force
+        if ($item.LinkType -eq "Junction" -and $item.Target -ne $_.FullName) { $item.Delete(); New-Item -ItemType Junction -Path $link -Target $_.FullName | Out-Null; Write-Host "   skill diarahkan ulang: $($_.Name)" }
+        else { Write-Host "   skill sudah ada: $($_.Name)" }
+    } else { New-Item -ItemType Junction -Path $link -Target $_.FullName | Out-Null; Write-Host "   skill: $($_.Name)" }
+}
 
 Write-Host "==> 4/4 Marketplace + plugin (scope user = global)" -ForegroundColor Cyan
 claude plugin marketplace add $KitDir
