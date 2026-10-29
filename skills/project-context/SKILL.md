@@ -48,3 +48,7 @@ Bahasa teks di layar (bukan bahasa percakapan dengan pemilik, yang tetap Indones
 - Jangan membawa nama produk, palet, atau istilah dari proyek lain. Semua datang dari PRD, referensi pemilik, dan dokumen proyek ini.
 - Jika dokumen bertentangan, urutan menang: PRD (tujuan dan kriteria), UX (alur), DESIGN (visual), ARCHITECTURE (teknis). Sebutkan konfliknya ke pemilik.
 - Jangan menambah fitur di luar PRD (mis. login sosial yang tidak diminta).
+
+## 6. Mode jawaban ringkas (mis. caveman)
+
+Bila mode ringkas aktif di sesi, ia hanya berlaku untuk obrolan antar-agent dan catatan kerja. TIDAK berlaku untuk: dokumen di `docs/` (PRD, UX, DESIGN, ARCHITECTURE, KEPUTUSAN, GLOSSARY), laporan dan pertanyaan ke pemilik (bagian 2 dan 3), dan teks UI. Bukti (output tes, temuan audit, pesan galat) dikutip apa adanya, tidak diringkas, karena dipakai sebagai `--evidence` di backlog.

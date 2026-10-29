@@ -1,5 +1,32 @@
 # Changelog
 
+## 1.9.1 - 2026-10-29 (ui-designer-kit, fullstack-dev)
+
+Dasar: cross-check skill terhadap agent dan repo sumber (tanpa uji jalan). Masalah utama: agent fullstack tidak punya tool `Skill` sehingga instruksi "muat skill X" tidak bisa dijalankan; jalur cepat ui-designer memuat antislop-ui tanpa core padahal Delivery Gate ada di core.
+
+### Skill baru
+- `antislop-layoutmobile` (anti-slop 5ca57fe): rancangan mobile 375 di langkah 2, checklist di langkah 5.
+- `diagnosing-bugs` (mattpocock 59db609): be dan fe untuk item bug, retry, atau tes gagal tanpa sebab jelas.
+
+### ui-designer
+- Langkah 2 memuat antislop + antislop-ui + antislop-layoutmobile; rancangan layar wajib menulis apa yang berubah di 375.
+- Jalur cepat dan `bangun arah X`: antislop-ui tanpa core memakai "UI Skill Checklist" sebagai gate (dulu meminta Delivery Gate yang tidak dimuat).
+
+### fullstack-dev
+- Tool `Skill` ditambahkan ke be, fe, qa, cyber, ux.
+- architect: preload `security-checklists` untuk threat model.
+- cyber: ponytail-review/audit tidak lagi di-preload; dimuat lewat Skill hanya di item `review-kode`/`audit-akhir`. Audit akhir mendaftar komentar `shortcut:`.
+- ux: tidak lagi memuat ux-writing-id DAN -en; satu tambahan bahasa lewat Skill.
+- fe: tdd lewat Skill untuk logika non-trivial; diagnosing-bugs untuk bug.
+- qa: PRD dicari lewat project-context (tidak lagi dikunci `docs/PRD.md`), membaca `tdd/tests.md`, kutip galat utuh.
+- backlog: mode sinkron mengumpulkan komentar `shortcut:` jadi item atau catatan audit-akhir (pengganti ponytail-debt).
+
+### project-context
+- Bagian 6: mode ringkas (caveman) tidak berlaku untuk dokumen `docs/`, laporan ke pemilik, teks UI, dan bukti.
+
+Pasang ulang skill baru: jalankan lagi `install-global.ps1` (junction per folder; skill lama dilewati).
+Cadangan file 1.9.0: `D:\01_Workspace\_diag\backup-1.9.0\`.
+
 ## 1.9.0 - 2026-10-28 (ui-designer-kit, fullstack-dev)
 
 Dasar: dua uji landing page dengan 1.8.0. Token turun jauh (desainer 691k dan 7m40s, dari 5,71M dan 57m), tetapi hasilnya masih template. Log Flow Viewer menunjukkan akar masalahnya: orkestrator (sesi utama) menulis ulang permintaan pemilik menjadi brief yang sudah menentukan gaya ("matahari besar", "A serif krem, B grid dingin") dan menyuruh "tanpa dokumen tambahan". Desainer menuruti tugas itu dan melewati langkah Arah/Rancang, sehingga antislop tidak pernah dimuat dan tidak ada rancangan yang bisa dinilai kritikus. Kerangka section juga sudah dikunci di UX ("3 langkah", "6 butir").

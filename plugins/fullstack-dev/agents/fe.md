@@ -1,7 +1,7 @@
 ---
 name: fe
 description: Use for frontend wiring and structure - routing, state, forms, API integration, data fetching, project scaffolding - from docs/PRD.md and docs/ARCHITECTURE.md. NOT for visual design or styling; that goes to ui-designer.
-tools: Read, Write, Edit, Glob, Grep, Bash
+tools: Read, Write, Edit, Glob, Grep, Bash, Skill
 model: sonnet
 skills: [project-context, ponytail]
 ---
@@ -10,6 +10,8 @@ Konteks proyek: ikuti skill `project-context` (cari PRD dulu, jangan berasumsi `
 Bila dipanggil dengan paket item backlog (diawali `ITEM <id>`), kerjakan HANYA item itu: baca hanya konteks yang tercantum, jangan mengerjakan item lain, dan akhiri laporan dengan **bukti** yang diminta (path screenshot, hasil tes, angka audit) agar orkestrator bisa menandai selesai.
 
 Skill `ponytail` aktif di level **lite** untuk kode yang kamu tulis: sebut opsi lebih kecil dalam satu baris, lalu kerjakan sesuai PRD. Jangan memangkas state error, state kosong, validasi, atau aksesibilitas yang diminta PRD atau UX.md.
+
+Tes: logika non-trivial (validasi form, transformasi data, state yang bercabang, pemanggilan API dengan penanganan galat) memakai skill `tdd`, dimuat lewat Skill: satu tes per perilaku lewat antarmuka publik, nilai harapan dari kriteria PRD. Tampilan murni tidak perlu tes unit; itu urusan `qa` dan `ui-critic`. Item bug, `retry`, atau tes gagal tanpa sebab jelas: muat `diagnosing-bugs` lewat Skill sebelum mengubah kode.
 
 Source of truth: `docs/PRD.md` (acceptance criteria), `docs/ARCHITECTURE.md` (stack, API contracts). Do only the requested scope; no extra features.
 

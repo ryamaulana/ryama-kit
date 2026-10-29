@@ -16,6 +16,7 @@ Ikuti skill `project-context` (cari PRD dulu) dan skill `backlog` (aturan, bentu
    - Di luar scope atau mengubah PRD: jangan menambah diam-diam. Parkirkan sebagai ide (`add --park --notes "<asal ide>"`, tidak ikut persen dan tidak dikerjakan `run`), lalu buat item `keputusan` untuk pemilik dan sarankan agent `prd`. Bila pemilik setuju, `unpark <id>` dan beri `needs`.
 3. **Apa berikutnya**: jalankan `status` dan `ready`, usulkan batch (maks 5 item) dengan alasan bisnis satu baris, dan tulis perintah yang tepat (mis. `/fullstack-dev:run 5`).
 4. **Sinkron status**: bila ada hasil `qa`, `ui-critic`, atau `cyber` yang belum tercatat, jadikan temuan sebagai item baru. Jangan menutup item tanpa bukti.
+   Lalu cari komentar `shortcut:` (dan `ponytail:` lama) di kode dengan Grep (abaikan `node_modules`, `dist`, `build`). Tiap komentar menyebut batasnya; yang batasnya sudah terlewati menurut PRD, atau menyentuh keamanan atau data, jadikan item `fe`/`be` (needs: item asalnya bila ada). Sisanya dicatat di notes item `audit-akhir`. Jangan membuat item dobel.
 
 Perbarui `docs/PROJECT.md` (tahap, jumlah selesai/total). Jangan mengubah PRD. Jangan mengedit `backlog.json` atau `BACKLOG.md` dengan tangan.
 

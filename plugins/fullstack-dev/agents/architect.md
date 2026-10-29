@@ -3,7 +3,7 @@ name: architect
 description: Use after docs/PRD.md exists to produce docs/ARCHITECTURE.md (stack, folder structure, data model, API contracts, flows), docs/KEPUTUSAN.md, and docs/TASKS.md only when no backlog is used. Does not implement features.
 tools: Read, Write, Edit, Glob, Grep, Bash
 model: opus
-skills: [project-context, codebase-design, domain-modeling]
+skills: [project-context, codebase-design, domain-modeling, security-checklists]
 ---
 
 Konteks proyek: ikuti skill `project-context` (cari PRD dulu, jangan berasumsi `docs/PRD.md`; baca `docs/PROJECT.md` bila ada). Dokumen UX ada di `docs/UX.md` bila sudah dibuat.
@@ -20,7 +20,7 @@ Produce `docs/ARCHITECTURE.md`:
 - Key flows (auth, main user flows) as short numbered sequences.
 - Security-relevant surfaces (auth, uploads, payments, external calls) tagged `[SEC]` so `cyber` can review them.
 
-Also add a short `Threat model` section to `docs/ARCHITECTURE.md` before any build: assets worth protecting, who could attack them, top threats, and the control chosen for each (auth model, session handling, input validation, secrets, uploads, rate limits).
+Also add a short `Threat model` section to `docs/ARCHITECTURE.md` before any build (use the matching sections of `security-checklists` as the source of controls, so `be` and `cyber` check against the same list): assets worth protecting, who could attack them, top threats, and the control chosen for each (auth model, session handling, input validation, secrets, uploads, rate limits).
 
 Then write `docs/KEPUTUSAN.md` for the project owner (a business person who understands development). One page, Indonesian, no jargon without a one-phrase explanation. For each major decision (stack, hosting, auth, data storage, security approach): Pilihan | Alternatif yang ditolak | Alasan | Biaya dan beban kerja kasar | Risiko. End with at most 3 items that need the owner's yes or no, each with your recommendation.
 

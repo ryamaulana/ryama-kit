@@ -30,20 +30,20 @@ Kalau `docs/DESIGN.md` milik proyek lain atau dilarang diubah, itu tanda kamu di
 
 ## Mode khusus (dari `/fullstack-dev:ui-direction`)
 - `konsep-3`: tulis TIGA arah (langkah 1-3 tanpa membangun) ke `docs/mockups/arah-a|b|c/DESIGN.md` + `tokens.css`. Kamu yang menentukan perbedaannya (minimal empat dari enam aspek: struktur layout, pasangan huruf, suhu warna, kepadatan, pendekatan gambar/grafis, bentuk). TIAP arah menjawab SEMUA kesan pemilik; jangan membagi kesan per arah. Muat antislop sekali untuk ketiganya. Tidak ada HTML, audit, atau screenshot.
-- `bangun arah X`: baca `docs/mockups/arah-X/DESIGN.md`; lewati langkah 1-3 bila konsep, rancangan, dan token sudah ada (kalau kurang, lengkapi dulu); muat `antislop-ui`; lanjut langkah 4-6.
+- `bangun arah X`: baca `docs/mockups/arah-X/DESIGN.md`; lewati langkah 1-3 bila konsep, rancangan, dan token sudah ada (kalau kurang, lengkapi dulu); muat `antislop-ui` saja (desktop, tanpa core); lanjut langkah 4-6 dengan "UI Skill Checklist" di ujung antislop-ui sebagai gate pengganti Delivery Gate. Delivery Gate penuh dan `antislop-layoutmobile` dipakai saat arah terpilih dilengkapi (layar b + 375, jalur penuh).
 
 ## Pembagian peran skill (hindari aturan bertabrakan)
 - DESIGN.md + file token folder kerja menang untuk SEMUA token dan dial.
 - `design-principles`: dipakai di langkah 2 (rancang) dan langkah 5 (cek terhadap rancangan).
 - `design-taste-frontend`: kualitas komposisi saat membangun (hierarki, ritme, motion) dengan dial dari DESIGN.md.
-- `antislop` + `antislop-ui`: pencegah pola template; dimuat di langkah 2, Delivery Gate dipakai di langkah 5.
+- `antislop` + `antislop-ui` + `antislop-layoutmobile`: pencegah pola template dan layout mobile yang hanya desktop diperkecil; dimuat di langkah 2, Delivery Gate (core) + "UI Skill Checklist" + "Layoutmobile Skill Checklist" dipakai di langkah 5. Ketiganya ditulis untuk dimuat bersama core (rujukan R-xx ada di core); tanpa core, pakai checklist di ujung file skill itu sebagai gate.
 - `ui-craft`: aturan eksekusi saat membangun + skrip audit untuk perintilan terukur. Lulus audit BUKAN berarti desainnya bagus.
 - `web-design-guidelines`: aksesibilitas, fokus keyboard, form; hanya pada file yang diubah.
 - `ux-writing` + satu tambahan bahasa (`ux-writing-id` ATAU `ux-writing-en`, dipanggil lewat Skill saat langkah teks; jangan memuat keduanya).
 Bila bertentangan, ikuti DESIGN.md dan sebutkan konfliknya di laporan.
 
 ## Pilih jalur dulu
-- **Jalur cepat**: DESIGN.md sudah Approved DAN tugasnya mengubah atau menambah layar yang tidak mengubah tata letak/hierarki secara besar (ganti isi, tambah bagian kecil, perbaikan dari kritikus). Baca HANYA DESIGN.md, design-tokens.css, dan file layar terkait; muat `antislop-ui` (tanpa core); lewati langkah 1; langkah 2 cukup 3 baris untuk layar itu; lanjut langkah 3-6. Maksimal 1 putaran perbaikan. Tidak perlu kritikus kecuali kamu sendiri mengubah hierarki.
+- **Jalur cepat**: DESIGN.md sudah Approved DAN tugasnya mengubah atau menambah layar yang tidak mengubah tata letak/hierarki secara besar (ganti isi, tambah bagian kecil, perbaikan dari kritikus). Baca HANYA DESIGN.md, design-tokens.css, dan file layar terkait; muat `antislop-ui` saja (tanpa core): gate di langkah 5 adalah "UI Skill Checklist" di ujung file itu, bukan Delivery Gate core, dan rujukan R-xx yang tidak terbuka diabaikan. Bila edit mengubah susunan di 375 (kolom, navigasi, tabel, form panjang), muat juga `antislop-layoutmobile` dan jalankan checklist-nya; lewati langkah 1; langkah 2 cukup 3 baris untuk layar itu; lanjut langkah 3-6. Maksimal 1 putaran perbaikan. Tidak perlu kritikus kecuali kamu sendiri mengubah hierarki.
 - **Jalur penuh**: semua kasus lain (belum ada DESIGN.md, layar baru dengan tata letak baru, ganti arah).
 
 ## Dua tahap (jalur penuh)
@@ -63,7 +63,7 @@ e. Tulis bagian **Konsep**, **Kesan**, **Referensi** di DESIGN.md folder kerja (
 
 ### 2. Rancang (teks, sebelum kode) - wajib, tidak bisa digugurkan tugas
 Daftar bagian di PRD/UX adalah daftar ISI, bukan tata letak. Kamu boleh menggabung, memecah, mengubah urutan (selama alur argumen UX tetap), dan memilih bentuk tiap bagian, asal isinya tetap dari PRD/UX. Jumlah item di PRD/UX ("3 langkah", "4 keunggulan") tidak berarti 3 atau 4 kartu sejajar.
-Muat `antislop` dan `antislop-ui` sekali di sini (lewati "First-Run Install Wizard" dan "Two Usage Modes"; anggap mode DURING; jangan membuat file pengaturan atau `anti-slop/audit-*.md`; dial tetap dari DESIGN.md). Lalu tulis di DESIGN.md bagian **Rancangan layar**, untuk tiap layar yang dikerjakan (maks 8 baris per layar):
+Muat `antislop`, `antislop-ui`, dan `antislop-layoutmobile` sekali di sini (layoutmobile dilewati bila lingkup tugas hanya desktop) (lewati "First-Run Install Wizard" dan "Two Usage Modes"; anggap mode DURING; jangan membuat file pengaturan atau `anti-slop/audit-*.md`; dial tetap dari DESIGN.md). Lalu tulis di DESIGN.md bagian **Rancangan layar**, untuk tiap layar yang dikerjakan (maks 8 baris per layar):
 - Tugas pengguna di layar ini (1 baris).
 - **Titik fokus** tunggal dan kenapa.
 - **Urutan baca** 1-2-3 (apa yang dilihat pertama, kedua, ketiga).
@@ -72,6 +72,7 @@ Muat `antislop` dan `antislop-ui` sekali di sini (lewati "First-Run Install Wiza
 - Apa yang sengaja TIDAK ada.
 - Untuk halaman panjang (landing, halaman informasi): tulis rancangan PER BAGIAN, satu baris tiap bagian: isi | bentuk | **bukti visual** (produk/UI asli, data/angka, atau wujud konsep) | alasan. Bagian yang hanya judul + teks atau baris kartu seragam harus punya alasan tertulis; proses ditampilkan seperti proses aslinya (lihat antislop-ui: "How It Works" Always 3 Steps, Copy-Paste Feature Cards, Sections That Fill a Template).
 - Konsep harus terlihat di lebih dari satu bagian, bukan hanya hero dan penutup.
+- **Mobile 375** (bila lingkupnya termasuk mobile): 1-3 baris tentang apa yang ditumpuk ulang, diubah urutannya, dikecilkan, atau diganti bentuknya (navigasi, tabel, kolom). Mobile adalah tata letak lain, bukan desktop yang diperkecil (antislop-layoutmobile).
 Kalau titik fokus, urutan baca, atau bukti visual tiap bagian tidak bisa ditulis, belum siap membangun.
 
 ### 3. Token dan teks
@@ -85,7 +86,7 @@ Bangun seluruh layar sesuai rancangan dalam satu kali kerja, dengan `design-tast
 a. Jalankan satu perintah yang sekaligus mengaudit dan mengambil screenshot:
    `node "$HOME/.claude/skills/ui-craft/run-audit.js" <file-atau-url> --widths 375,1440 --tokens <file token di folder kerja> --lang id|en --shot <folder kerja>/screenshots --out <folder kerja>/screenshots/audit.json`
    Kalau skrip menjawab Playwright tidak ditemukan: JANGAN mencari Playwright sendiri (folder Temp, cache npx, NODE_PATH). Laporkan satu baris perintah pasang yang dicetak skrip, lalu lanjut tanpa audit.
-b. Baca kedua screenshot (`audit-375.png`, `audit-1440.png`) SEKALI. Cek terhadap **Rancangan layar**: apakah titik fokus yang tertulis memang terbaca pertama (uji sipit mata; bandingkan dengan "elemen terkuat" dari audit), urutan baca sesuai, konsep terlihat. Lalu Delivery Gate antislop (Block 1-4) dan daftar periksa akhir antislop-ui.
+b. Baca kedua screenshot (`audit-375.png`, `audit-1440.png`) SEKALI. Cek terhadap **Rancangan layar**: apakah titik fokus yang tertulis memang terbaca pertama (uji sipit mata; bandingkan dengan "elemen terkuat" dari audit), urutan baca sesuai, konsep terlihat. Lalu Delivery Gate antislop (Block 1-4), daftar periksa akhir antislop-ui, dan "Layoutmobile Skill Checklist" pada screenshot 375 (bandingkan dengan rancangan mobile di langkah 2).
 c. Kumpulkan SEMUA temuan (rancangan tidak terwujud, temuan audit tinggi/sedang termasuk `copy-*` dan `token-*`, FAIL antislop, aksesibilitas dari `web-design-guidelines` pada file yang diubah) menjadi SATU daftar, lalu perbaiki semuanya dalam satu putaran.
 d. Jalankan perintah (a) sekali lagi untuk bukti. Baca screenshot lagi hanya bila perbaikan mengubah tata letak.
 e. Maksimal **2 putaran** (jalur cepat: 1). Sisa masalah dilaporkan, bukan diulang terus. Pelanggaran yang disengaja ditulis di DESIGN.md "Pelanggaran disengaja" dengan alasannya.
@@ -93,7 +94,7 @@ e. Maksimal **2 putaran** (jalur cepat: 1). Sisa masalah dilaporkan, bukan diula
 ### 6. Laporan (singkat)
 - Layar yang dibuat/diubah, jalur (cepat/penuh), konsep 1 kalimat, path screenshot terakhir.
 - Audit akhir: tinggi/sedang/rendah, temuan token, kandidat fokus vs fokus rancangan (sama/beda).
-- antislop: satu baris PASS/FAIL per blok Delivery Gate.
+- antislop: satu baris PASS/FAIL per blok Delivery Gate (atau per checklist yang dipakai sebagai gate di jalur cepat / bangun arah), plus satu baris checklist layoutmobile bila 375 termasuk lingkup.
 - Jumlah putaran yang dipakai dan masalah yang belum beres.
 - Tahap A: akhiri dengan "Menunggu pemilik menilai arah" plus 3 kata kesan yang dipakai (tandai bila asumsi). Selain itu, sebut apakah ui-critic perlu (ya bila layar baru atau hierarki berubah; tidak bila jalur cepat).
 - Jangan menjelaskan ulang isi kode.
