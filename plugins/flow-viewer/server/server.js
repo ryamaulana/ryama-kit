@@ -13,6 +13,9 @@ const PUBLIC = path.join(__dirname, 'public');
 fs.mkdirSync(DIR, { recursive: true });
 const LOG_FILE = path.join(DIR, 'events.jsonl');
 const store = require('./store').open(DIR); // riwayat run (SQLite, atau JSON kalau node:sqlite tidak ada)
+const readline = require('readline');
+const { analyze } = require('./tokens'); // token per pemanggilan, cache ditulis ulang, output tool, limit
+const tokenReport = require('./token-report');
 
 const FLOW_CMD = /\/(?:fullstack-dev:)?(build|start|run|backlog|boilerplate|ui-only|fe-only|prd-check|ui-direction)\b[ \t]*([\w-]*)/;
 const norm = (n) => String(n || '').split(':').pop().trim();
@@ -38,9 +41,12 @@ function parseAgentFile(file) {
   const m = /^---\r?\n([\s\S]*?)\r?\n---/.exec(txt);
   if (!m) return null;
   const get = (k) => { const r = new RegExp(`^${k}:[ \\t]*(.*)$`, 'm').exec(m[1]); return r ? r[1].trim().replace(/^["']|["']$/g, '') : ''; };
+  // Daftar YAML bertingkat (`skills:` lalu baris `  - a`): dulu terbaca kosong.
+  const block = (k) => { const r = new RegExp(`^${k}:[ \\t]*\\r?\\n((?:[ \\t]+-[^\\n]*(?:\\n|$))+)`, 'm').exec(m[1]); return r ? r[1].split(/\r?\n/).map((l) => l.replace(/^[ \t]+-[ \t]*/, '').trim().replace(/^["']|["']$/g, '')).filter(Boolean) : []; };
   const name = get('name') || path.basename(file, '.md');
-  const skills = get('skills').replace(/^\[|\]$/g, '').split(',').map((s) => s.trim()).filter(Boolean);
-  return { name, model: get('model'), effort: get('effort'), tools: get('tools'), skills, description: get('description').slice(0, 220) };
+  const sk = get('skills');
+  const skills = sk ? sk.replace(/^\[|\]$/g, '').split(',').map((s) => s.trim()).filter(Boolean) : block('skills');
+  return { name, model: get('model'), effort: get('effort'), tools: get('tools') || block('tools').join(', '), skills, description: get('description').slice(0, 220) };
 }
 function scanAgentDir(dir) {
   if (scannedDirs.has(dir)) return;
@@ -101,9 +107,21 @@ function flushRun() {
     store.save({
       id: state.runId, project: cwdNow || '', flow: state.flow, title: state.title || '', prompt: String(state.prompt || '').slice(0, 600),
       started_at: state.startedAt, updated_at: Date.now(), finished: state.finished ? 1 : 0, tokens_eq: eq, tokens_raw: raw, agents_ran: ran,
-      files: (state.fileList || []).length, state: JSON.stringify(state), convo: JSON.stringify(convo.filter((m) => m.t >= state.startedAt - 1000).slice(-300)),
+      files: (state.fileList || []).length, state: JSON.stringify({ ...state, details: snapDetails() }), convo: JSON.stringify(convo.filter((m) => m.t >= state.startedAt - 1000).slice(-300)),
     });
   } catch (_) { /* riwayat tidak boleh mengganggu viewer */ }
+}
+// Detail per agent ikut disimpan agar run lama bisa dibuka penuh (aktivitas, file, tugas, hasil).
+function snapDetails() {
+  const out = {};
+  for (const [k, d] of Object.entries(details)) {
+    out[k] = {
+      task: d.task, taskDesc: d.taskDesc, result: d.result,
+      events: (d.events || []).slice(-200).map((r) => ({ id: r.id, t: r.t, tool: r.tool, summary: r.summary, status: r.status, ms: r.ms })),
+      files: Object.values(d.files || {}).map((f) => ({ path: f.path, add: f.add, del: f.del, edits: f.edits, created: f.created })),
+    };
+  }
+  return out;
 }
 function persistSoon() { if (!store || persistT) return; persistT = setTimeout(flushRun, 1500); }
 process.on('exit', () => { try { flushRun(); } catch (_) {} });
@@ -127,7 +145,7 @@ function newRun(key) {
     crew: ov.nodes.map((n) => n.id), crewMeta: ov.nodes.map((n) => ({ id: n.id, col: n.col, row: n.row })), crewEdges: ov.edges,
     prompt: state ? state.prompt : '', promptAt: state ? state.promptAt : null,
     main: { status: 'idle', tools: 0, last: '', recent: [], usage: null, model: '' },
-    log: state ? state.log : [], mainSkills: [], skillCalls: [],
+    log: state ? state.log : [], mainSkills: [], skillCalls: [], mainSegs: [],
   };
 }
 
@@ -375,11 +393,12 @@ async function agentUsage(ev, agentId, names) {
   }
   for (const f of cands) {
     const t = await readText(f);
-    if (t) { const u = parseUsage(t, null, names); if (u.turns) return u; }
+    if (t) { const u = parseUsage(t, null, names); if (u.turns) { u.inv = analyze(t); return u; } }
   }
   if (tp && agentId) { // older layout: sidechain messages live inside the main transcript
     const t = await readText(tp);
-    if (t) { const u = parseUsage(t, (o) => o.isSidechain && o.agentId === agentId, names); if (u.turns) return u; }
+    const filter = (o) => o.isSidechain && o.agentId === agentId;
+    if (t) { const u = parseUsage(t, filter, names); if (u.turns) { u.inv = analyze(t, { filter }); return u; } }
   }
   return null;
 }
@@ -395,24 +414,129 @@ async function refreshUsage(key, ev, force) {
       if (!t) return;
       const allNames = [...new Set([...Object.values(state.nodes).flatMap((x) => x.skillsDef || []), 'caveman'])];
       const u = parseUsage(t, (o) => !o.isSidechain, allNames);
+      // Sesi utama bisa melewati beberapa run: token dihitung hanya sejak run ini mulai.
+      const A = analyze(t, { filter: (o) => !o.isSidechain, from: state.startedAt - 1000 });
+      if (A.turns) { Object.assign(u, { in: A.in, out: A.out, cr: A.cr, cc: A.cc, turns: A.turns, ctx: A.ctxLast }); state.main.tokens = slimMain(A); }
       if (u.turns) { state.main.usage = u; state.main.model = u.model; }
     } else {
       const n = state.nodes[key], d = details[key];
       if (!n || !d || !d.agentIds.length) return;
       const sum = { in: 0, out: 0, cr: 0, cc: 0, turns: 0, model: '', ctx: 0, audits: 0, skillEv: {}, imgReads: 0, imgUniq: 0, dupReads: 0 };
       let any = false;
+      const invs = [];
       for (const id of d.agentIds) {
         const u = await agentUsage(ev, id, [...new Set([...(n.skillsDef || []), 'caveman'])]);
         if (!u) continue;
         any = true;
+        if (u.inv) invs.push(slimInv(id, u.inv));
         sum.in += u.in; sum.out += u.out; sum.cr += u.cr; sum.cc += u.cc; sum.turns += u.turns; sum.audits += u.audits; Object.assign(sum.skillEv, u.skillEv); sum.imgReads += u.imgReads; sum.imgUniq += u.imgUniq; sum.dupReads += u.dupReads;
         sum.model = u.model || sum.model; sum.ctx = u.ctx;
       }
-      if (any) n.usage = sum;
+      if (any) { n.usage = sum; n.invocations = invs.sort((a, b) => a.t0 - b.t0); }
     }
     broadcast();
   } catch (_) { /* best effort */ }
 }
+
+// ---------- token per pemanggilan (lihat tokens.js) ----------
+function slimInv(agentId, A) {
+  return { agentId, item: A.item, prompt: A.prompt.slice(0, 120), model: A.model, byModel: A.byModel, turns: A.turns, in: A.in, out: A.out, cr: A.cr, cc: A.cc, raw: A.raw, eq: eqOf(A),
+    ctxFirst: A.ctxFirst, ctxPeak: A.ctxPeak, ctxLast: A.ctxLast, t0: A.t0, t1: A.t1, imgs: A.imgs, coldN: A.cold.length, coldTok: A.coldTok, heavy: A.heavy.slice(0, 5), outTok: A.outTok, tools: A.tools };
+}
+function slimMain(A) {
+  return { byModel: A.byModel, turns: A.turns, raw: A.raw, ctxPeak: A.ctxPeak, ctxLast: A.ctxLast, cold: A.cold, coldTok: A.coldTok, handbacks: A.handbacks, heavy: A.heavy, limits: A.limits.slice(0, 20), outTok: A.outTok };
+}
+function mergeA(list) {
+  if (list.length === 1) return list[0];
+  const M = analyze('');
+  for (const A of list) {
+    for (const k of ['in', 'out', 'cr', 'cc', 'raw', 'turns', 'imgs', 'coldTok']) M[k] += A[k] || 0;
+    M.ctxPeak = Math.max(M.ctxPeak, A.ctxPeak); M.ctxLast = A.ctxLast || M.ctxLast;
+    for (const k of ['byModel', 'outTok', 'tools']) for (const [x, v] of Object.entries(A[k] || {})) M[k][x] = (M[k][x] || 0) + v;
+    M.cold.push(...A.cold); M.heavy.push(...A.heavy); M.limits.push(...A.limits);
+    const h = A.handbacks || {}; M.handbacks = { n: M.handbacks.n + (h.n || 0), avg: 0, max: Math.max(M.handbacks.max, h.max || 0), top: [...M.handbacks.top, ...(h.top || [])], sum: (M.handbacks.sum || 0) + (h.avg || 0) * (h.n || 0) };
+  }
+  M.handbacks.avg = M.handbacks.n ? Math.round(M.handbacks.sum / M.handbacks.n) : 0; delete M.handbacks.sum;
+  M.handbacks.top = M.handbacks.top.sort((a, b) => b.chars - a.chars).slice(0, 5);
+  M.cold = M.cold.sort((a, b) => b.cc - a.cc).slice(0, 20); M.heavy = M.heavy.sort((a, b) => b.tok - a.tok).slice(0, 8);
+  return M;
+}
+const sameDir = (a, b) => { const f = (x) => path.resolve(String(x || '')).toLowerCase(); return !!a && !!b && (f(a) === f(b) || f(a).startsWith(f(b) + path.sep)); };
+
+// Analisis ulang run dari riwayat: path transkrip dan id agent diambil dari events.jsonl dalam rentang waktu run itu.
+async function rescanRun(id) {
+  const row = store && store.get(id);
+  if (!row) throw new Error('run tidak ada');
+  if (state && id === state.runId) throw new Error('run yang sedang berjalan dihitung langsung dari hook');
+  const st = typeof row.state === 'string' ? JSON.parse(row.state) : row.state;
+  const from = row.started_at - 1000, to = (row.updated_at || Date.now()) + 60000;
+  const mains = new Map(), agents = new Map(), segs = [];
+  let open = null;
+  if (fs.existsSync(LOG_FILE)) {
+    const rl = readline.createInterface({ input: fs.createReadStream(LOG_FILE, { encoding: 'utf8' }), crlfDelay: Infinity });
+    for await (const line of rl) {
+      const mt = /^\{"ts":(\d+)/.exec(line);
+      if (!mt) continue;
+      const ts = Number(mt[1]);
+      if (ts < from) continue;
+      if (ts > to) break;
+      let ev; try { ev = JSON.parse(line); } catch (_) { continue; }
+      if (row.project && ev.cwd && !sameDir(ev.cwd, row.project)) continue;
+      const e = ev.hook_event_name || ev.event;
+      const tp = typeof ev.transcript_path === 'string' ? ev.transcript_path : '';
+      if (ev.agent_id && norm(ev.agent_type)) {
+        const prev = agents.get(ev.agent_id);
+        if (!prev || (!prev.ev.agent_transcript_path && ev.agent_transcript_path)) agents.set(ev.agent_id, { type: norm(ev.agent_type), ev: { transcript_path: tp, agent_transcript_path: ev.agent_transcript_path, session_id: ev.session_id } });
+      } else if (tp) {
+        mains.set(tp, true);
+        if (e === 'UserPromptSubmit' && open === null) open = ts;
+        if (e === 'Stop' && open !== null) { segs.push({ s: open, e: ts }); open = null; }
+      }
+    }
+  }
+  const byNode = {};
+  for (const [aid, a] of agents) {
+    const u = await agentUsage(a.ev, aid, []);
+    if (u && u.inv) (byNode[a.type] = byNode[a.type] || []).push(slimInv(aid, u.inv));
+  }
+  for (const [k, invs] of Object.entries(byNode)) { const n = st.nodes[k]; if (n) n.invocations = invs.sort((a, b) => a.t0 - b.t0); }
+  const mainAs = [];
+  for (const tp of mains.keys()) {
+    const t = await readText(tp);
+    if (t) { const A = analyze(t, { filter: (o) => !o.isSidechain, from: row.started_at - 1000, to: row.updated_at || Date.now() }); if (A.turns) mainAs.push(A); }
+  }
+  if (mainAs.length) st.main.tokens = slimMain(mergeA(mainAs));
+  if (segs.length) st.mainSegs = segs;
+  st.tokensScan = { at: Date.now(), agents: agents.size, analysed: Object.values(byNode).reduce((a, x) => a + x.length, 0), sessions: mains.size };
+  store.save({ ...row, state: JSON.stringify(st) });
+  writeTokenFile(row.project);
+  return st.tokensScan;
+}
+
+const parseJ = (x, d) => { if (x && typeof x === 'object') return x; try { return JSON.parse(x); } catch (_) { return d; } };
+function tokenBuild(project, n = 60) {
+  flushRun();
+  const rows = store ? store.list(project, n) : [];
+  const runs = rows.map((r) => { const full = store.get(r.id) || {}; return { ...r, state: parseJ(full.state, {}), convo: parseJ(full.convo, []) }; });
+  return { rows: rows.length, R: tokenReport.build(runs, project) };
+}
+// Salinan markdown untuk dibaca AI di folder proyek: <proyek>/.flow-viewer/laporan-token.md (folder itu meng-ignore dirinya sendiri).
+function writeTokenFile(project) {
+  try {
+    if (!project || !fs.statSync(project).isDirectory()) return;
+    const { rows, R } = tokenBuild(project);
+    if (!rows) return;
+    const dir = path.join(project, '.flow-viewer');
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(path.join(dir, '.gitignore'), '*\n');
+    fs.writeFileSync(path.join(dir, 'laporan-token.md'), tokenReport.markdown(R));
+  } catch (_) { /* laporan tidak boleh mengganggu viewer */ }
+}
+let tokenFileAt = 0;
+function writeTokenFileSoon() { const now = Date.now(); if (now - tokenFileAt < 60000) return; tokenFileAt = now; setTimeout(() => writeTokenFile(cwdNow), 3000); }
+
+const mainOpen = () => { const g = state.mainSegs[state.mainSegs.length - 1]; if (!g || g.e) { state.mainSegs.push({ s: Date.now(), e: null }); if (state.mainSegs.length > 500) state.mainSegs.shift(); } };
+const mainClose = () => { const g = state.mainSegs[state.mainSegs.length - 1]; if (g && !g.e) g.e = Date.now(); };
 
 // Mark the run finished only when the main session is idle AND no agent is still running
 // (background agents keep running after the main session's Stop).
@@ -443,7 +567,7 @@ function handle(ev) {
       if (/^<(agent-message|task-notification|system-reminder)\b/i.test(text)) { // sistem menyuntik pesan (mis. agent latar selesai), bukan ketikan user
         say('notify', 'notifikasi sistem: ' + cap(text.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim(), 200));
         addLog('stop', 'notifikasi agent masuk');
-        state.main.status = 'running'; state.finished = false;
+        state.main.status = 'running'; state.finished = false; mainOpen();
         break;
       }
       const m = FLOW_CMD.exec(text);
@@ -454,7 +578,7 @@ function handle(ev) {
       state.prompt = text.slice(0, 160); state.promptAt = Date.now();
       say('user', String(ev.prompt || ''));
       clearPending();
-      state.main.status = 'running'; state.finished = false;
+      state.main.status = 'running'; state.finished = false; mainOpen();
       addLog('prompt', `prompt: ${text.slice(0, 70)}`);
       break;
     }
@@ -498,10 +622,11 @@ function handle(ev) {
       }
       break;
     case 'Stop':
-      state.main.status = 'idle'; addLog('stop', 'sesi utama selesai giliran'); maybeFinalize();
+      state.main.status = 'idle'; mainClose(); addLog('stop', 'sesi utama selesai giliran'); maybeFinalize();
       if (ev.last_assistant_message) say('claude', ev.last_assistant_message);
       clearPending();
       refreshUsage(MAIN, ev, true);
+      writeTokenFileSoon();
       break;
     case 'PermissionRequest': {
       const txt = `${tool || 'tool'}: ${describe(tool || '', input).replace(/^\w+ ?/, '')}`;
@@ -573,7 +698,7 @@ function detailFor(id) {
   const n = id === MAIN ? null : state.nodes[id];
   return {
     id, title: id === MAIN ? 'Claude (sesi utama)' : id,
-    mainModel: state.main.model || '', node: n ? { role: n.role, desc: n.desc, model: n.model, effort: n.effort, modelCheck: n.modelCheck, modelSrc: n.modelSrc, resolvedModel: n.resolvedModel, toolsAllowed: n.toolsAllowed, skillsDef: n.skillsDef, skills: n.skills, usage: n.usage, status: n.status, count: n.count, ms: n.status === 'running' ? n.ms + (Date.now() - n.startedAt) : n.ms, background: n.background, extra: n.extra } : { role: 'sesi utama (orchestrator)', model: state.main.model, usage: state.main.usage, skills: state.mainSkills, status: state.main.status },
+    mainModel: state.main.model || '', node: n ? { role: n.role, desc: n.desc, model: n.model, effort: n.effort, modelCheck: n.modelCheck, modelSrc: n.modelSrc, resolvedModel: n.resolvedModel, toolsAllowed: n.toolsAllowed, skillsDef: n.skillsDef, skills: n.skills, usage: n.usage, invocations: n.invocations, status: n.status, count: n.count, ms: n.status === 'running' ? n.ms + (Date.now() - n.startedAt) : n.ms, background: n.background, extra: n.extra } : { role: 'sesi utama (orchestrator)', model: state.main.model, usage: state.main.usage, skills: state.mainSkills, status: state.main.status },
     task: d.task, taskDesc: d.taskDesc, result: d.result,
     events: d.events, files: Object.values(d.files),
     usageNote: (n ? n.usage : state.main.usage) ? '' : 'Token belum terbaca. Hook belum mengirim transcript_path, atau file transcript agent ini belum ditemukan (cek ~/.claude/flow-viewer/events.jsonl).',
@@ -652,6 +777,23 @@ const server = http.createServer((req, res) => {
     const esc = (t) => t.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(`<!doctype html><meta charset="utf-8"><meta http-equiv="refresh" content="4"><title>Laporan Flow Viewer</title><body style="font:14px/1.5 ui-monospace,Consolas,monospace;background:#fff;color:#111;padding:16px"><pre style="white-space:pre-wrap;margin:0">${esc(report())}</pre></body>`);
+    return;
+  }
+  if (url === '/report/tokens.md' || url === '/report/tokens.json') {
+    const q = new URLSearchParams(req.url.split('?')[1] || '');
+    const project = q.get('project') || cwdNow;
+    try {
+      const { rows, R } = tokenBuild(project, Math.min(200, Number(q.get('n')) || 60));
+      if (rows && q.get('write') !== '0') writeTokenFile(project);
+      if (url.endsWith('.json')) { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(R)); }
+      else { res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' }); res.end(tokenReport.markdown(R)); }
+    } catch (err) { res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' }); res.end('laporan gagal: ' + err.message); }
+    return;
+  }
+  if (req.method === 'POST' && url === '/history/rescan') {
+    const id = Number(new URLSearchParams(req.url.split('?')[1] || '').get('id'));
+    rescanRun(id).then((r) => { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: true, ...r })); })
+      .catch((err) => { res.writeHead(400, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: false, error: err.message })); });
     return;
   }
   if (url === '/history') {

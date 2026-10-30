@@ -9,7 +9,8 @@ import { initTheme } from './theme.js';
 import { prefs, alertNew, askDesktop, clearTitle } from './notify.js';
 import { loadProjects, projectName } from './projects.js';
 import { attentionItems, needsInput, agentLabel, phase, MAIN } from './model.js';
-import { fmtDur } from './format.js';
+import { fmtDur, fmtClock, fmtAgo } from './format.js';
+import { mdToHtml } from './md.js';
 
 let S = { nodes: {}, crew: [], crewMeta: [], expected: [], edges: [], log: [], fileList: [], main: {} };
 const ctx = { key: null, selId: null, agentTab: 'ringkasan', convo: [], detail: {}, tokOpen: new Set(), history: { rows: [], all: false, liveId: 0 }, cmp: new Set() };
@@ -18,15 +19,25 @@ const seen = new Set(); let first = true, convoN = -1, detailAt = 0, projects = 
 const cur = () => viewing || S;
 function renderAll() {
   const V = cur();
-  renderHeader(V); renderGraph(V, ctx.selId); renderRail(V, ctx);
+  renderHeader(V, viewing ? (V.updatedAt || Date.now()) : Date.now()); renderGraph(V, ctx.selId); renderRail(V, ctx);
   const needs = renderPanel(V, ctx);
-  if (needs === 'convo' && V.convoN !== convoN) loadConvo();
+  if (!viewing && needs === 'convo' && V.convoN !== convoN) loadConvo();
   if (needs === 'detail') loadDetail();
   $('#pname').textContent = projectName(V);
 }
 async function loadConvo() { try { const d = await getJSON('/detail', { id: '__convo' }); convoN = S.convoN; ctx.convo = d.convo || []; renderAll(); } catch (_) { /* abaikan */ } }
+// Detail agent dari snapshot riwayat (tanpa server). Run lama tanpa `details` jatuh ke `recent` dan fileList.
+function histDetail(id) {
+  const V = viewing, d = (V.details || {})[id], n = id === MAIN ? null : V.nodes[id];
+  const node = n ? { ...n } : { role: 'sesi utama (orchestrator)', model: (V.main || {}).model, usage: (V.main || {}).usage, skills: V.mainSkills, status: (V.main || {}).status };
+  const files = d ? d.files : (V.fileList || []).filter((f) => f.agent === id || (id === MAIN && f.agent === 'Claude'));
+  const events = d ? d.events : ((n || V.main || {}).recent || []).slice().reverse().map((r) => { const [tool, ...rest] = String(r.text || '').split(' '); return { t: r.t, tool, summary: rest.join(' '), status: 'ok' }; });
+  const result = d && d.result ? d.result : [...(ctx.convo || [])].reverse().find((m) => m.kind === 'agent' && m.agent === id)?.text || '';
+  return { node, events, files, task: d ? d.task : '', result, usageNote: d ? '' : 'Run ini disimpan sebelum detail per agent ikut tersimpan: aktivitas hanya beberapa kejadian terakhir.' };
+}
 async function loadDetail(force) {
   const id = ctx.selId; if (!id) return;
+  if (viewing) { if (!ctx.detail[id]) { ctx.detail[id] = histDetail(id); renderAll(); } return; }
   if (!force && ctx.detail[id] && Date.now() - detailAt < 1500) return;
   detailAt = Date.now();
   try { ctx.detail[id] = await getJSON('/detail', { id }); renderAll(); } catch (_) { ctx.detail[id] = { node: {}, events: [], files: [], usageNote: 'Detail tidak tersedia.' }; renderAll(); }
@@ -43,10 +54,30 @@ function checkAlerts(next) {
 }
 
 function onState(next) {
-  if (next.runId !== S.runId && S.runId) { ctx.detail = {}; ctx.convo = []; convoN = -1; resetView(); seen.clear(); first = true; }
+  if (next.runId !== S.runId && S.runId && !viewing) { ctx.detail = {}; ctx.convo = []; convoN = -1; resetView(); seen.clear(); first = true; }
   checkAlerts(next); S = next;
-  if (!viewing) renderAll();
+  if (viewing) return;
+  renderAll();
   if (ctx.key === 'agent' || ctx.selId) loadDetail();
+}
+
+// ---- Mode riwayat: run lama dimuat ke kanvas dan semua panel, hanya baca.
+async function enterHist(id) {
+  let r; try { r = await getJSON('/history/get', { id }); } catch (_) { return; }
+  if (!r || !r.state) return;
+  viewing = { ...r.state, __hist: { id: r.id, project: r.project }, convoN: (r.convo || []).length };
+  ctx.convo = r.convo || []; ctx.detail = {}; ctx.selId = null; ctx.key = 'chat';
+  const bar = $('#histbar'), V = viewing;
+  bar.innerHTML = html`<span class="hb-t"><b>Melihat riwayat</b> · ${fmtClock(V.startedAt)} (${fmtAgo(V.startedAt)}) · ${V.title || V.flow || ''}${V.prompt ? ' · “' + String(V.prompt).slice(0, 80) + '”' : ''} · hanya baca${V.finished ? '' : ' · run tidak ditutup, status terakhir dibekukan'}</span><button class="btn" type="button" id="hsum">Ringkasan</button><button class="btn pri" type="button" id="hback">Kembali ke live</button>`.s;
+  bar.hidden = false; document.body.classList.add('hist');
+  $('#hsum').onclick = () => openSummary(viewing, 'Ringkasan run');
+  $('#hback').onclick = exitHist;
+  resetView(); renderAll(); setTimeout(refit, 230);
+}
+function exitHist() {
+  viewing = null; ctx.detail = {}; ctx.convo = []; convoN = -1; ctx.selId = null;
+  $('#histbar').hidden = true; document.body.classList.remove('hist');
+  resetView(); renderAll(); setTimeout(refit, 230);
 }
 
 function openPanel(k) {
@@ -57,7 +88,7 @@ function openPanel(k) {
 function selectAgent(id) {
   ctx.selId = id; ctx.key = 'agent'; ctx.agentTab = 'ringkasan'; renderAll(); loadDetail(true);
 }
-const closeModal = () => { $('#modal').classList.remove('on'); viewing = null; renderAll(); };
+const closeModal = () => { $('#modal').classList.remove('on'); $('#mc').classList.remove('wide'); renderAll(); };
 function openSummary(state, title) { $('#mc').innerHTML = summaryHtml(state, title).s; $('#modal').classList.add('on'); }
 function flash(sel) { const el = $(sel); if (!el) return; el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); }
 
@@ -83,7 +114,27 @@ function init() {
   on($('#pi'), 'change', '[data-cmp]', (e, el) => { const id = Number(el.dataset.cmp); if (el.checked) { if (ctx.cmp.size >= 2) ctx.cmp.delete(ctx.cmp.values().next().value); ctx.cmp.add(id); } else ctx.cmp.delete(id); renderAll(); });
   on($('#pi'), 'click', '[data-act=hall]', () => { ctx.history.all = !ctx.history.all; loadHistory(); });
   on($('#pi'), 'click', '[data-act=hopen]', async (e, b) => {
-    try { const r = await getJSON('/history/get', { id: b.dataset.id }); viewing = null; openSummary(r.state, 'Ringkasan run'); } catch (_) { /* abaikan */ }
+    if (Number(b.dataset.id) === ctx.history.liveId) { if (viewing) exitHist(); return; }
+    enterHist(b.dataset.id);
+  });
+  // Laporan token proyek (markdown yang sama dengan file .flow-viewer/laporan-token.md untuk AI).
+  on($('#pi'), 'click', '[data-act=trep]', async (e, b) => {
+    const project = b.dataset.project || '';
+    let md = '';
+    try { const r = await fetch('/report/tokens.md' + (project ? '?project=' + encodeURIComponent(project) : ''), { cache: 'no-store' }); md = await r.text(); } catch (_) { md = 'Laporan tidak tersedia.'; }
+    $('#mc').classList.add('wide');
+    $('#mc').innerHTML = mdToHtml(md) + '<div class="chs" style="margin-top:14px"><button class="btn pri" type="button" data-act="mclose">Tutup</button></div>';
+    $('#modal').classList.add('on');
+  });
+  on($('#pi'), 'click', '[data-act=hscan]', async (e, b) => {
+    const id = b.dataset.id; ctx.history.scan = ctx.history.scan || {};
+    ctx.history.scan[id] = 'Menganalisis…'; renderAll();
+    try {
+      const r = await fetch('/history/rescan?id=' + id, { method: 'POST' }).then((x) => x.json());
+      ctx.history.scan[id] = r.ok ? `${r.analysed}/${r.agents} agent ✓` : 'Gagal';
+      if (!r.ok) console.warn('rescan', r.error);
+    } catch (_) { ctx.history.scan[id] = 'Gagal'; }
+    renderAll();
   });
   on($('#mc'), 'click', '[data-act=mclose]', closeModal);
   $('#modal').addEventListener('click', (e) => { if (e.target.id === 'modal') closeModal(); });
@@ -121,6 +172,7 @@ function init() {
     if ($('#modal').classList.contains('on')) closeModal();
     else if (!$('#pmenu').hidden || $('#pop').classList.contains('on')) hideMenu();
     else if (ctx.key) openPanel(ctx.key);
+    else if (viewing) exitHist();
   });
   setInterval(() => { if (!viewing && phase(S) === 'running') { renderHeader(S); renderGraph(S, ctx.selId); } }, 1000);
   renderAll();

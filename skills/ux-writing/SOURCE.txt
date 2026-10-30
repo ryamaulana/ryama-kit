@@ -1,1 +1,1 @@
-Sumber: https://github.com/content-designer/ux-writing-skill (MIT, v1.6.0). Disalin apa adanya tanpa ubahan. Aturan khusus kit ini ada di skills/ux-writing-id dan menang bila bertentangan.
+Sumber: https://github.com/content-designer/ux-writing-skill (MIT, v1.6.0). Disalin apa adanya tanpa ubahan. Aturan khusus kit ini ada di skills/ux-writing-id dan menang bila bertentangan. Satu-satunya ubahan (1.9.2): baris `description` di frontmatter dipersempit agar tidak terpicu otomatis di sesi utama.

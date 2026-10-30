@@ -21,6 +21,8 @@ Division of labor:
 
 Rules:
 - If `docs/DESIGN.md` exists, consume its tokens from `docs/design-tokens.css` (import or copy it into the app's style entry, do not redefine values); never hardcode visual values.
+- Screen components built by `ui-designer` (presentational, with a "Kontrak komponen" table in its report): wire data, state, routing, and API into them through their props and events. Do not change their markup, classes, or styles. If wiring needs a visual change (new prop variant, new state look), stop and report it as a `ui-designer` item instead of editing the component.
+- Import request/response types from the shared contract module named in `docs/ARCHITECTURE.md`; do not redeclare them.
 - If the user said to skip design (boilerplate): scaffold plain, semantic, unstyled structure plus an empty tokens file ready for `ui-designer`. No visual opinions.
 - Use API contracts exactly as written; if a contract is missing or wrong, report it, do not guess.
 - Implement every state in the PRD (empty/loading/error/success).

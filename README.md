@@ -66,11 +66,11 @@ Dokumen kerja per project ada di `docs/`: PRD.md, ARCHITECTURE.md, TASKS.md, DES
 | architect | ARCHITECTURE.md (+ threat model) + KEPUTUSAN.md untuk pemilik; TASKS.md hanya bila tanpa backlog | opus |
 | backlog | backlog berdependensi (docs/backlog.json), triase ide dan bug terhadap PRD | sonnet |
 | ui-designer (ui-designer-kit) | konsep -> rancangan layar -> token -> bangun sekali -> cek sekali; jalur cepat untuk edit kecil | opus |
-| fe | wiring, state, API, scaffold (bukan visual) | sonnet |
+| fe | wiring, state, API, scaffold; menyambung ke komponen tampilan buatan ui-designer (bukan visual) | sonnet |
 | be | API, DB, auth, logic | opus |
 | ui-critic | menilai hasil terhadap konsep dan rancangan layar (bukan hanya token), satu batch perbaikan; hanya untuk layar baru/ubah tata letak | opus |
 | cyber | review keamanan read-only | sonnet |
-| qa | acceptance criteria -> tes Playwright | haiku |
+| qa | acceptance criteria -> tes Playwright | sonnet |
 
 Command (scope): `/fullstack-dev:build <all|boilerplate|ui-only|fe-only|be-only|review>`,
 pintasan `/fullstack-dev:boilerplate`, `:ui-only`, `:fe-only`, `/fullstack-dev:prd-check`, dan

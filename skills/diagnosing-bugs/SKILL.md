@@ -1,6 +1,6 @@
 ---
 name: diagnosing-bugs
-description: Diagnosis loop for hard bugs and performance regressions. Use when the user says "diagnose"/"debug this", or reports something broken/throwing/failing/slow.
+description: "Diagnosis loop for hard bugs and performance regressions. Loaded by the be and fe agents for bug, retry, or unexplained failing-test items; in the main session only when the user explicitly asks to diagnose or debug."
 ---
 
 # Diagnosing Bugs

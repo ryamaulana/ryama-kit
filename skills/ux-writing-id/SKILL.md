@@ -1,6 +1,6 @@
 ---
 name: ux-writing-id
-description: Tambahan untuk skill ux-writing pada UI berbahasa Indonesia - nada "kamu", batas kata yang diukur audit, larangan slogan/rima dan klaim di luar PRD. Menang bila bertentangan dengan ux-writing. Dipakai ui-designer, ui-critic, dan ux hanya bila bahasa UI Indonesia (bahasa Inggris: ux-writing-en).
+description: 'Tambahan untuk skill ux-writing pada UI berbahasa Indonesia - nada "kamu", batas kata yang diukur audit, larangan slogan/rima dan klaim di luar PRD. Menang bila bertentangan dengan ux-writing. Dipakai ui-designer, ui-critic, dan ux hanya bila bahasa UI Indonesia (bahasa Inggris: ux-writing-en).'
 ---
 
 # UX writing Indonesia (tambahan, menang atas `ux-writing`)

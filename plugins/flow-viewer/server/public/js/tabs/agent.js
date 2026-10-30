@@ -17,11 +17,16 @@ export function view(S, ctx) {
   const d = ctx.detail[id];
   const m = metaOf(id, S), tab = ctx.agentTab || 'ringkasan';
   const head = html`<div class="chs" style="margin:6px 0 0"><span class="ch ${st === 'done' ? 'ok' : st === 'running' ? 'acc' : st === 'failed' ? 'bad' : st === 'input' ? 'w' : ''}">${STATUS_TEXT[st]}</span>${d && d.node && d.node.model ? html`<span class="ch m">${d.node.model}</span>` : ''}</div>
-    <div class="tabs" id="agtabs">${[['ringkasan', 'Ringkasan'], ['aktivitas', 'Aktivitas'], ['files', 'File'], ['hasil', 'Hasil']].map(([k, l]) => html`<button type="button" data-tab="${k}" class="${tab === k ? 'on' : ''}">${l}</button>`)}</div>`;
+    <div class="tabs" id="agtabs">${[['ringkasan', 'Ringkasan'], ['panggil', 'Pemanggilan'], ['aktivitas', 'Aktivitas'], ['files', 'File'], ['hasil', 'Hasil']].map(([k, l]) => html`<button type="button" data-tab="${k}" class="${tab === k ? 'on' : ''}">${l}</button>`)}</div>`;
   if (!d) return { title: m.label, sub: m.role || ROLE[id] || '', body: html`${head}<div class="sub">Memuat detail…</div>`, needs: 'detail' };
   const n = d.node || {}, u = n.usage;
   let body;
-  if (tab === 'aktivitas') {
+  if (tab === 'panggil') {
+    const inv = (n.invocations || []).slice().sort((a, b) => b.raw - a.raw);
+    body = inv.length ? html`<div class="sub">Tiap baris satu pemanggilan agent ini, termahal dulu. Biaya ≈ giliran × konteks.</div>${inv.map((v) => html`<div class="box"><div class="kv"><span><b>${v.item || '(tanpa item)'}</b></span><b>${fmtTok(v.raw)} mentah · ${fmtTok(v.eq)} setara</b></div>
+      <div class="d2">${v.model || '—'} · ${v.turns} giliran · konteks ${fmtTok(v.ctxFirst)} → ${fmtTok(v.ctxPeak)}${v.imgs ? ` · ${v.imgs} gambar` : ''}${v.coldTok ? ` · cache tulis ulang ${fmtTok(v.coldTok)}` : ''}${v.t0 ? ' · ' + fmtClock(v.t0) : ''}</div>
+      ${(v.heavy || []).slice(0, 3).map((h) => html`<div class="d2 mono">↳ ${h.tool} ${h.what} · ~${fmtTok(h.tok)}</div>`)}</div>`)}` : html`<div class="sub">Belum ada data per pemanggilan. Untuk run lama: Riwayat → Analisis.</div>`;
+  } else if (tab === 'aktivitas') {
     const ev = (d.events || []).slice().reverse();
     body = ev.length ? html`${ev.map((e) => html`<div class="row rh" title="${e.summary}"><i class="dt" style="background:${e.status === 'error' ? 'var(--bad)' : e.status === 'pending' ? 'var(--acc)' : 'var(--ok)'}"></i><span class="p mono">${e.tool} · ${e.summary}</span><span class="r">${fmtClock(e.t)}${e.ms != null ? ' · ' + fmtDur(e.ms) : ''}</span></div>`)}` : html`<div class="sub">Belum ada aktivitas.</div>`;
   } else if (tab === 'files') {

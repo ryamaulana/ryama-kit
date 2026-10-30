@@ -28,6 +28,15 @@ DESIGN.md dan file token selalu ditulis di folder kerja tugas ini:
 - selain itu: `docs/DESIGN.md` + `docs/design-tokens.css`.
 Kalau `docs/DESIGN.md` milik proyek lain atau dilarang diubah, itu tanda kamu di sub-proyek: tulis di subfolder, jangan melewati. Di seluruh file ini, "DESIGN.md" dan "design-tokens.css" berarti file di folder kerja.
 
+## Layar di aplikasi (setelah boilerplate ada)
+Bila proyek sudah punya kode aplikasi (`package.json` dengan framework, atau item backlog menyebut folder komponen dari `docs/ARCHITECTURE.md`), layar dibangun sebagai **komponen tampilan** di framework itu, bukan HTML statis:
+- Mockup Approved di `docs/mockups/` adalah rancangannya. Memporting layar yang sudah punya mockup = jalur cepat (tata letak sudah diputuskan); layar tanpa mockup = jalur penuh.
+- Token: `docs/design-tokens.css` diimpor sekali di entry gaya aplikasi; komponen hanya memakai `var(--...)` atau kelas yang memetakan token. Tidak ada nilai lepas.
+- Komponen menerima data lewat props dan memanggil aksi lewat event/callback. Tidak ada fetch, state server, routing, atau validasi bisnis; itu milik `fe`. Untuk dicek, pakai data contoh realistis dari PRD (fixture di sebelah komponen atau halaman preview), termasuk varian state kosong, memuat, dan galat dari `docs/UX.md`.
+- Letak file mengikuti `docs/ARCHITECTURE.md` (folder komponen tampilan). Jangan menyentuh container, hook data, atau route milik `fe`.
+- Audit langkah 5 dijalankan pada halaman preview atau dev server, bukan file mockup.
+- Laporan ditambah **Kontrak komponen**: komponen | props (nama: tipe) | event | state yang didukung. `fe` menyambung berdasarkan tabel ini.
+
 ## Mode khusus (dari `/fullstack-dev:ui-direction`)
 - `konsep-3`: tulis TIGA arah (langkah 1-3 tanpa membangun) ke `docs/mockups/arah-a|b|c/DESIGN.md` + `tokens.css`. Kamu yang menentukan perbedaannya (minimal empat dari enam aspek: struktur layout, pasangan huruf, suhu warna, kepadatan, pendekatan gambar/grafis, bentuk). TIAP arah menjawab SEMUA kesan pemilik; jangan membagi kesan per arah. Muat antislop sekali untuk ketiganya. Tidak ada HTML, audit, atau screenshot.
 - `bangun arah X`: baca `docs/mockups/arah-X/DESIGN.md`; lewati langkah 1-3 bila konsep, rancangan, dan token sudah ada (kalau kurang, lengkapi dulu); muat `antislop-ui` saja (desktop, tanpa core); lanjut langkah 4-6 dengan "UI Skill Checklist" di ujung antislop-ui sebagai gate pengganti Delivery Gate. Delivery Gate penuh dan `antislop-layoutmobile` dipakai saat arah terpilih dilengkapi (layar b + 375, jalur penuh).
@@ -103,6 +112,8 @@ e. Maksimal **2 putaran** (jalur cepat: 1). Sisa masalah dilaporkan, bukan diula
 - Jumlah giliran adalah biaya terbesar: setiap giliran membaca ulang seluruh konteks. Jangan edit-screenshot-edit per elemen; kumpulkan perbaikan lalu kerjakan sekaligus.
 - Jangan membaca ulang screenshot, file referensi, atau file library yang sudah dibaca, kecuali isinya berubah.
 - Screenshot hanya layar yang diubah, hanya lewat perintah audit di langkah 5.
+- Gambar yang sudah dibaca tetap di konteks dan ikut dibaca ulang di setiap giliran berikutnya. Baca screenshot paling akhir yang kamu butuhkan, bukan di awal pekerjaan; perbaikan yang tidak mengubah tata letak dibuktikan dengan angka audit (teks), bukan dengan membuka PNG lagi.
+- Paket backlog ber-`model=sonnet` (porting mockup Approved, item perbaikan, jalur cepat): ikuti rancangan dan perbaikan yang sudah ada apa adanya; jangan memulai konsep atau arah baru.
 
 ## Larangan
 - Jangan pakai gradien ungu-biru generik, emoji sebagai ikon, atau kartu identik berjejer tanpa hierarki, kecuali referensi pemilik memang begitu.

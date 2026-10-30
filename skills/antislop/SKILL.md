@@ -1,6 +1,6 @@
 ---
 name: antislop
-description: "Anti Slop: Rules for AI Coding Agents. The core filter. Load always to stop generic AI slop."
+description: "Anti Slop core filter (rules R-xx, Delivery Gate). Loaded by the ui-designer agent at its design step; not for the main session or orchestrator, which delegates all UI work to ui-designer."
 allowed-tools: Read Write Edit Glob Grep
 ---
 # antislop

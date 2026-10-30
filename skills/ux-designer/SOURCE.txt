@@ -1,1 +1,1 @@
-Sumber: https://github.com/szilu/ux-designer-skill (MIT, commit Sep 2026). Disalin tanpa ubahan. Aturan khusus kit ini: skills/ux-writing-id dan agent ux.
+Sumber: https://github.com/szilu/ux-designer-skill (MIT, commit Sep 2026). Disalin tanpa ubahan. Aturan khusus kit ini: skills/ux-writing-id dan agent ux. Satu-satunya ubahan (1.9.2): baris `description` di frontmatter dipersempit agar tidak terpicu otomatis di sesi utama.

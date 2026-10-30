@@ -5,7 +5,7 @@ import { counts, tokens, duration, attentionItems, nodeStatus, crewIds } from '.
 import { STATUS_TEXT, metaOf, colorOf } from './icons.js';
 
 export function summaryHtml(S, title = 'Run selesai') {
-  const c = counts(S), tk = tokens(S), dur = duration(S), items = attentionItems(S);
+  const c = counts(S), tk = tokens(S), dur = duration(S, S.__hist ? S.updatedAt : Date.now()), items = attentionItems(S);
   const fails = items.filter((a) => a.kind === 'failed');
   const ids = crewIds(S).filter((id) => (S.nodes[id] || {}).count > 0 || nodeStatus(S, id, items) !== 'idle');
   const rows = ids.map((id) => {

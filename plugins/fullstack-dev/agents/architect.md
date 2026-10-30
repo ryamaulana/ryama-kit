@@ -19,6 +19,10 @@ Produce `docs/ARCHITECTURE.md`:
 - API contract per endpoint: method, path, request, response, error codes, auth.
 - Key flows (auth, main user flows) as short numbered sequences.
 - Security-relevant surfaces (auth, uploads, payments, external calls) tagged `[SEC]` so `cyber` can review them.
+- **Shared contract**: name one module that holds the request/response schemas (TypeScript stack: zod schemas per endpoint, types inferred from them; other stacks: `openapi.yaml`). `be` validates with it, `fe` imports its types. The prose contract above and the schema must say the same; in code the schema wins.
+- **Component placement**: the folder for presentational screen components (owned by `ui-designer`) and the folder for containers, hooks, and routes (owned by `fe`).
+- **Run locally**: required tools and versions, env var names (no values), DB setup + migrate + seed command, dev server command and port, test command. `be` and `fe` keep these working; `qa` uses them.
+- **Deploy**: target host from `docs/KEPUTUSAN.md` and the steps in 3-5 lines. No deploy automation unless the PRD asks for it.
 
 Also add a short `Threat model` section to `docs/ARCHITECTURE.md` before any build (use the matching sections of `security-checklists` as the source of controls, so `be` and `cyber` check against the same list): assets worth protecting, who could attack them, top threats, and the control chosen for each (auth model, session handling, input validation, secrets, uploads, rate limits).
 

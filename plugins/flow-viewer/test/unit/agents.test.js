@@ -8,7 +8,7 @@ const agents = require('../../server/agents');
 test('be.md dari plugin ryama-kit terbaca dengan 5 skill (daftar YAML)', () => {
   const be = agents.catalogFor(null).defs.be;
   assert.deepStrictEqual(be.skills, ['security-checklists', 'project-context', 'ponytail', 'codebase-design', 'tdd']);
-  assert.strictEqual(be.model, 'opus');
+  assert.strictEqual(be.model, 'sonnet'); // hemat token: opus lewat field model item backlog
 });
 
 test('flows.json.agents memuat tampilan (label, peran, ikon) yang dulu ada di index.html', () => {

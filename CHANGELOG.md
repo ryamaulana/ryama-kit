@@ -1,5 +1,62 @@
 # Changelog
 
+## Belum dirilis (fullstack-dev, ui-designer-kit, flow-viewer)
+
+### Hemat token (fullstack-dev, ui-designer-kit)
+Dasar: run TryoutHub (29-30 Okt): 166 juta token mentah untuk 33/147 item, limit tercapai dua kali. 94% dari empat agent opus: be 31% (621 giliran), ui-designer 28% (59 gambar, konteks 189k), orkestrator 26% (satu sesi untuk 6 batch, konteks 254k), architect 9% (5 putaran sinkron ulang).
+- Orkestrator: satu sesi = satu batch. `run` berakhir dengan laporan maks 15 baris, satu pertanyaan commit lokal, lalu `/clear` + `/fullstack-dev:run`. Hook session-start ikut mengingatkan. Bukti dicek dengan output pendek (`ls`, tes paket `| tail`), bukan suite penuh atau screenshot.
+- backlog.js: field `model` per item (validasi opus/sonnet/haiku), tampil di paket (`model=` + instruksi parameter Agent), `ready`, dan BACKLOG.md. Perintah baru `set <id,...> --model|--size` untuk item yang belum jalan. Paket item non-keputusan membawa aturan "Hemat token" (perintah digabung dan dipotong, baca per bagian, laporan maks 15 baris).
+- be: bawaan sonnet; opus lewat `model` item untuk logika sulit. TDD per seam (tes satu seam sekaligus, lalu implementasi), bukan satu tes satu implementasi.
+- ui-designer: `model: sonnet` untuk porting mockup Approved, perbaikan kritikus, dan jalur cepat; screenshot dibaca paling akhir, perbaikan non-layout dibuktikan dengan angka audit.
+- agent backlog: mode "Atur model" untuk backlog lama.
+- prd-review: temuan baru untuk format data masuk/keluar (file contoh asli wajib, tanpa itu = Tinggi) dan batas angka.
+
+### Log token untuk AI (flow-viewer)
+- `server/tokens.js` (baru): analisis transkrip per pemanggilan agent: ID item backlog (dari `ITEM <id>` di prompt), model, giliran, konteks awal/puncak/akhir, token per model, output tool terbesar yang masuk konteks (perkiraan karakter/4, gambar ~1.600), cache yang ditulis ulang (>= 20k dan >= 60% konteks giliran itu; biasanya setelah sesi menganggur), laporan subagent yang masuk ke orkestrator, dan pesan limit.
+- Tiap agent menyimpan `invocations` (satu baris per pemanggilan); sesi utama menyimpan `main.tokens`. Token sesi utama sekarang dihitung sejak run mulai (dulu satu sesi yang melewati beberapa run dihitung penuh di tiap run).
+- Waktu sesi utama aktif dicatat (`mainSegs`) untuk memisahkan kerja, menunggu pemilik, dan limit.
+- `server/token-report.js` (baru) + `GET /report/tokens.md|.json?project=`: laporan per proyek lintas run (per run, per agent, pemanggilan termahal per item, orkestrator, output tool terbesar, waktu kerja/nunggu/limit, setara per item). Salinannya ditulis ke `<proyek>/.flow-viewer/laporan-token.md` (folder meng-ignore dirinya sendiri), diperbarui maksimal tiap menit saat sesi utama berhenti.
+- `POST /history/rescan?id=`: analisis ulang run lama dari `events.jsonl` (path transkrip dan id agent dalam rentang waktu run). Tombol "Analisis" dan "Laporan" di tiap baris Riwayat; tab "Pemanggilan" di panel agent.
+- Perbaikan: `server.js` membaca `skills:`/`tools:` berbentuk daftar YAML bertingkat (dulu kosong untuk be, qa, cyber). Modul `agents.js` sudah benar, tetapi server memakai pembacanya sendiri.
+- Tes: `test/unit/tokens.test.js` (5 kasus); tes agents menyesuaikan be = sonnet.
+
+### Riwayat run dibuka penuh lagi
+- Tombol "Buka" di Riwayat memuat run lama ke kanvas dan semua panel (Chat, Backlog, File, Skill, Token, Agent, Log), seperti mode "Lihat" di 1.7.1. Bar "Melihat riwayat · hanya baca" berisi tombol Ringkasan dan Kembali ke live; Esc juga kembali ke live. Dulu v2 hanya membuka modal ringkasan.
+- Server menyimpan detail per agent ke snapshot riwayat (tugas, hasil, 200 aktivitas terakhir, file). Run yang tersimpan sebelum perubahan ini hanya punya beberapa aktivitas terakhir per agent.
+- Durasi run yang tidak ditutup dihitung sampai update terakhir, bukan sampai sekarang (dulu ringkasan menulis 21j 55m untuk run 17j 11m).
+
+## 1.10.0 - 2026-10-29 (ui-designer-kit, fullstack-dev)
+
+Persiapan masuk tahap build. Dasar: cross-check; bagian build (architect, backlog, be, fe, qa, cyber) belum pernah dijalankan di proyek mana pun.
+
+### Jembatan mockup -> aplikasi
+- ui-designer: bagian baru "Layar di aplikasi". Setelah boilerplate ada, layar dibangun sebagai komponen tampilan di framework aplikasi (porting mockup Approved = jalur cepat), token diimpor sekali, data lewat props, fixture untuk state kosong/memuat/galat, audit di halaman preview. Laporan menambah tabel "Kontrak komponen".
+- fe: menyambung data, state, routing ke komponen itu tanpa mengubah markup/kelas/gaya; perubahan visual jadi item ui-designer.
+- backlog: urutan dalam irisan = be + ui-designer (paralel) -> fe -> ui-critic -> qa.
+- build `fe-only`: urutan ui-designer dulu, lalu fe.
+
+### Kontrak dan lingkungan
+- architect: modul kontrak bersama (zod per endpoint untuk TypeScript, `openapi.yaml` untuk lainnya), letak folder komponen tampilan vs container, bagian "Run locally" (tool, env var, migrate + seed, dev server, tes), dan "Deploy" ringkas.
+- be: validasi dengan modul kontrak; perintah run lokal dan seed data realistis tetap jalan.
+- fe: tipe diimpor dari modul kontrak.
+
+### qa
+- Model haiku -> sonnet.
+- playwright-review ditulis ulang: locator berbasis peran/label, assertion web-first tanpa sleep, data tes mandiri + reset DB, storageState untuk login, webServer dari "Run locally", bukti galat utuh, flaky = gagal.
+- App dijalankan dengan perintah "Run locally".
+
+### Hook
+- post-edit: pengingat UI hanya untuk sesi utama dan sekali per sesi; pengingat keamanan sekali per file dan tidak untuk cyber. Dulu muncul di setiap edit, termasuk di agent fe/ui-designer.
+- session-start: PRD dibaca dari `docs/PROJECT.md` (tidak dikunci `docs/PRD.md`); di folder yang bukan proyek kit hanya satu baris.
+- `boilerplate` dan `ui-only`: PRD dicari lewat project-context.
+
+Cadangan file 1.9.2: `D:\01_Workspace\_diag\backup-1.9.2\`.
+
+## 1.9.2 - 2026-10-29 (skills)
+
+- Description dipersempit pada antislop, antislop-ui, antislop-layoutmobile, ponytail, ux-designer, ux-writing, diagnosing-bugs: menyebut agent pemakainya dan bahwa sesi utama/orkestrator mendelegasikan, bukan memuat sendiri. Mencegah orkestrator terpicu otomatis memuat skill desain lalu ikut mendesain. Isi skill tidak diubah; dicatat di SOURCE.txt masing-masing.
+- ux-writing-id: description dibungkus tanda kutip. Teks "(bahasa Inggris: ux-writing-en)" membuat frontmatter tidak valid YAML, sehingga skill ini berisiko gagal terbaca.
+
 ## 1.9.1 - 2026-10-29 (ui-designer-kit, fullstack-dev)
 
 Dasar: cross-check skill terhadap agent dan repo sumber (tanpa uji jalan). Masalah utama: agent fullstack tidak punya tool `Skill` sehingga instruksi "muat skill X" tidak bisa dijalankan; jalur cepat ui-designer memuat antislop-ui tanpa core padahal Delivery Gate ada di core.

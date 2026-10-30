@@ -1,6 +1,6 @@
 ---
 name: ux-designer
-description: UX/UI design guidance for building, reviewing, and critiquing interfaces and frontend code. Use when designing screens or components, auditing usability or accessibility (WCAG 2.2, EAA), writing microcopy, or designing forms, navigation, search, tables, dashboards, onboarding, notifications, real-time collaboration, canvas/whiteboard apps, AI/chat interfaces, i18n/RTL, voice, design systems, or barcode/QR scanning and display.
+description: "UX decision guidance (flows, modal vs panel vs page, navigation, forms, states, accessibility, plus reference files per topic). Preloaded by the ux agent; the main session and orchestrator delegate UX and UI work instead of loading this."
 ---
 
 # UX Designer

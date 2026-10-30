@@ -1,6 +1,6 @@
 ---
 name: antislop-ui
-description: "UI and visual skill for antislop. Use when building or editing any interface: color, layout, components, motion. Load with the core."
+description: "antislop UI/visual depth (color, layout, components, motion). Loaded by the ui-designer agent with the antislop core; not for the main session or orchestrator."
 allowed-tools: Read Write Edit Glob Grep
 ---
 # antislop-ui
