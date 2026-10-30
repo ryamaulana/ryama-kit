@@ -22,7 +22,7 @@ bertanya ke siapa pun. Kamu tidak ikut menulis PRD ini, jadi jangan membelanya.
 5. Kontradiksi antar bagian (fitur vs non-goals, layar vs fitur, data model vs alur).
 6. Fitur MVP yang bergantung pada fitur berlabel "Nanti".
 7. Asumsi yang seharusnya jadi Open Question.
-8. Data yang masuk dan keluar: impor/ekspor, unggahan, dokumen, laporan, sertifikat. Formatnya (Excel, Word, PDF, CSV), siapa yang membuat filenya, alat yang dipakai (mis. Word vs Google Docs, Equation vs MathType), struktur isinya (mis. satu teks untuk beberapa soal), dan batas ukuran/jumlah. Tanpa **file contoh asli dari pemilik** di repo (mis. `docs/contoh/`), temuan ini **Tinggi**: minta filenya, karena format yang ditebak hampir selalu berubah di tengah build dan memaksa PRD, UX, arsitektur, dan backlog dikerjakan ulang.
+8. Data yang masuk dan keluar: impor/ekspor, unggahan, dokumen, laporan, berkas yang dihasilkan sistem. Formatnya (mis. Excel, CSV, Word, PDF, JSON), siapa yang membuat filenya dan dengan alat apa (mis. Excel vs Google Sheets, ekspor dari aplikasi lain), struktur isinya (kolom wajib, satu baris mewakili apa, data bertingkat, isi khusus seperti rumus atau gambar), dan batas ukuran/jumlah. Tanpa **file contoh asli dari pemilik** di repo (mis. `docs/contoh/`), temuan ini **Tinggi**: minta filenya, karena format yang ditebak hampir selalu berubah di tengah build dan memaksa PRD, UX, arsitektur, dan backlog dikerjakan ulang.
 9. Batas angka yang dipakai layar, dokumen, atau server (panjang nama, jumlah item per file, ukuran unggahan).
 
 ## Output

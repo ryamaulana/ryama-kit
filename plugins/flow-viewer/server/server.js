@@ -386,19 +386,20 @@ const readText = (f) => fs.promises.readFile(f, 'utf8').catch(() => null);
 async function agentUsage(ev, agentId, names) {
   const tp = ev.transcript_path;
   const cands = [];
-  if (ev.agent_transcript_path) cands.push(ev.agent_transcript_path);
+  // agent_transcript_path milik agent yang mengirim event; untuk id lain dipakai, file yang sama terbaca berkali-kali (token dobel).
+  if (ev.agent_transcript_path && (!ev.agent_id || ev.agent_id === agentId)) cands.push(ev.agent_transcript_path);
   if (tp && agentId) {
     const dir = path.dirname(tp), sid = ev.session_id || path.basename(tp, '.jsonl');
     cands.push(path.join(dir, sid, 'subagents', `agent-${agentId}.jsonl`), path.join(dir, `agent-${agentId}.jsonl`));
   }
   for (const f of cands) {
     const t = await readText(f);
-    if (t) { const u = parseUsage(t, null, names); if (u.turns) { u.inv = analyze(t); return u; } }
+    if (t) { const u = parseUsage(t, null, names); if (u.turns) { u.inv = analyze(t); u.file = path.resolve(f).toLowerCase(); return u; } }
   }
   if (tp && agentId) { // older layout: sidechain messages live inside the main transcript
     const t = await readText(tp);
     const filter = (o) => o.isSidechain && o.agentId === agentId;
-    if (t) { const u = parseUsage(t, filter, names); if (u.turns) { u.inv = analyze(t, { filter }); return u; } }
+    if (t) { const u = parseUsage(t, filter, names); if (u.turns) { u.inv = analyze(t, { filter }); u.file = path.resolve(tp).toLowerCase() + '#' + agentId; return u; } }
   }
   return null;
 }
@@ -423,10 +424,11 @@ async function refreshUsage(key, ev, force) {
       if (!n || !d || !d.agentIds.length) return;
       const sum = { in: 0, out: 0, cr: 0, cc: 0, turns: 0, model: '', ctx: 0, audits: 0, skillEv: {}, imgReads: 0, imgUniq: 0, dupReads: 0 };
       let any = false;
-      const invs = [];
+      const invs = [], seenF = new Set();
       for (const id of d.agentIds) {
         const u = await agentUsage(ev, id, [...new Set([...(n.skillsDef || []), 'caveman'])]);
-        if (!u) continue;
+        if (!u || seenF.has(u.file)) continue; // dua id ke file yang sama: hitung sekali
+        seenF.add(u.file);
         any = true;
         if (u.inv) invs.push(slimInv(id, u.inv));
         sum.in += u.in; sum.out += u.out; sum.cr += u.cr; sum.cc += u.cc; sum.turns += u.turns; sum.audits += u.audits; Object.assign(sum.skillEv, u.skillEv); sum.imgReads += u.imgReads; sum.imgUniq += u.imgUniq; sum.dupReads += u.dupReads;
@@ -444,7 +446,7 @@ function slimInv(agentId, A) {
     ctxFirst: A.ctxFirst, ctxPeak: A.ctxPeak, ctxLast: A.ctxLast, t0: A.t0, t1: A.t1, imgs: A.imgs, coldN: A.cold.length, coldTok: A.coldTok, heavy: A.heavy.slice(0, 5), outTok: A.outTok, tools: A.tools };
 }
 function slimMain(A) {
-  return { byModel: A.byModel, turns: A.turns, raw: A.raw, ctxPeak: A.ctxPeak, ctxLast: A.ctxLast, cold: A.cold, coldTok: A.coldTok, handbacks: A.handbacks, heavy: A.heavy, limits: A.limits.slice(0, 20), outTok: A.outTok };
+  return { byModel: A.byModel, turns: A.turns, raw: A.raw, ctxFirst: A.ctxFirst, ctxPeak: A.ctxPeak, ctxLast: A.ctxLast, cold: A.cold, coldTok: A.coldTok, handbacks: A.handbacks, heavy: A.heavy, limits: A.limits.slice(0, 20), outTok: A.outTok };
 }
 function mergeA(list) {
   if (list.length === 1) return list[0];
@@ -494,12 +496,20 @@ async function rescanRun(id) {
       }
     }
   }
-  const byNode = {};
+  const byNode = {}, seenF = new Set();
   for (const [aid, a] of agents) {
     const u = await agentUsage(a.ev, aid, []);
+    if (u && seenF.has(u.file)) continue;
+    if (u) seenF.add(u.file);
     if (u && u.inv) (byNode[a.type] = byNode[a.type] || []).push(slimInv(aid, u.inv));
   }
-  for (const [k, invs] of Object.entries(byNode)) { const n = st.nodes[k]; if (n) n.invocations = invs.sort((a, b) => a.t0 - b.t0); }
+  for (const [k, invs] of Object.entries(byNode)) {
+    const n = st.nodes[k]; if (!n) continue;
+    n.invocations = invs.sort((a, b) => a.t0 - b.t0);
+    const s = { in: 0, out: 0, cr: 0, cc: 0, turns: 0 };
+    for (const v of invs) for (const f of Object.keys(s)) s[f] += v[f] || 0;
+    n.usage = { ...(n.usage || {}), ...s, ctx: invs[invs.length - 1].ctxLast, model: 'claude-' + (invs[invs.length - 1].model || '') };
+  }
   const mainAs = [];
   for (const tp of mains.keys()) {
     const t = await readText(tp);
@@ -507,6 +517,9 @@ async function rescanRun(id) {
   }
   if (mainAs.length) st.main.tokens = slimMain(mergeA(mainAs));
   if (segs.length) st.mainSegs = segs;
+  if (mainAs.length) { const A = mergeA(mainAs); st.main.usage = { ...(st.main.usage || {}), in: A.in, out: A.out, cr: A.cr, cc: A.cc, turns: A.turns, ctx: A.ctxLast }; }
+  const us = [st.main.usage, ...Object.values(st.nodes).map((n) => n.usage)].filter(Boolean);
+  row.tokens_eq = us.reduce((a, u) => a + eqOf(u), 0); row.tokens_raw = us.reduce((a, u) => a + rawOf(u), 0);
   st.tokensScan = { at: Date.now(), agents: agents.size, analysed: Object.values(byNode).reduce((a, x) => a + x.length, 0), sessions: mains.size };
   store.save({ ...row, state: JSON.stringify(st) });
   writeTokenFile(row.project);

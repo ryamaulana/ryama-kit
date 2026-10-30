@@ -4,12 +4,22 @@
 
 ### Hemat token (fullstack-dev, ui-designer-kit)
 Dasar: run TryoutHub (29-30 Okt): 166 juta token mentah untuk 33/147 item, limit tercapai dua kali. 94% dari empat agent opus: be 31% (621 giliran), ui-designer 28% (59 gambar, konteks 189k), orkestrator 26% (satu sesi untuk 6 batch, konteks 254k), architect 9% (5 putaran sinkron ulang).
+- run: item `running` dari sesi yang berhenti di tengah dicek dulu di awal run (bukti lengkap → done, kalau tidak → retry dan lanjut dari working tree). Dulu item itu tertahan selamanya karena `next` hanya mengambil item siap.
 - Orkestrator: satu sesi = satu batch. `run` berakhir dengan laporan maks 15 baris, satu pertanyaan commit lokal, lalu `/clear` + `/fullstack-dev:run`. Hook session-start ikut mengingatkan. Bukti dicek dengan output pendek (`ls`, tes paket `| tail`), bukan suite penuh atau screenshot.
 - backlog.js: field `model` per item (validasi opus/sonnet/haiku), tampil di paket (`model=` + instruksi parameter Agent), `ready`, dan BACKLOG.md. Perintah baru `set <id,...> --model|--size` untuk item yang belum jalan. Paket item non-keputusan membawa aturan "Hemat token" (perintah digabung dan dipotong, baca per bagian, laporan maks 15 baris).
 - be: bawaan sonnet; opus lewat `model` item untuk logika sulit. TDD per seam (tes satu seam sekaligus, lalu implementasi), bukan satu tes satu implementasi.
 - ui-designer: `model: sonnet` untuk porting mockup Approved, perbaikan kritikus, dan jalur cepat; screenshot dibaca paling akhir, perbaikan non-layout dibuktikan dengan angka audit.
 - agent backlog: mode "Atur model" untuk backlog lama.
 - prd-review: temuan baru untuk format data masuk/keluar (file contoh asli wajib, tanpa itu = Tinggi) dan batas angka.
+
+### Model sesuai berat kerjaan, ui-designer lebih ramping (fullstack-dev, ui-designer-kit)
+Dasar: tiga batch pertama dengan kit hemat (30 Okt sore): token mentah per item turun dari 5,0 jt ke ~2,2 jt, tetapi 90% masih opus: ui-designer 54% (tiap pemanggilan mulai di ~89k; perkiraan ~56k dari dua skill luar yang dimuat di awal), orkestrator 30%.
+- Prinsip: opus untuk keputusan sulit dan penilaian kualitas; sonnet untuk pekerjaan yang mengikuti pola/kontrak yang ada, selalu dengan pemeriksa (tes atau ui-critic opus). Tabel per agent/pekerjaan di skill backlog (aturan 7); agent backlog mengisinya otomatis.
+- `/fullstack-dev:run` berjalan di sonnet (frontmatter `model: sonnet`). Orkestrator tidak menulis kode.
+- ui-designer: `design-taste-frontend` dan `web-design-guidelines` tidak lagi dimuat di awal; dimuat lewat Skill di langkah 4 (bangun) dan 5c (audit). Jalur cepat/perbaikan tidak memuat taste.
+- `docs/KOMPONEN.md`: indeks komponen tampilan (satu baris per komponen) dibaca ui-designer dan fe sebagai ganti membuka semua file komponen.
+- Layar baru yang besar dipecah dua item: `Bagian: bangun` lalu `<id>-audit` (`Bagian: audit`, konteks bersih). Item yang bergantung pindah ke item audit. Aturan 8 skill backlog.
+- backlog.js: urutan `ready`/`next` = item verifikasi (qa, sec, review, review-kode, audit-akhir) dulu, lalu irisan yang sudah dimulai, lalu nilai. `ready` menampilkan jenis item. `run` wajib memuat minimal satu item verifikasi per batch bila ada yang siap, dan melaporkan item fe/be yang menahan QA. Dasar: setelah 48 item, QA 0/15 dan fe 4/24 karena item bernilai tinggi dari irisan baru selalu didahulukan.
 
 ### Log token untuk AI (flow-viewer)
 - `server/tokens.js` (baru): analisis transkrip per pemanggilan agent: ID item backlog (dari `ITEM <id>` di prompt), model, giliran, konteks awal/puncak/akhir, token per model, output tool terbesar yang masuk konteks (perkiraan karakter/4, gambar ~1.600), cache yang ditulis ulang (>= 20k dan >= 60% konteks giliran itu; biasanya setelah sesi menganggur), laporan subagent yang masuk ke orkestrator, dan pesan limit.
@@ -18,7 +28,10 @@ Dasar: run TryoutHub (29-30 Okt): 166 juta token mentah untuk 33/147 item, limit
 - `server/token-report.js` (baru) + `GET /report/tokens.md|.json?project=`: laporan per proyek lintas run (per run, per agent, pemanggilan termahal per item, orkestrator, output tool terbesar, waktu kerja/nunggu/limit, setara per item). Salinannya ditulis ke `<proyek>/.flow-viewer/laporan-token.md` (folder meng-ignore dirinya sendiri), diperbarui maksimal tiap menit saat sesi utama berhenti.
 - `POST /history/rescan?id=`: analisis ulang run lama dari `events.jsonl` (path transkrip dan id agent dalam rentang waktu run). Tombol "Analisis" dan "Laporan" di tiap baris Riwayat; tab "Pemanggilan" di panel agent.
 - Perbaikan: `server.js` membaca `skills:`/`tools:` berbentuk daftar YAML bertingkat (dulu kosong untuk be, qa, cyber). Modul `agents.js` sudah benar, tetapi server memakai pembacanya sendiri.
-- Tes: `test/unit/tokens.test.js` (5 kasus); tes agents menyesuaikan be = sonnet.
+- Perbaikan: token dobel. Event dari satu subagent membawa `agent_transcript_path` miliknya; dulu path itu dipakai untuk semua id agent sejenis, sehingga dua-tiga pemanggilan terbaca sebagai file yang sama (run 30 Okt 16.08 tercatat 23 jt, aslinya ~12 jt). Kini path itu hanya untuk id pengirim, dan file yang sama dihitung sekali. Analisis ulang menghitung ulang total agent dan run.
+- Perbaikan: laporan agent latar dihitung dari pesan notifikasi (`task-notification`), bukan dari tanda mulai Agent (dulu selalu 1.092 karakter).
+- Riwayat: "Buka" menampilkan kanvas dulu (panel tidak menutupinya); baris run yang sedang berjalan bertombol "Lihat live".
+- Tes: `test/unit/tokens.test.js` (6 kasus); tes agents menyesuaikan be = sonnet.
 
 ### Riwayat run dibuka penuh lagi
 - Tombol "Buka" di Riwayat memuat run lama ke kanvas dan semua panel (Chat, Backlog, File, Skill, Token, Agent, Log), seperti mode "Lihat" di 1.7.1. Bar "Melihat riwayat · hanya baca" berisi tombol Ringkasan dan Kembali ke live; Esc juga kembali ke live. Dulu v2 hanya membuka modal ringkasan.

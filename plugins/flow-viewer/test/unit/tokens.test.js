@@ -57,3 +57,15 @@ test('laporan proyek: waktu kerja/limit/menunggu dan item per run', () => {
   assert.strictEqual(R.items[0].item, 'kontrak-api');
   assert.match(report.markdown(R), /## Pemanggilan termahal/);
 });
+
+test('laporan agent latar dihitung dari pesan notifikasi, bukan dari tanda mulai Agent', () => {
+  const txt = L([
+    { type: 'assistant', timestamp: T(0), message: { id: 'm1', model: 'claude-opus-5-5', usage: usage(1, 1, 0, 0), content: [{ type: 'tool_use', id: 'bg1', name: 'Agent', input: { subagent_type: 'fullstack-dev:be', prompt: 'ITEM be-email', run_in_background: true } }] } },
+    { type: 'user', timestamp: T(1), message: { content: [{ type: 'tool_result', tool_use_id: 'bg1', content: [{ type: 'text', text: 'Async agent launched successfully.' }] }] } },
+    { type: 'user', timestamp: T(9), message: { content: '<task-notification><agent_type>fullstack-dev:be</agent_type>[Subagent hand-back] ITEM be-email selesai. ' + 'z'.repeat(5000) + '</task-notification>' } },
+  ]);
+  const A = analyze(txt);
+  assert.strictEqual(A.handbacks.n, 1);
+  assert.ok(A.handbacks.max > 5000);
+  assert.strictEqual(A.handbacks.top[0].to, 'be be-email');
+});

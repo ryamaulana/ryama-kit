@@ -56,7 +56,13 @@ function save(db) {
 }
 const byId = (db) => Object.fromEntries(db.items.map((i) => [i.id, i]));
 const isReady = (db, it) => { const m = byId(db); return it.status === 'todo' && (it.needs || []).every((n) => m[n] && (m[n].status === 'done')); };
-const sorter = (db) => (a, b) => (VAL[a.value || 'mid'] - VAL[b.value || 'mid']) || (db.items.indexOf(a) - db.items.indexOf(b));
+// Urutan siap: verifikasi dulu (QA/keamanan/review tidak menumpuk di ujung), lalu irisan yang sudah dimulai (supaya selesai dan bisa di-QA), lalu nilai, lalu urutan rencana.
+const VERIFY = new Set(['qa', 'sec', 'review', 'review-kode', 'audit-akhir']);
+const sorter = (db) => {
+  const started = new Set(db.items.filter((i) => i.slice && (i.status === 'done' || i.status === 'running')).map((i) => i.slice));
+  const rank = (i) => (VERIFY.has(i.type) ? 0 : i.slice && started.has(i.slice) ? 1 : 2);
+  return (a, b) => (rank(a) - rank(b)) || (VAL[a.value || 'mid'] - VAL[b.value || 'mid']) || (db.items.indexOf(a) - db.items.indexOf(b));
+};
 const readyList = (db) => db.items.filter((i) => isReady(db, i)).sort(sorter(db));
 
 function render(db) {
@@ -135,7 +141,7 @@ switch (cmd) {
     save(db); console.log('ditambah: ' + flags.id); break;
   }
   case 'list': { const db = load(); const rd = new Set(readyList(db).map((i) => i.id)); for (const i of db.items) { if (flags.status && i.status !== flags.status) continue; console.log(`${i.id}\t${i.status}${rd.has(i.id) ? '*siap' : ''}\t${i.type || '-'}\t${i.title}\tneeds:${(i.needs || []).join(',') || '-'}`); } break; }
-  case 'ready': { const db = load(); const r = readyList(db); if (flags.json) console.log(JSON.stringify(r, null, 2)); else console.log(r.map((i) => `${i.id}\t${i.agent || '-'}${i.model ? '/' + i.model : ''}\t${i.title}`).join('\n') || '(tidak ada item siap)'); break; }
+  case 'ready': { const db = load(); const r = readyList(db); if (flags.json) console.log(JSON.stringify(r, null, 2)); else console.log(r.map((i) => `${i.id}\t${i.type || '-'}\t${i.agent || '-'}${i.model ? '/' + i.model : ''}\t${i.title}`).join('\n') || '(tidak ada item siap)'); break; }
   case 'next': {
     const db = load(); const r = readyList(db);
     if (!r.length) { const run = db.items.filter((i) => i.status === 'running'), fl = db.items.filter((i) => i.status === 'failed'), wt = db.items.filter((i) => i.status === 'todo');

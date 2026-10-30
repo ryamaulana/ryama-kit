@@ -66,7 +66,7 @@ async function enterHist(id) {
   let r; try { r = await getJSON('/history/get', { id }); } catch (_) { return; }
   if (!r || !r.state) return;
   viewing = { ...r.state, __hist: { id: r.id, project: r.project }, convoN: (r.convo || []).length };
-  ctx.convo = r.convo || []; ctx.detail = {}; ctx.selId = null; ctx.key = 'chat';
+  ctx.convo = r.convo || []; ctx.detail = {}; ctx.selId = null; ctx.key = null; // kanvas dulu; panel dibuka lewat rel
   const bar = $('#histbar'), V = viewing;
   bar.innerHTML = html`<span class="hb-t"><b>Melihat riwayat</b> · ${fmtClock(V.startedAt)} (${fmtAgo(V.startedAt)}) · ${V.title || V.flow || ''}${V.prompt ? ' · “' + String(V.prompt).slice(0, 80) + '”' : ''} · hanya baca${V.finished ? '' : ' · run tidak ditutup, status terakhir dibekukan'}</span><button class="btn" type="button" id="hsum">Ringkasan</button><button class="btn pri" type="button" id="hback">Kembali ke live</button>`.s;
   bar.hidden = false; document.body.classList.add('hist');
@@ -114,7 +114,7 @@ function init() {
   on($('#pi'), 'change', '[data-cmp]', (e, el) => { const id = Number(el.dataset.cmp); if (el.checked) { if (ctx.cmp.size >= 2) ctx.cmp.delete(ctx.cmp.values().next().value); ctx.cmp.add(id); } else ctx.cmp.delete(id); renderAll(); });
   on($('#pi'), 'click', '[data-act=hall]', () => { ctx.history.all = !ctx.history.all; loadHistory(); });
   on($('#pi'), 'click', '[data-act=hopen]', async (e, b) => {
-    if (Number(b.dataset.id) === ctx.history.liveId) { if (viewing) exitHist(); return; }
+    if (Number(b.dataset.id) === ctx.history.liveId) { if (viewing) exitHist(); else { ctx.key = null; renderAll(); setTimeout(refit, 230); } return; } // run berjalan = tampilan live
     enterHist(b.dataset.id);
   });
   // Laporan token proyek (markdown yang sama dengan file .flow-viewer/laporan-token.md untuk AI).

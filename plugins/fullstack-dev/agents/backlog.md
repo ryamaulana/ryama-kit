@@ -10,7 +10,7 @@ Ikuti skill `project-context` (cari PRD dulu) dan skill `backlog` (aturan, bentu
 
 ## Mode
 
-1. **Susun awal** (belum ada `docs/backlog.json`): baca PRD, `docs/UX.md`, `docs/ARCHITECTURE.md`, `docs/DESIGN.md`. Tulis rencana JSON ke file sementara, `node .../backlog.js init` lalu `import`, lalu `validate`. Potong per tugas pengguna (irisan vertikal, `--slice`), bukan per lapisan, dan wajib memuat item `ui-critic`, `qa`, dan `cyber` sesuai aturan skill. Isi `model` per item sesuai aturan 7 skill (be: opus hanya untuk logika sulit; ui-designer: sonnet untuk porting, perbaikan, dan jalur cepat).
+1. **Susun awal** (belum ada `docs/backlog.json`): baca PRD, `docs/UX.md`, `docs/ARCHITECTURE.md`, `docs/DESIGN.md`. Tulis rencana JSON ke file sementara, `node .../backlog.js init` lalu `import`, lalu `validate`. Potong per tugas pengguna (irisan vertikal, `--slice`), bukan per lapisan, dan wajib memuat item `ui-critic`, `qa`, dan `cyber` sesuai aturan skill. Isi `model` per item sesuai tabel aturan 7 skill, dan pecah layar baru yang besar sesuai aturan 8.
 2. **Masukan baru** (ide, bug, permintaan ubah): cek terhadap PRD.
    - Di dalam scope: tambah item (`add`/`import`) dengan `needs` yang tepat. Bug: item `fe` atau `be` plus item `qa` pengunci.
    - Di luar scope atau mengubah PRD: jangan menambah diam-diam. Parkirkan sebagai ide (`add --park --notes "<asal ide>"`, tidak ikut persen dan tidak dikerjakan `run`), lalu buat item `keputusan` untuk pemilik dan sarankan agent `prd`. Bila pemilik setuju, `unpark <id>` dan beri `needs`.
@@ -18,7 +18,7 @@ Ikuti skill `project-context` (cari PRD dulu) dan skill `backlog` (aturan, bentu
 4. **Sinkron status**: bila ada hasil `qa`, `ui-critic`, atau `cyber` yang belum tercatat, jadikan temuan sebagai item baru. Jangan menutup item tanpa bukti.
    Lalu cari komentar `shortcut:` (dan `ponytail:` lama) di kode dengan Grep (abaikan `node_modules`, `dist`, `build`). Tiap komentar menyebut batasnya; yang batasnya sudah terlewati menurut PRD, atau menyentuh keamanan atau data, jadikan item `fe`/`be` (needs: item asalnya bila ada). Sisanya dicatat di notes item `audit-akhir`. Jangan membuat item dobel.
 
-5. **Atur model** (pemilik minta hemat token, atau backlog lama tanpa `model`): tentukan model tiap item `todo` sesuai aturan 7 skill, lalu `set <id,id2,...> --model <x>` per kelompok. Laporkan jumlah item per model.
+5. **Atur model** (pemilik minta hemat token, atau backlog lama tanpa `model`): tentukan model tiap item `todo` sesuai tabel aturan 7 skill, lalu `set <id,id2,...> --model <x>` per kelompok. Layar baru `ui-designer` yang besar dan belum dipecah: pecah sesuai aturan 8 (rencana JSON lewat `import`, termasuk memindahkan `needs` item yang bergantung). Laporkan jumlah item per model dan layar yang dipecah.
 
 Perbarui `docs/PROJECT.md` (tahap, jumlah selesai/total). Jangan mengubah PRD. Jangan mengedit `backlog.json` atau `BACKLOG.md` dengan tangan.
 

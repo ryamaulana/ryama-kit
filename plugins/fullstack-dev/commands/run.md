@@ -1,11 +1,18 @@
 ---
 description: "Jalankan backlog: ambil item siap, satu agent per item dengan konteks sekecil mungkin, sampai habis atau berhenti di keputusan pemilik. Usage: /fullstack-dev:run [jumlah item, default 5]"
 argument-hint: "[jumlah item, default 5]"
+model: sonnet
 ---
 
 Jumlah item maksimal untuk run ini: $ARGUMENTS (kosong = 5; `1` = hanya item berikutnya).
 
 Baca skill `backlog` dan `project-context`. Butuh `docs/backlog.json`; kalau belum ada, berhenti dan jalankan `/fullstack-dev:backlog` dulu. Orkestrator tetap ringan: kamu hanya mengatur antrean dan tidak mengerjakan item sendiri.
+
+**Item yang tertinggal dari sesi lalu.** Sebelum mengambil item baru, `node "$HOME/.claude/skills/backlog/backlog.js" list --status running`. Item `running` di awal sesi berarti sesi sebelumnya berhenti di tengah (tidak ada agent yang masih jalan). Untuk tiap item itu, cek bukti yang diminta paketnya dengan perintah ber-output pendek (file ada, tes paket terkait lulus): lengkap → `done --evidence`; tidak lengkap → `retry <id>`, lalu item itu ikut batch ini dengan catatan "lanjutkan dari perubahan yang sudah ada di working tree, jangan mulai dari nol". Jangan membuang perubahan yang belum di-commit.
+
+Kamu berjalan di sonnet (frontmatter perintah ini): orkestrator hanya mengatur antrean, mengirim paket, dan memeriksa bukti; kualitas kode ditentukan agent dan model per item.
+
+**Isi batch.** Mulai dengan `ready`. Bila ada item verifikasi siap (`qa`, `sec`, `review`, `review-kode`, `audit-akhir`; skrip menaruhnya paling atas), minimal satu masuk batch ini. Bila tidak ada, sebut di laporan item `fe`/`be` mana yang menahan QA, dan dahulukan item itu.
 
 Ulangi sampai batas jumlah item tercapai:
 1. `node "$HOME/.claude/skills/backlog/backlog.js" next`. Keluar kode 2 = tidak ada item siap: berhenti dan lapor sebabnya (selesai, menunggu keputusan, atau gagal).

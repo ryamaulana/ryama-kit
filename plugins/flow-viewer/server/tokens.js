@@ -56,6 +56,14 @@ function analyze(text, opts = {}) {
     const m = o.message && typeof o.message === 'object' ? o.message : null;
     if (!m) continue;
     if (o.type === 'user') {
+      // Laporan agent latar masuk sebagai pesan sistem (task-notification), bukan sebagai hasil tool Agent.
+      const ut = userText(m.content);
+      if (ut && /^\s*<(task-notification|agent-message)\b|\[Subagent hand-back\]/.test(ut)) {
+        const to = ((/<(?:subagent_type|agent_type|agent)>([^<]+)</.exec(ut) || [])[1] || (/subagent_type["':\s]+([\w:-]+)/.exec(ut) || [])[1] || 'agent latar');
+        const it = itemOf(ut);
+        handbacks.push({ to: norm(to) + (it ? ' ' + it : ''), chars: ut.length, t });
+        continue;
+      }
       if (!prompt && !o.isMeta) { const p = userText(m.content); if (p && !/^<(command|local-command|system-reminder)/.test(p)) prompt = p; }
       if (Array.isArray(m.content)) for (const b of m.content) {
         if (!b || b.type !== 'tool_result') continue;
@@ -65,14 +73,14 @@ function analyze(text, opts = {}) {
         imgs += r.imgs;
         outTok[u.name] = (outTok[u.name] || 0) + tok;
         heavy.push({ tool: u.name, what: u.what, tok, t });
-        if (u.name === 'Agent' || u.name === 'Task') handbacks.push({ to: u.what, chars: r.chars, t });
+        if ((u.name === 'Agent' || u.name === 'Task') && !u.bg) handbacks.push({ to: u.what, chars: r.chars, t }); // agent latar: hasil tool hanya tanda mulai
       }
       continue;
     }
     if (o.type !== 'assistant') continue;
     if (Array.isArray(m.content)) for (const b of m.content) {
       if (!b) continue;
-      if (b.type === 'tool_use') { uses.set(b.id, { name: b.name, what: whatOf(b.name, b.input) }); tools[b.name] = (tools[b.name] || 0) + 1; }
+      if (b.type === 'tool_use') { uses.set(b.id, { name: b.name, what: whatOf(b.name, b.input), bg: !!(b.input && b.input.run_in_background) }); tools[b.name] = (tools[b.name] || 0) + 1; }
       if (b.type === 'text' && (o.isApiErrorMessage || m.model === '<synthetic>') && /limit|quota/i.test(b.text || '')) limits.push({ t, text: one(b.text, 160) });
     }
     if (!m.usage || m.model === '<synthetic>') continue;

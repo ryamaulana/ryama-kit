@@ -23,8 +23,17 @@ Skrip: `node "$HOME/.claude/skills/backlog/backlog.js" <perintah>` dari root pro
 4. **Wajib ada dan tidak boleh dihapus:** `ui-critic` per kelompok layar BARU atau perubahan tata letak (needs: layar tersebut; bukan untuk edit kecil atau item perbaikan, yang lewat jalur cepat ui-designer), `qa` untuk kriteria PRD (needs: fe dan be terkait), `cyber` bila ada `[SEC]` di arsitektur (needs: be terkait). Inilah yang membuat review pasti jalan. Tambahan: satu item `review-kode` (agent `cyber`, skill `ponytail-review`, needs: item fe/be terkait) per kelompok fe/be berukuran m atau l, dan satu `audit-akhir` (agent `cyber`, skill `ponytail-audit`, needs: semua item build) di ujung antrean.
 5. Keputusan bisnis yang tidak bisa ditebak (scope, prioritas) jadi item `checkpoint`; pertanyaan harus bisnis, bukan teknis. Layar atau fitur yang memerlukannya bergantung padanya.
 6. `context` hanya bagian yang dibutuhkan (mis. `docs/UX.md#Masuk`), bukan seluruh dokumen. Ini yang menghemat token.
-7. **Model per item** (biaya terbesar ada di sini). `be` bawaan sonnet: beri `model: opus` hanya untuk logika yang sulit dibuktikan benar (penilaian, perhitungan uang/skor, algoritma, konkurensi), spike teknis berisiko, atau item `l` yang menyentuh `[SEC]`. CRUD, kontrak, skema, seed, dan penyambungan tetap sonnet. `ui-designer` bawaan opus: beri `model: sonnet` untuk porting mockup Approved ke komponen, item perbaikan dari kritikus, dan edit jalur cepat; opus tetap untuk layar baru dan arah. Agent lain pakai bawaannya.
-8. Setelah `import`, jalankan `validate`. Siklus atau `needs` yang tidak ada = perbaiki sebelum lanjut.
+7. **Model per item: sesuai berat kerjaannya.** Opus untuk keputusan sulit dan penilaian kualitas; sonnet untuk pekerjaan yang mengikuti pola atau kontrak yang sudah ada, dengan syarat hasilnya selalu dicek (tes, atau `ui-critic` opus). Isi `model` hanya bila berbeda dari bawaan agent.
+   | Pekerjaan | Model |
+   |---|---|
+   | `prd`, `ux`, `architect`, `ui-critic` | opus (bawaan) |
+   | `ui-designer`: arah desain, layar dengan pola atau tata letak baru, landing/halaman pemasaran, layar utama pengguna akhir yang menentukan kesan produk | opus (bawaan) |
+   | `ui-designer`: layar yang mengikuti kerangka/pola yang sudah ada (daftar, form, tabel di area yang kerangkanya sudah lolos kritikus), porting mockup Approved, item perbaikan, jalur cepat | `sonnet` |
+   | `be`: logika yang sulit dibuktikan benar (perhitungan yang menentukan hasil bagi pengguna seperti skor, harga, saldo, tagihan; algoritma; konkurensi dan transaksi), spike berisiko, item `l` yang menyentuh `[SEC]` | `opus` |
+   | `be`: CRUD, kontrak, skema, seed, migrasi, penyambungan | sonnet (bawaan) |
+   | `fe`, `qa`, `cyber`, `backlog` | sonnet (bawaan); `audit-akhir` = `opus` |
+8. **Layar baru yang besar dipecah dua item** (`ui-designer`, jalur penuh, usaha m/l): `<id>` dengan `notes: "Bagian: bangun"` dan `<id>-audit` dengan `notes: "Bagian: audit"` (needs `<id>`, model sama). Item yang membutuhkan layar itu (`ui-critic`, `fe`) bergantung pada `<id>-audit`. Pemanggilan kedua mulai dengan konteks bersih, jadi audit dan perbaikan tidak dibaca ulang di atas ratusan ribu token pembangunan.
+9. Setelah `import`, jalankan `validate`. Siklus atau `needs` yang tidak ada = perbaiki sebelum lanjut.
 
 ## Aturan menjalankan (orkestrator)
 - Ambil `next`, kirim **hanya paket itu** ke agent yang disebut (bukan riwayat chat). Paket ber-`model=` dipanggil dengan parameter `model` itu di tool Agent. Item `PEMILIK=ya`: tanya pemilik lewat AskUserQuestion lalu `decide`.
@@ -32,4 +41,5 @@ Skrip: `node "$HOME/.claude/skills/backlog/backlog.js" <perintah>` dari root pro
 - Satu sesi = satu batch. Konteks orkestrator ikut dibaca ulang di setiap giliran, jadi setelah batch dilaporkan, sesi berikutnya dimulai bersih (`/clear` lalu `/fullstack-dev:run`); statusnya ada di backlog, bukan di riwayat chat.
 - Gagal → `fail`; dua kali gagal = berhenti dan laporkan ke pemilik. Jangan mengulang tanpa perubahan.
 - Item siap yang tidak berbagi file boleh dijalankan paralel.
+- **Verifikasi tiap batch.** `ready` dan `next` menaruh item verifikasi (`qa`, `sec`, `review`, `review-kode`, `audit-akhir`) paling atas, lalu item dari irisan yang sudah dimulai (supaya irisan selesai dan QA-nya bisa jalan), baru item lain. Satu batch memuat minimal satu item verifikasi bila ada yang siap; bila tidak ada, laporan menyebut item `fe`/`be` mana yang menahan QA.
 - Perubahan scope dari pemilik: serahkan ke agent `backlog` (dan `prd` bila PRD berubah). Jangan menambah item sendiri.
