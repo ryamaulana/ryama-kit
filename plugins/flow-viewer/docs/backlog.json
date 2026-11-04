@@ -174,7 +174,7 @@
       "finishedAt": "2026-10-27T07:44:18.998Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "t02-agents",
         "t03-usage"
@@ -197,10 +197,14 @@
       "slice": "server",
       "value": "high",
       "size": "l",
-      "done": "run.js: pabrik per run, handle dan state dari server.js, snapshot superset 1.7.1. Uji unit: fixture feed.js lama menghasilkan snapshot dengan semua field 1.7.1."
+      "done": "run.js: pabrik per run, handle dan state dari server.js, snapshot superset 1.7.1. Uji unit: fixture feed.js lama menghasilkan snapshot dengan semua field 1.7.1.",
+      "attempts": 1,
+      "startedAt": "2026-11-04T00:24:53.766Z",
+      "evidence": "node --test: 41 lulus 0 gagal (4 tes baru run.test.js); server/run.js ada. Catatan: feed.js lama tidak ada di repo, fixture ditulis ulang sebagai urutan event",
+      "finishedAt": "2026-11-04T00:29:01.588Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "t05a-run-pabrik"
       ],
@@ -219,10 +223,14 @@
       "slice": "server",
       "value": "high",
       "size": "m",
-      "done": "detail, convo, report per run; pending jadi daftar per pengirim; endpoint /detail dan /report tetap jalan. Uji unit atas fixture lama."
+      "done": "detail, convo, report per run; pending jadi daftar per pengirim; endpoint /detail dan /report tetap jalan. Uji unit atas fixture lama.",
+      "attempts": 1,
+      "startedAt": "2026-11-04T00:29:08.428Z",
+      "evidence": "node --test: 43 lulus 0 gagal; pending jadi daftar per pengirim di run.js",
+      "finishedAt": "2026-11-04T00:29:58.057Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "t05b-run-detail-percakapan",
         "k-run-baru-per-prompt",
@@ -246,10 +254,14 @@
       "slice": "server",
       "value": "high",
       "size": "l",
-      "done": "Fase running/paused/finished, debounce 2 dtk, background_tasks, run baru per prompt setelah finished, sesi baru = run baru; Stop dengan langkah wajib tersisa atau pesan terakhir berupa pertanyaan = jeda (Butuh input). Uji unit per aturan dengan jam palsu, termasuk Stop saat background_tasks berjalan."
+      "done": "Fase running/paused/finished, debounce 2 dtk, background_tasks, run baru per prompt setelah finished, sesi baru = run baru; Stop dengan langkah wajib tersisa atau pesan terakhir berupa pertanyaan = jeda (Butuh input). Uji unit per aturan dengan jam palsu, termasuk Stop saat background_tasks berjalan.",
+      "attempts": 1,
+      "startedAt": "2026-11-04T00:30:06.741Z",
+      "evidence": "node --test: 52 lulus 0 gagal; node --check server.js bersih; fase running/paused/finished dengan jam palsu. Belum diuji: HTTP/SSE, replay T12",
+      "finishedAt": "2026-11-04T00:32:59.951Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "t06a-fase-run",
         "t04-backlog-ringkas"
@@ -270,7 +282,11 @@
       "slice": "server",
       "value": "high",
       "size": "m",
-      "done": "Status Gagal (Agent error, backlog failed) dan objek summary (langkah selesai/dilewati, token, durasi, file, keputusan tersisa; summary.auto hanya bila ada agent atau file berubah, PRD v1.1). Uji unit tiap kasus."
+      "done": "Status Gagal (Agent error, backlog failed) dan objek summary (langkah selesai/dilewati, token, durasi, file, keputusan tersisa; summary.auto hanya bila ada agent atau file berubah, PRD v1.1). Uji unit tiap kasus.",
+      "attempts": 1,
+      "startedAt": "2026-11-04T00:33:06.974Z",
+      "evidence": "node --test: 58 lulus 0 gagal (6 tes baru); status Gagal dan summary di run.js",
+      "finishedAt": "2026-11-04T00:34:36.288Z"
     },
     {
       "status": "todo",
@@ -323,7 +339,8 @@
       "slice": "server",
       "value": "high",
       "size": "m",
-      "done": "store.js: previous(), projects(), prune 200 per proyek + 1.000 total, indeks (project, flow, started_at), runId monoton. Uji unit SQLite dan JSON (FLOW_VIEWER_STORE=json)."
+      "done": "store.js: previous(), projects(), prune 200 run per proyek (run proyek lain tidak tersentuh; tanpa batas total lintas proyek), indeks (project, flow, started_at), runId monoton. Uji unit SQLite dan JSON (FLOW_VIEWER_STORE=json): proyek A 201 run -> A tinggal 200, B utuh. Hapus run berjalan ditolak.",
+      "notes": "Selaras KEPUTUSAN butir 2 dan PRD F8: batas 1.000 total dihapus dari definisi selesai."
     },
     {
       "status": "todo",
@@ -533,7 +550,10 @@
       "needs": [
         "t10b-server-endpoint",
         "t09b-snapshot-proyek",
-        "t07-attention"
+        "t07-attention",
+        "t33a-laporan-server",
+        "t34a-backlog-bagian-server",
+        "sec-laporan-project"
       ],
       "criteria": [],
       "context": [
@@ -563,7 +583,7 @@
       "context": [
         "docs/ARCHITECTURE.md#2. Struktur folder",
         "docs/ARCHITECTURE.md#10.2 Id elemen dan selector skrip uji",
-        "docs/UX.md#8. Asumsi dan pertanyaan terbuka",
+        "docs/UX.md#11. Asumsi dan pertanyaan terbuka",
         "docs/mockups/arah-a/README.md"
       ],
       "id": "t13a-kerangka-html",
@@ -631,7 +651,7 @@
       ],
       "context": [
         "docs/ARCHITECTURE.md#6. API",
-        "docs/UX.md#6. State per layar"
+        "docs/UX.md#9. State per layar"
       ],
       "id": "t14b-api-sse",
       "title": "Klien data live: SSE, sambung ulang, bilah terputus dengan jam pembaruan",
@@ -706,7 +726,7 @@
       ],
       "context": [
         "docs/DESIGN.md#4. Aturan komponen",
-        "docs/UX.md#4. Pola per tugas",
+        "docs/UX.md#5. Pola per tugas",
         "docs/PRD.md#F2. Workflow live bergaya n8n",
         "docs/ARCHITECTURE.md#5.7 Agent dikenali dari folder + flows.json"
       ],
@@ -733,7 +753,7 @@
       "context": [
         "docs/DESIGN.md#4. Aturan komponen",
         "docs/DESIGN.md#Masalah terbuka dari review ui-critic putaran 2",
-        "docs/UX.md#5. Alur utama"
+        "docs/UX.md#8. Alur utama"
       ],
       "id": "t16b-graph-zoom",
       "title": "Zoom, pan, pas layar, seleksi, dan keyboard pada grafik",
@@ -785,7 +805,7 @@
       ],
       "context": [
         "docs/DESIGN.md#4. Aturan komponen",
-        "docs/UX.md#4. Pola per tugas",
+        "docs/UX.md#5. Pola per tugas",
         "docs/PRD.md#F3. Tiga indikator besar"
       ],
       "id": "t17-indikator",
@@ -811,11 +831,11 @@
       "context": [
         "docs/DESIGN.md#4. Aturan komponen",
         "docs/DESIGN.md#Masalah terbuka dari review ui-critic putaran 2",
-        "docs/UX.md#4. Pola per tugas",
-        "docs/UX.md#5. Alur utama"
+        "docs/UX.md#5. Pola per tugas",
+        "docs/UX.md#8. Alur utama"
       ],
       "id": "t18a-panel-rel-percakapan-backlog",
-      "title": "Panel samping dan rel + tab Percakapan dan Backlog",
+      "title": "Panel samping dan rel (enam kunci) + tab Percakapan",
       "phase": "4 Live (Tahap A)",
       "type": "fe",
       "agent": "fe",
@@ -823,7 +843,7 @@
       "screen": "Tampilan proyek (live)",
       "value": "high",
       "size": "m",
-      "done": "panel.js: rel + lencana (warn hanya Percakapan bertanya dan Backlog keputusan), lebar diingat, tertutup default 900-1199 dan mendorong grafik; masalah #5: node terpilih di-scroll ke terlihat, baris tab nowrap padding 8 px, ubin detail 2 kolom; tab Percakapan dan Backlog dengan data 1.7.1 (#chat, #blist, #bbar). Bukti: Playwright 900 dan 1440, daftar data 1.7.1 vs klik (UX §5) dicentang untuk dua tab ini."
+      "done": "panel.js: rel + lencana (warn hanya Percakapan bertanya dan Backlog keputusan), rel hanya chat, backlog, files, skill, token, log (agent dan history keluar dari rel, ARCH 10.2a), lebar diingat, tertutup default 900-1199 dan mendorong grafik; masalah #5: node terpilih di-scroll ke terlihat, baris tab nowrap padding 8 px; tab Percakapan dengan data 1.7.1 (#chat); tab Backlog sementara memakai data 1.7.1 sampai t34b. Bukti: Playwright 900 dan 1440, daftar data 1.7.1 vs klik (UX §8) dicentang."
     },
     {
       "status": "todo",
@@ -835,12 +855,12 @@
         "F4-2"
       ],
       "context": [
-        "docs/DESIGN.md#Masalah terbuka dari review ui-critic putaran 2",
-        "docs/UX.md#5. Alur utama",
-        "docs/PRD.md#F4. Detail node tanpa kehilangan workflow"
+        "docs/ARCHITECTURE.md#10.2a Perubahan id dan selector untuk UX v1.2",
+        "docs/UX.md#6.2 Detail agent (F4)",
+        "docs/DESIGN.md#Masalah terbuka dari review ui-critic putaran 2"
       ],
       "id": "t19a-detail-mode",
-      "title": "Detail node di panel: mode detail, tab diingat, Esc tidak menggeser grafik",
+      "title": "Detail agent di panel: satu kolom, status lipat disimpan, Esc tidak menggeser grafik",
       "phase": "4 Live (Tahap A)",
       "type": "fe",
       "agent": "fe",
@@ -848,8 +868,8 @@
       "screen": "Detail node",
       "value": "high",
       "size": "m",
-      "done": "detail.js: mode detail di #side, tab Ringkasan/Aktivitas/File/Hasil dengan tab diingat antar node dan isi diperbarui saat run berlanjut; masalah #6: Esc di 1200+ kembali ke tab data terakhir (bukan menutup panel), di 900-1199 posisi dan zoom grafik disimpan lalu dipakai ulang. Playwright: zoom dan posisi grafik sama sebelum dan sesudah Esc.",
-      "notes": "Isi lengkap tab dan state (agent belum jalan, gagal muat) dikerjakan di t19b setelah desain Tahap B."
+      "done": "agent.js: wadah #drawer di #side, tanpa #agtabs/[data-tab]/ctx.agentTab; status lipat fv-dsec (bawaan hasil dan files terbuka) berlaku untuk semua agent dan bertahan antar node; masalah #6: Esc di 1200+ kembali ke tab data terakhir, di 900-1199 posisi dan zoom grafik disimpan lalu dipakai ulang. Playwright: zoom dan posisi grafik sama sebelum dan sesudah Esc.",
+      "notes": "Kerangka satu kolom. Isi bagian dan peringatan di t19b."
     },
     {
       "status": "todo",
@@ -893,7 +913,7 @@
       "context": [
         "docs/DESIGN.md#4. Aturan komponen",
         "docs/DESIGN.md#Masalah terbuka dari review ui-critic putaran 2",
-        "docs/UX.md#4. Pola per tugas",
+        "docs/UX.md#5. Pola per tugas",
         "docs/PRD.md#F5. Pemberitahuan saat butuh perhatian"
       ],
       "id": "t20a-kotak-pemberitahuan",
@@ -923,7 +943,7 @@
         "docs/ARCHITECTURE.md#7.3 Pemberitahuan (klien",
         "`notify.js`)",
         "docs/PRD.md#F5. Pemberitahuan saat butuh perhatian",
-        "docs/UX.md#6. State per layar"
+        "docs/UX.md#9. State per layar"
       ],
       "id": "t20b-notifikasi-bunyi",
       "title": "Judul tab berkedip, bunyi, dan notifikasi desktop",
@@ -949,7 +969,7 @@
       "context": [
         "docs/DESIGN.md#4. Aturan komponen",
         "docs/DESIGN.md#Masalah terbuka dari review ui-critic putaran 2",
-        "docs/UX.md#5. Alur utama",
+        "docs/UX.md#8. Alur utama",
         "docs/mockups/arah-a/ringkasan.html"
       ],
       "id": "t21-ringkasan-run",
@@ -1167,7 +1187,10 @@
         "t18a-panel-rel-percakapan-backlog",
         "t19a-detail-mode",
         "t20b-notifikasi-bunyi",
-        "t21-ringkasan-run"
+        "t21-ringkasan-run",
+        "t33b-laporan-fe",
+        "t34b-backlog-fe",
+        "t19b-detail-lengkap"
       ],
       "criteria": [],
       "context": [
@@ -1196,8 +1219,8 @@
       ],
       "context": [
         "docs/DESIGN.md#8. Tahap B: layar sisanya",
-        "docs/UX.md#6. State per layar",
-        "docs/UX.md#4. Pola per tugas"
+        "docs/UX.md#9. State per layar",
+        "docs/UX.md#5. Pola per tugas"
       ],
       "id": "ui-b-daftar-proyek",
       "title": "Desain Daftar proyek (/), keadaan kosong, memuat, terputus",
@@ -1214,19 +1237,21 @@
       "status": "todo",
       "needs": [
         "critic-live-r2",
-        "critic-notif-r2"
+        "critic-notif-r2",
+        "design-dial-dan-rujukan"
       ],
       "criteria": [
         "F8-1",
         "F8-2"
       ],
       "context": [
-        "docs/DESIGN.md#8. Tahap B: layar sisanya",
-        "docs/UX.md#5. Alur utama",
-        "docs/UX.md#6. State per layar"
+        "docs/UX.md#3. Penggolongan layar",
+        "docs/UX.md#6.4 Riwayat (F8)",
+        "docs/DESIGN.md#Dial per jenis area",
+        "docs/DESIGN.md#8. Tahap B: layar sisanya"
       ],
       "id": "ui-b-riwayat-runlama",
-      "title": "Desain Riwayat dan tampilan run lama",
+      "title": "Desain Riwayat selebar layar (6 kolom, selisih + Boros) dan run lama (bangun)",
       "phase": "5 Tahap B",
       "type": "ui",
       "agent": "ui-designer",
@@ -1234,7 +1259,8 @@
       "screen": "Riwayat, Run lama",
       "value": "high",
       "size": "m",
-      "done": "Mockup HTML + screenshot di docs/mockups/tahap-b/ per layar dan state (terang dan gelap, 900 dan 1440), token DESIGN tanpa pelanggaran baru; audit ui-craft --lang id. Bukti: path screenshot dan hasil audit. Mencakup tabel run, tren token 12 run, banding dua run dengan peringatan flow berbeda, Hapus dua langkah, run live tanpa Hapus, bilah \"Kembali ke live\", state kosong/memuat/galat."
+      "done": "Mockup HTML + screenshot di docs/mockups/tahap-b/ (terang dan gelap, 900 dan 1440): Riwayat selebar layar dengan pita tetap terlihat, 6 kolom (judul, waktu, flow, setara + selisih, durasi, aksi Buka/Analisis), tanda Boros, satu tombol \"Laporan token\" di kepala (di kepala tiap grup untuk Semua proyek; nonaktif \"Belum ada run untuk dilaporkan\"), tren 12 run, banding dua run, Hapus satu konfirmasi, run berjalan tanpa Hapus, bilah \"Kembali ke live\", kosong/memuat/galat.",
+      "notes": "Bagian: bangun"
     },
     {
       "status": "todo",
@@ -1247,8 +1273,8 @@
       ],
       "context": [
         "docs/DESIGN.md#8. Tahap B: layar sisanya",
-        "docs/UX.md#6. State per layar",
-        "docs/UX.md#5. Alur utama"
+        "docs/UX.md#9. State per layar",
+        "docs/UX.md#8. Alur utama"
       ],
       "id": "ui-b-tab-data",
       "title": "Desain tab File (diff), Skill, dan state lengkap Percakapan/Backlog",
@@ -1273,7 +1299,7 @@
       ],
       "context": [
         "docs/DESIGN.md#8. Tahap B: layar sisanya",
-        "docs/UX.md#6. State per layar"
+        "docs/UX.md#9. State per layar"
       ],
       "id": "ui-b-tab-token-log",
       "title": "Desain tab Token (tabel per agent) dan Log (linimasa)",
@@ -1290,27 +1316,30 @@
       "status": "todo",
       "needs": [
         "critic-live-r2",
-        "critic-notif-r2"
+        "critic-notif-r2",
+        "design-dial-dan-rujukan"
       ],
       "criteria": [
         "F4-3",
         "F2-4"
       ],
       "context": [
-        "docs/DESIGN.md#8. Tahap B: layar sisanya",
-        "docs/UX.md#6. State per layar",
-        "docs/PRD.md#F4. Detail node tanpa kehilangan workflow"
+        "docs/UX.md#3. Penggolongan layar",
+        "docs/UX.md#6.2 Detail agent (F4)",
+        "docs/DESIGN.md#Dial per jenis area",
+        "docs/DESIGN.md#8. Tahap B: layar sisanya"
       ],
       "id": "ui-b-detail-state",
-      "title": "Desain detail node tersisa dan agent di luar flow",
+      "title": "Desain detail agent satu kolom: jawaban di atas, bagian berlipat (bangun)",
       "phase": "5 Tahap B",
       "type": "ui",
       "agent": "ui-designer",
       "slice": "detail-node",
-      "screen": "Detail node",
+      "screen": "Detail agent",
       "value": "mid",
       "size": "m",
-      "done": "Mockup HTML + screenshot di docs/mockups/tahap-b/ per layar dan state (terang dan gelap, 900 dan 1440), token DESIGN tanpa pelanggaran baru; audit ui-craft --lang id. Bukti: path screenshot dan hasil audit. Mencakup tab Aktivitas dan Hasil penuh, agent belum jalan (definisi), gagal dimuat + Coba lagi, node \"tidak dipakai di flow ini\" dan \"di luar flow\"."
+      "done": "Mockup HTML + screenshot di docs/mockups/tahap-b/ (terang dan gelap, 900 dan 1440): #dhead, #dwarn, #dans, #dnums, 8 bagian berlipat urutan tetap, agent belum jalan (hanya def, model, skill), gagal tanpa alasan, gagal dimuat + Coba lagi, \"di luar flow\". Tanpa tab. Token DESIGN tanpa pelanggaran baru.",
+      "notes": "Bagian: bangun"
     },
     {
       "status": "todo",
@@ -1324,7 +1353,7 @@
       ],
       "context": [
         "docs/DESIGN.md#8. Tahap B: layar sisanya",
-        "docs/UX.md#6. State per layar"
+        "docs/UX.md#9. State per layar"
       ],
       "id": "ui-b-state-global",
       "title": "Desain state global: kosong, memuat, terputus, tanpa flow, notifikasi diblokir",
@@ -1375,7 +1404,7 @@
       ],
       "context": [
         "docs/PRD.md#F1. Status terpisah per proyek",
-        "docs/UX.md#6. State per layar",
+        "docs/UX.md#9. State per layar",
         "docs/ARCHITECTURE.md#6. API"
       ],
       "id": "t22-daftar-proyek",
@@ -1392,22 +1421,26 @@
     {
       "status": "todo",
       "needs": [
-        "ui-b-riwayat-runlama",
+        "ui-b-riwayat-runlama-audit",
         "t21-ringkasan-run",
-        "t10b-server-endpoint"
+        "t10b-server-endpoint",
+        "t08-store",
+        "fix-riwayat-laporan-baris"
       ],
       "criteria": [
         "F8-1",
-        "F8-2"
+        "F8-2",
+        "F12-1"
       ],
       "context": [
         "docs/ARCHITECTURE.md#7.5 Riwayat",
-        "docs/PRD.md#F8. Riwayat dan banding token",
-        "per proyek",
-        "docs/UX.md#5. Alur utama"
+        "docs/ARCHITECTURE.md#10.2a Perubahan id dan selector untuk UX v1.2",
+        "docs/PRD.md#F8. Riwayat dan banding token per proyek",
+        "docs/UX.md#6.4 Riwayat (F8)",
+        "docs/UX.md#8. Alur utama"
       ],
       "id": "t23a-riwayat",
-      "title": "Bangun Riwayat: tabel, tren, banding dua run, hapus",
+      "title": "Bangun Riwayat selebar layar: tabel 6 kolom, selisih + Boros, tren, banding, hapus",
       "phase": "5 Tahap B",
       "type": "fe",
       "agent": "fe",
@@ -1415,7 +1448,7 @@
       "screen": "Riwayat",
       "value": "high",
       "size": "m",
-      "done": "history.js: Riwayat per proyek + \"Semua proyek\", tren 12 run, banding dua run + peringatan flow berbeda, aksi \"Ringkasan\" (U5), Hapus dua langkah, run live tanpa Hapus; id #pg-history/#hist/#hall/#hcmp/#hback tetap. Playwright: run proyek A tidak tampil di Riwayat B."
+      "done": "history.js: Riwayat sebagai tampilan selebar layar (pita tetap terlihat; keluar dari rel), per proyek + \"Semua proyek\", selisih token terhadap pembanding dan tanda Boros di baris, tren 12 run, banding dua run + peringatan flow berbeda, aksi Ringkasan (U5), Hapus satu konfirmasi (run berjalan tanpa Hapus); satu tombol Laporan token per proyek di kepala; id #pg-history/#hist/#hall/#hcmp/#hback tetap. Playwright: run proyek A tidak tampil di Riwayat B; R1 tetap lulus."
     },
     {
       "status": "todo",
@@ -1428,8 +1461,8 @@
       ],
       "context": [
         "docs/ARCHITECTURE.md#7.5 Riwayat",
-        "docs/UX.md#6. State per layar",
-        "docs/UX.md#8. Asumsi dan pertanyaan terbuka"
+        "docs/UX.md#9. State per layar",
+        "docs/UX.md#11. Asumsi dan pertanyaan terbuka"
       ],
       "id": "t23b-run-lama",
       "title": "Bangun tampilan run lama (hanya baca)",
@@ -1452,8 +1485,8 @@
         "F9-1"
       ],
       "context": [
-        "docs/UX.md#5. Alur utama",
-        "docs/UX.md#6. State per layar",
+        "docs/UX.md#8. Alur utama",
+        "docs/UX.md#9. State per layar",
         "docs/PRD.md#F9. Fitur yang dipertahankan"
       ],
       "id": "t18b-tab-file-skill-state",
@@ -1478,8 +1511,8 @@
         "F3-3"
       ],
       "context": [
-        "docs/UX.md#5. Alur utama",
-        "docs/UX.md#6. State per layar",
+        "docs/UX.md#8. Alur utama",
+        "docs/UX.md#9. State per layar",
         "docs/ARCHITECTURE.md#5.5 Token (indikator c) dan pembanding"
       ],
       "id": "t18c-tab-token-log",
@@ -1496,19 +1529,22 @@
     {
       "status": "todo",
       "needs": [
-        "ui-b-detail-state",
+        "ui-b-detail-state-audit",
         "t19a-detail-mode"
       ],
       "criteria": [
         "F4-1",
+        "F4-2",
         "F4-3"
       ],
       "context": [
-        "docs/UX.md#6. State per layar",
+        "docs/ARCHITECTURE.md#10.2a Perubahan id dan selector untuk UX v1.2",
+        "docs/UX.md#6.2 Detail agent (F4)",
+        "docs/UX.md#9. State per layar",
         "docs/PRD.md#F4. Detail node tanpa kehilangan workflow"
       ],
       "id": "t19b-detail-lengkap",
-      "title": "Bangun detail node lengkap: Aktivitas, Hasil penuh, agent belum jalan, gagal muat",
+      "title": "Bangun isi detail agent: kepala, peringatan, jawaban, tiga angka, delapan bagian berlipat",
       "phase": "5 Tahap B",
       "type": "fe",
       "agent": "fe",
@@ -1516,7 +1552,7 @@
       "screen": "Detail node",
       "value": "mid",
       "size": "m",
-      "done": "Semua isi laci 1.7.1 tersedia; agent belum jalan menampilkan definisi (peran, model, skill); \"Detail gagal dimuat.\" + Coba lagi; run lama \"Tidak disimpan di Riwayat.\". Playwright."
+      "done": "#dhead, #dwarn (.dw[data-kind=failed|input|quiet|model|model-unproven|skill] bila ada), #dans (gagal tanpa alasan: \"Gagal tanpa alasan tercatat\"), #dnums, section.dsec[data-sec=hasil|files|tugas|langkah|skill|model|token|def] urutan tetap; baris file terlihat tanpa klik, diff di tempat; belum jalan: \"Belum jalan di run ini.\" + hanya def/model/skill; \"Detail gagal dimuat.\" + Coba lagi; run lama \"Tidak disimpan di Riwayat.\". Playwright: uji pengganti ARCH 10.2a (T4 dua langkah, T9 \"Gagal:\" di .dw)."
     },
     {
       "status": "todo",
@@ -1530,7 +1566,7 @@
         "F2"
       ],
       "context": [
-        "docs/UX.md#6. State per layar"
+        "docs/UX.md#9. State per layar"
       ],
       "id": "t25a-state-global",
       "title": "Bangun state global: kosong, memuat, terputus, tanpa flow, notifikasi diblokir",
@@ -1546,7 +1582,7 @@
     {
       "status": "todo",
       "needs": [
-        "ui-b-detail-state",
+        "ui-b-detail-state-audit",
         "t16a-graph-layout"
       ],
       "criteria": [
@@ -1603,7 +1639,9 @@
       "criteria": [],
       "context": [
         "docs/DESIGN.md#8. Tahap B: layar sisanya",
-        "docs/DESIGN.md#1. Arah dan ide"
+        "docs/DESIGN.md#1. Arah dan ide",
+        "docs/UX.md#3. Penggolongan layar",
+        "docs/DESIGN.md#Dial per jenis area"
       ],
       "id": "critic-b1-r1",
       "title": "Kritik Daftar proyek, Riwayat, dan run lama (putaran 1)",
@@ -1643,7 +1681,9 @@
       ],
       "criteria": [],
       "context": [
-        "docs/DESIGN.md#8. Tahap B: layar sisanya"
+        "docs/DESIGN.md#8. Tahap B: layar sisanya",
+        "docs/UX.md#3. Penggolongan layar",
+        "docs/DESIGN.md#Dial per jenis area"
       ],
       "id": "critic-b1-r2",
       "title": "Kritik Daftar proyek, Riwayat, run lama (putaran 2, terakhir)",
@@ -1669,7 +1709,9 @@
       "criteria": [],
       "context": [
         "docs/DESIGN.md#8. Tahap B: layar sisanya",
-        "docs/DESIGN.md#1. Arah dan ide"
+        "docs/DESIGN.md#1. Arah dan ide",
+        "docs/UX.md#3. Penggolongan layar",
+        "docs/DESIGN.md#Dial per jenis area"
       ],
       "id": "critic-b2-r1",
       "title": "Kritik tab data, detail node, state, di luar flow, < 900 px (putaran 1)",
@@ -1709,7 +1751,9 @@
       ],
       "criteria": [],
       "context": [
-        "docs/DESIGN.md#8. Tahap B: layar sisanya"
+        "docs/DESIGN.md#8. Tahap B: layar sisanya",
+        "docs/UX.md#3. Penggolongan layar",
+        "docs/DESIGN.md#Dial per jenis area"
       ],
       "id": "critic-b2-r2",
       "title": "Kritik tab data, detail, state, sempit (putaran 2, terakhir)",
@@ -1727,7 +1771,12 @@
       "needs": [
         "critic-b1-r2",
         "critic-b2-r2",
-        "qa-a-acceptance"
+        "qa-a-acceptance",
+        "critic-b3-r2",
+        "qa-laporan-token",
+        "qa-backlog-bagian",
+        "qa-detail-satu-kolom",
+        "qa-kunci-riwayat-buka-r1"
       ],
       "criteria": [
         "F1-1",
@@ -1904,7 +1953,10 @@
     {
       "status": "todo",
       "needs": [
-        "t30-rilis"
+        "t30-rilis",
+        "qa-b-acceptance",
+        "fix-teks-butuh-input",
+        "rujukan-tasks-detail"
       ],
       "criteria": [],
       "context": [
@@ -1960,7 +2012,642 @@
       "value": "mid",
       "size": "m",
       "notes": "PRD F10 = Nanti. Asal: T24 TASKS dihapus dari UI v2; endpoint /report tetap ada tanpa menu. Keluarkan bila pemilik menyetujui (agent prd perlu menaikkan prioritas F10)"
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "t10a-guard"
+      ],
+      "criteria": [
+        "PRD-8",
+        "F12-2"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#8.1 Permukaan [SEC]",
+        "docs/ARCHITECTURE.md#8.2 Threat model",
+        "docs/PRD.md#F12. Laporan token proyek",
+        "server/server.js"
+      ],
+      "id": "fix-sec-laporan-project",
+      "title": "Perbaiki celah keamanan: Laporan token menerima alamat proyek mentah dari luar",
+      "phase": "0 Bug awal",
+      "type": "be",
+      "agent": "be",
+      "slice": "bug-laporan",
+      "value": "high",
+      "size": "s",
+      "done": "/report/tokens.md|.json hanya menerima project yang ada di daftar proyek yang dikenal server (hasil guard/ProjectStore); nilai lain, kosong, atau bernada path (../, path absolut asing) -> 400 pesan biasa, tanpa memakai folder kerja terakhir sebagai cadangan, dan tidak ada file ditulis di luar folder proyek terdaftar (writeTokenFile). Uji unit/HTTP: project=../../x, absolut asing, kosong, proyek lain terdaftar (terpisah). Bukti: output tes.",
+      "notes": "Bug keamanan: input dari luar (?project=) langsung dipakai sebagai folder baca dan tulis. Urutan 1 (paling awal)."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "fix-sec-laporan-project"
+      ],
+      "criteria": [
+        "PRD-8",
+        "F12-2"
+      ],
+      "context": [
+        "docs/PRD.md#F12. Laporan token proyek",
+        "docs/ARCHITECTURE.md#11. Strategi uji"
+      ],
+      "id": "qa-kunci-laporan-project",
+      "title": "Kunci uji: Laporan token menolak proyek tak dikenal",
+      "phase": "0 Bug awal",
+      "type": "qa",
+      "agent": "qa",
+      "slice": "bug-laporan",
+      "value": "high",
+      "size": "s",
+      "done": "Tes regresi test/http: project tak dikenal/path berbahaya/kosong -> 400 dan tidak ada file ditulis; project terdaftar -> 200 dan memuat hanya run proyek itu. Gagal bila perbaikan dibalik. Bukti: output tes."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "fix-sec-laporan-project"
+      ],
+      "criteria": [
+        "PRD-8"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#8.1 Permukaan [SEC]",
+        "docs/ARCHITECTURE.md#8.2 Threat model"
+      ],
+      "id": "sec-laporan-project",
+      "title": "Cyber: uji tembus Laporan token (alamat proyek, tulis file salinan)",
+      "phase": "0 Bug awal",
+      "type": "sec",
+      "agent": "cyber",
+      "slice": "bug-laporan",
+      "value": "high",
+      "size": "s",
+      "done": "Uji tembus manual endpoint /report/tokens.* (traversal, path absolut, symlink, Host/Origin asing, n= besar), cek tulis .flow-viewer/laporan-token.md hanya di folder proyek terdaftar. Daftar temuan bertingkat; tidak ada temuan tinggi terbuka; menengah dijadikan item. Bukti: perintah uji + hasil."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "fix-sec-laporan-project"
+      ],
+      "criteria": [
+        "F8-1",
+        "F12-1"
+      ],
+      "context": [
+        "docs/UX.md#8. Alur utama",
+        "docs/UX.md#6.4 Riwayat (F8)",
+        "docs/PRD.md#F12. Laporan token proyek",
+        "server/public/js/history.js"
+      ],
+      "id": "fix-riwayat-laporan-baris",
+      "title": "Perbaiki Riwayat: tombol Laporan per baris tidak lagi menimpa tombol Buka",
+      "phase": "0 Bug awal",
+      "type": "fe",
+      "agent": "fe",
+      "slice": "bug-laporan",
+      "value": "high",
+      "size": "s",
+      "done": "Tidak ada tombol Laporan di baris run; satu tombol \"Laporan token\" di kepala Riwayat (nama proyek dikirim dari proyek Riwayat, bukan cadangan), Buka di baris membuka run itu. Lulus uji regresi UX §8 T6 R1 (Playwright, minimal 2 run selesai): klik Buka tidak membuka laporan. Bukti: output Playwright + path screenshot.",
+      "notes": "Urutan 2: sengaja menunggu fix-sec-laporan-project agar dua bug awal berurutan. Bentuk selebar layar menyusul di t23a."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "fix-riwayat-laporan-baris"
+      ],
+      "criteria": [
+        "F8-1",
+        "F12-1"
+      ],
+      "context": [
+        "docs/UX.md#8. Alur utama",
+        "docs/ARCHITECTURE.md#10.2 Id elemen dan selector skrip uji"
+      ],
+      "id": "qa-kunci-riwayat-buka-r1",
+      "title": "Kunci uji: klik Buka di Riwayat membuka run, bukan laporan (R1)",
+      "phase": "0 Bug awal",
+      "type": "qa",
+      "agent": "qa",
+      "slice": "bug-laporan",
+      "value": "high",
+      "size": "s",
+      "done": "Uji regresi R1 di test/ui/ui.test.mjs: (a) 0 tombol Laporan di baris, \"Laporan token\" hanya di kepala; (b) klik Buka membuka run; (c) laporan berjudul proyek Riwayat. Gagal bila perbaikan dibalik. Bukti: output tes."
+    },
+    {
+      "status": "todo",
+      "needs": [],
+      "criteria": [],
+      "context": [
+        "docs/UX.md#3. Penggolongan layar",
+        "docs/DESIGN.md#8. Tahap B: layar sisanya",
+        "docs/DESIGN.md#1. Arah dan ide"
+      ],
+      "id": "design-dial-dan-rujukan",
+      "title": "Lengkapi DESIGN: bagian Dial per jenis area dan rujukan detail satu kolom (§8 butir 5)",
+      "phase": "0 Bug awal",
+      "type": "ui",
+      "agent": "ui-designer",
+      "model": "sonnet",
+      "slice": "rujukan",
+      "value": "high",
+      "size": "s",
+      "done": "DESIGN.md punya bagian \"Dial per jenis area\" (area dashboard Flow Viewer) yang dirujuk item ui-designer/ui-critic; §8 butir 5 diganti: detail agent satu kolom dengan bagian berlipat (bukan tab Aktivitas/Hasil). Diff dikutip sebagai bukti.",
+      "notes": "Bagian \"Dial per jenis area\" belum ada di DESIGN.md (hanya baris Dial taste di §1); item ui yang merujuknya menunggu ini."
+    },
+    {
+      "status": "done",
+      "needs": [],
+      "criteria": [],
+      "context": [
+        "docs/TASKS.md",
+        "docs/UX.md#6.2 Detail agent (F4)",
+        "docs/ARCHITECTURE.md#10.2a Perubahan id dan selector untuk UX v1.2"
+      ],
+      "id": "rujukan-tasks-detail",
+      "title": "Selaraskan TASKS.md: T19 detail satu kolom (bukan empat tab) dan nomor bagian UX",
+      "phase": "0 Bug awal",
+      "type": "review",
+      "agent": "architect",
+      "model": "sonnet",
+      "slice": "rujukan",
+      "value": "mid",
+      "size": "s",
+      "done": "TASKS.md T19 tanpa kata empat tab, memuat satu kolom/fv-dsec; rujukan ke nomor bagian UX lama diganti; ditambah baris T untuk F11, F12, Riwayat selebar layar. Diff dikutip sebagai bukti.",
+      "attempts": 1,
+      "startedAt": "2026-11-04T00:24:02.188Z",
+      "evidence": "TASKS.md: 'empat tab' 0 hit, fv-dsec 1 hit, T32-T34 ditambah; +8/-5 baris",
+      "finishedAt": "2026-11-04T00:24:50.690Z"
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "t20a-kotak-pemberitahuan",
+        "t18a-panel-rel-percakapan-backlog"
+      ],
+      "criteria": [],
+      "context": [
+        "docs/UX.md#10. Istilah",
+        "server/public/js/header.js",
+        "server/public/js/notify.js",
+        "server/public/js/panel.js",
+        "test/ui/ui.test.mjs"
+      ],
+      "id": "fix-teks-butuh-input",
+      "title": "Samakan teks \"butuh jawabanmu\" dengan istilah Butuh input (UX §10) di tampilan dan uji",
+      "phase": "0 Bug awal",
+      "type": "fe",
+      "agent": "fe",
+      "slice": "rujukan",
+      "value": "low",
+      "size": "s",
+      "done": "grep \"butuh jawabanmu\" di server/public dan test/ui = 0 hasil; pengganti memakai istilah UX §10 (\"Butuh input\"); test/ui/ui.test.mjs ikut diperbarui dan lulus. Bukti: output grep + tes."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "ui-b-detail-state"
+      ],
+      "criteria": [
+        "F4-1",
+        "F4-3"
+      ],
+      "context": [
+        "docs/UX.md#3. Penggolongan layar",
+        "docs/UX.md#6.2 Detail agent (F4)",
+        "docs/DESIGN.md#Dial per jenis area",
+        "docs/DESIGN.md#8. Tahap B: layar sisanya"
+      ],
+      "id": "ui-b-detail-state-audit",
+      "title": "Audit desain detail agent satu kolom (ui-craft, antislop, kontras)",
+      "phase": "5 Tahap B",
+      "type": "ui",
+      "agent": "ui-designer",
+      "slice": "detail-node",
+      "screen": "Detail agent",
+      "value": "mid",
+      "size": "m",
+      "done": "Audit ui-craft --lang id dan perbaikan temuan atas mockup detail agent; screenshot sesudah. Bukti: hasil audit + path screenshot.",
+      "notes": "Bagian: audit"
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "t19b-detail-lengkap"
+      ],
+      "criteria": [
+        "F4-1",
+        "F4-2",
+        "F4-3"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#10.2a Perubahan id dan selector untuk UX v1.2",
+        "docs/UX.md#8. Alur utama"
+      ],
+      "id": "qa-detail-satu-kolom",
+      "title": "Uji detail agent satu kolom: T4 (2 langkah lalu 1) dan T9 (alasan gagal 1 klik)",
+      "phase": "6 Verifikasi dan rilis",
+      "type": "qa",
+      "agent": "qa",
+      "slice": "detail-node",
+      "value": "mid",
+      "size": "s",
+      "done": "Playwright mengikuti uji pengganti ARCH 10.2a: files tanpa klik, langkah terbuka bertahan antar agent, skenario failed memuat \"Gagal:\", agent belum jalan hanya 3 bagian. Bukti: laporan lulus/gagal per AC."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "ui-b-riwayat-runlama"
+      ],
+      "criteria": [
+        "F8-1",
+        "F8-2"
+      ],
+      "context": [
+        "docs/UX.md#3. Penggolongan layar",
+        "docs/UX.md#6.4 Riwayat (F8)",
+        "docs/DESIGN.md#Dial per jenis area",
+        "docs/DESIGN.md#8. Tahap B: layar sisanya"
+      ],
+      "id": "ui-b-riwayat-runlama-audit",
+      "title": "Audit desain Riwayat selebar layar dan run lama",
+      "phase": "5 Tahap B",
+      "type": "ui",
+      "agent": "ui-designer",
+      "slice": "riwayat",
+      "screen": "Riwayat, Run lama",
+      "value": "high",
+      "size": "m",
+      "done": "Audit ui-craft --lang id dan perbaikan temuan atas mockup Riwayat; screenshot sesudah. Bukti: hasil audit + path screenshot.",
+      "notes": "Bagian: audit"
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "critic-live-r2",
+        "critic-notif-r2",
+        "design-dial-dan-rujukan"
+      ],
+      "criteria": [
+        "F12-1",
+        "F12-6"
+      ],
+      "context": [
+        "docs/UX.md#3. Penggolongan layar",
+        "docs/UX.md#6.5 Laporan token (F12)",
+        "docs/DESIGN.md#Dial per jenis area",
+        "docs/DESIGN.md#8. Tahap B: layar sisanya"
+      ],
+      "id": "ui-b-laporan-token",
+      "title": "Desain Laporan token proyek di atas Riwayat (bangun)",
+      "phase": "5 Tahap B",
+      "type": "ui",
+      "agent": "ui-designer",
+      "slice": "laporan-token",
+      "screen": "Laporan token",
+      "value": "high",
+      "size": "m",
+      "done": "Mockup HTML + screenshot di docs/mockups/tahap-b/ (terang dan gelap, 900 dan 1440): judul \"Laporan token · <proyek>\", tiga penyumbang terbesar dengan persen setara, catatan data (belum dianalisis, batas 200, salinan tidak tertulis), tabel rinci, state memuat \"Menyusun laporan...\", galat + Coba lagi, kosong; tutup Esc/Tutup/klik luar. Token DESIGN tanpa pelanggaran baru.",
+      "notes": "Bagian: bangun"
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "ui-b-laporan-token"
+      ],
+      "criteria": [
+        "F12-1",
+        "F12-6"
+      ],
+      "context": [
+        "docs/UX.md#3. Penggolongan layar",
+        "docs/UX.md#6.5 Laporan token (F12)",
+        "docs/DESIGN.md#Dial per jenis area",
+        "docs/DESIGN.md#8. Tahap B: layar sisanya"
+      ],
+      "id": "ui-b-laporan-token-audit",
+      "title": "Audit desain Laporan token proyek",
+      "phase": "5 Tahap B",
+      "type": "ui",
+      "agent": "ui-designer",
+      "slice": "laporan-token",
+      "screen": "Laporan token",
+      "value": "high",
+      "size": "m",
+      "done": "Audit ui-craft --lang id dan perbaikan temuan; screenshot sesudah. Bukti: hasil audit + path screenshot.",
+      "notes": "Bagian: audit"
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "fix-sec-laporan-project",
+        "t08-store"
+      ],
+      "criteria": [
+        "F12-2",
+        "F12-6",
+        "F12-8"
+      ],
+      "context": [
+        "docs/PRD.md#F12. Laporan token proyek",
+        "docs/ARCHITECTURE.md#5.5 Token (indikator c) dan pembanding",
+        "server/token-report.js"
+      ],
+      "id": "t33a-laporan-server",
+      "title": "Laporan token: proyek tepat, persen dari setara, tiga penyumbang teratas, batas 200 run",
+      "phase": "2 Server",
+      "type": "be",
+      "agent": "be",
+      "slice": "laporan-token",
+      "value": "high",
+      "size": "m",
+      "done": "token-report: bagian teratas memuat tiga penyumbang setara terbesar (agent atau item) dengan persen; semua persen dari token setara (rumus PRD 4a, sama dengan pita dan Riwayat); maks 200 run terbaru + catatan batas; jumlah run belum dianalisis; salinan <proyek>/.flow-viewer/laporan-token.md dilewati tanpa galat bila folder hilang/tak bisa ditulis; keluaran berupa data, bukan HTML dari isi run. Uji unit. Bukti: output tes."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "ui-b-laporan-token-audit",
+        "t33a-laporan-server",
+        "t23a-riwayat"
+      ],
+      "criteria": [
+        "F12-1",
+        "F12-2",
+        "F12-3",
+        "F12-4",
+        "F12-5",
+        "F12-6",
+        "F12-7",
+        "F12-8"
+      ],
+      "context": [
+        "docs/UX.md#6.5 Laporan token (F12)",
+        "docs/UX.md#9. State per layar",
+        "docs/PRD.md#F12. Laporan token proyek",
+        "server/public/js/md.js"
+      ],
+      "id": "t33b-laporan-fe",
+      "title": "Bangun Laporan token di atas Riwayat: tombol per proyek, state, tutup tanpa kehilangan posisi",
+      "phase": "5 Tahap B",
+      "type": "fe",
+      "agent": "fe",
+      "slice": "laporan-token",
+      "screen": "Laporan token",
+      "value": "high",
+      "size": "m",
+      "done": "Satu tombol \"Laporan token\" per proyek (grup untuk Semua proyek), nonaktif \"Belum ada run untuk dilaporkan\"; \"Menyusun laporan...\" tanpa klik ganda; galat + Coba lagi (bukan teks mentah server); tutup Esc/Tutup/klik luar tanpa mengubah gulir dan centang Riwayat; tautan penyumbang ke baris tabel; teks run sebagai teks biasa. Playwright: laporan proyek A walau proyek B lebih baru; fixture berbahaya tidak dirender."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "t33a-laporan-server",
+        "t33b-laporan-fe"
+      ],
+      "criteria": [
+        "F12-1",
+        "F12-2",
+        "F12-3",
+        "F12-4",
+        "F12-5",
+        "F12-6",
+        "F12-7",
+        "F12-8"
+      ],
+      "context": [
+        "docs/PRD.md#F12. Laporan token proyek",
+        "docs/ARCHITECTURE.md#11. Strategi uji"
+      ],
+      "id": "qa-laporan-token",
+      "title": "Uji penerimaan Laporan token (F12)",
+      "phase": "6 Verifikasi dan rilis",
+      "type": "qa",
+      "agent": "qa",
+      "slice": "laporan-token",
+      "value": "high",
+      "size": "m",
+      "done": "Lulus/gagal per AC F12 (8 kriteria + dua edge case) dengan Playwright dan tes HTTP; persen laporan = persen pita/Riwayat untuk data yang sama. Bukti: ringkasan per AC + path screenshot."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "t04-backlog-ringkas"
+      ],
+      "criteria": [
+        "F11-1",
+        "F11-2",
+        "F11-3",
+        "F11-4",
+        "F11-5",
+        "F11-6",
+        "F11-7",
+        "F11-8"
+      ],
+      "context": [
+        "docs/PRD.md#F11. Backlog terbaca per bagian",
+        "docs/UX.md#6.3 Backlog (F11)",
+        "docs/ARCHITECTURE.md#6. API",
+        "server/backlog.js"
+      ],
+      "id": "t34a-backlog-bagian-server",
+      "title": "Backlog per bagian: keadaan bagian, baris jawaban, urutan item (server)",
+      "phase": "2 Server",
+      "type": "be",
+      "agent": "be",
+      "slice": "backlog-bagian",
+      "value": "high",
+      "size": "m",
+      "done": "Ringkasan backlog dikelompokkan per slice (nama biasa; tanpa slice = \"Tanpa bagian\"), keadaan Butuh keputusan > Macet > Berjalan > Belum mulai > Selesai, item keputusan yang sudah selesai tidak pernah berlabel perlu keputusan, baris atas \"<n> bagian macet · <m> keputusan menunggu kamu · Berikutnya: <judul>\", urutan item di bagian, grup Diparkir, persen = indikator (b); edge: tanpa backlog.json, tanpa slice sama sekali, bagian >20 item, file rusak/>2 MB. Uji unit dengan backlog fixture proyek ini. Bukti: output tes.",
+      "notes": "t04 (selesai) menyediakan ringkasan datar; ini menambah pengelompokan tanpa membuka ulang t04."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "critic-live-r2",
+        "critic-notif-r2",
+        "design-dial-dan-rujukan"
+      ],
+      "criteria": [
+        "F11-1",
+        "F11-2",
+        "F11-3"
+      ],
+      "context": [
+        "docs/UX.md#3. Penggolongan layar",
+        "docs/UX.md#6.3 Backlog (F11)",
+        "docs/DESIGN.md#Dial per jenis area",
+        "docs/DESIGN.md#8. Tahap B: layar sisanya"
+      ],
+      "id": "ui-b-backlog-bagian",
+      "title": "Desain panel Backlog per bagian (bangun)",
+      "phase": "5 Tahap B",
+      "type": "ui",
+      "agent": "ui-designer",
+      "slice": "backlog-bagian",
+      "screen": "Backlog",
+      "value": "high",
+      "size": "m",
+      "done": "Mockup HTML + screenshot di docs/mockups/tahap-b/ (terang dan gelap, 900 dan 1440): baris jawaban teratas, judul bagian (nama, keadaan ikon+teks, selesai dari total), bagian Selesai terlipat, item keputusan/gagal/menunggu dengan keterangannya, grup Diparkir, bagian >20 item, tanpa backlog, tanpa slice, galat baca. Token DESIGN tanpa pelanggaran baru.",
+      "notes": "Bagian: bangun"
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "ui-b-backlog-bagian"
+      ],
+      "criteria": [
+        "F11-1",
+        "F11-2",
+        "F11-3"
+      ],
+      "context": [
+        "docs/UX.md#3. Penggolongan layar",
+        "docs/UX.md#6.3 Backlog (F11)",
+        "docs/DESIGN.md#Dial per jenis area",
+        "docs/DESIGN.md#8. Tahap B: layar sisanya"
+      ],
+      "id": "ui-b-backlog-bagian-audit",
+      "title": "Audit desain panel Backlog per bagian",
+      "phase": "5 Tahap B",
+      "type": "ui",
+      "agent": "ui-designer",
+      "slice": "backlog-bagian",
+      "screen": "Backlog",
+      "value": "high",
+      "size": "m",
+      "done": "Audit ui-craft --lang id dan perbaikan temuan; screenshot sesudah. Bukti: hasil audit + path screenshot.",
+      "notes": "Bagian: audit"
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "ui-b-backlog-bagian-audit",
+        "t34a-backlog-bagian-server",
+        "t18a-panel-rel-percakapan-backlog"
+      ],
+      "criteria": [
+        "F11-1",
+        "F11-2",
+        "F11-3",
+        "F11-4",
+        "F11-5",
+        "F11-6",
+        "F11-7",
+        "F11-8"
+      ],
+      "context": [
+        "docs/UX.md#6.3 Backlog (F11)",
+        "docs/UX.md#9. State per layar",
+        "docs/PRD.md#F11. Backlog terbaca per bagian",
+        "server/public/js/panel.js"
+      ],
+      "id": "t34b-backlog-fe",
+      "title": "Bangun panel Backlog per bagian (menggantikan daftar datar per jenis)",
+      "phase": "5 Tahap B",
+      "type": "fe",
+      "agent": "fe",
+      "slice": "backlog-bagian",
+      "screen": "Backlog",
+      "value": "high",
+      "size": "m",
+      "done": "Panel Backlog per bagian sesuai UX 6.3: baris jawaban teratas, urutan keadaan, selesai terlipat, label jenis berkata biasa, klik sel Progres membuka Backlog; #blist/#bbar dipertahankan bila masih dipakai uji. Playwright dengan fixture: keputusan yang sudah dijawab tidak berlabel \"perlu keputusan\". Bukti: output + screenshot."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "t34a-backlog-bagian-server",
+        "t34b-backlog-fe"
+      ],
+      "criteria": [
+        "F11-1",
+        "F11-2",
+        "F11-3",
+        "F11-4",
+        "F11-5",
+        "F11-6",
+        "F11-7",
+        "F11-8"
+      ],
+      "context": [
+        "docs/PRD.md#F11. Backlog terbaca per bagian",
+        "docs/UX.md#8. Alur utama"
+      ],
+      "id": "qa-backlog-bagian",
+      "title": "Uji penerimaan Backlog per bagian (F11)",
+      "phase": "6 Verifikasi dan rilis",
+      "type": "qa",
+      "agent": "qa",
+      "slice": "backlog-bagian",
+      "value": "high",
+      "size": "m",
+      "done": "Lulus/gagal per AC F11 dan 4 edge case; persen sama dengan indikator (b); T7 satu klik. Bukti: ringkasan per AC + screenshot."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "t23a-riwayat",
+        "t33b-laporan-fe",
+        "t34b-backlog-fe"
+      ],
+      "criteria": [],
+      "context": [
+        "docs/UX.md#3. Penggolongan layar",
+        "docs/DESIGN.md#Dial per jenis area",
+        "docs/DESIGN.md#8. Tahap B: layar sisanya",
+        "docs/DESIGN.md#1. Arah dan ide",
+        "docs/UX.md#6.4 Riwayat (F8)",
+        "docs/UX.md#6.5 Laporan token (F12)",
+        "docs/UX.md#6.3 Backlog (F11)"
+      ],
+      "id": "critic-b3-r1",
+      "title": "Review ui-critic: Riwayat selebar layar, Laporan token, Backlog per bagian",
+      "phase": "5 Tahap B",
+      "type": "review",
+      "agent": "ui-critic",
+      "slice": "laporan-token",
+      "value": "high",
+      "size": "m",
+      "done": "Review ui-critic atas layar nyata (screenshot Playwright 1440x900 dan 900x780, terang dan gelap), bukan mockup; dinilai sebagai layar dashboard (UX Penggolongan + dial per jenis area). Putaran maksimal 2 per kelompok. Bukti: daftar temuan bertingkat + path screenshot."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "critic-b3-r1"
+      ],
+      "criteria": [],
+      "context": [
+        "docs/DESIGN.md#4. Aturan komponen"
+      ],
+      "id": "fix-b3",
+      "title": "Tutup temuan wajib review Riwayat, Laporan token, Backlog",
+      "phase": "5 Tahap B",
+      "type": "fe",
+      "agent": "fe",
+      "slice": "laporan-token",
+      "value": "high",
+      "size": "s",
+      "done": "Semua temuan wajib putaran 1 ditutup. Bukti: tiap temuan -> perubahan + screenshot sesudah."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "fix-b3"
+      ],
+      "criteria": [],
+      "context": [
+        "docs/UX.md#3. Penggolongan layar",
+        "docs/DESIGN.md#Dial per jenis area",
+        "docs/DESIGN.md#8. Tahap B: layar sisanya",
+        "docs/DESIGN.md#1. Arah dan ide"
+      ],
+      "id": "critic-b3-r2",
+      "title": "Review ulang ui-critic: Riwayat, Laporan token, Backlog",
+      "phase": "5 Tahap B",
+      "type": "review",
+      "agent": "ui-critic",
+      "slice": "laporan-token",
+      "value": "high",
+      "size": "s",
+      "done": "Review ui-critic atas layar nyata (screenshot Playwright 1440x900 dan 900x780, terang dan gelap), bukan mockup; dinilai sebagai layar dashboard (UX Penggolongan + dial per jenis area). Putaran maksimal 2 per kelompok. Bukti: daftar temuan bertingkat + path screenshot."
     }
   ],
-  "updatedAt": "2026-10-27T07:45:50.191Z"
+  "updatedAt": "2026-11-04T00:34:36.290Z"
 }
