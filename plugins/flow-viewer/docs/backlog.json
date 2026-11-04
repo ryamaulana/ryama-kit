@@ -289,7 +289,7 @@
       "finishedAt": "2026-11-04T00:34:36.288Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "t04-backlog-ringkas",
         "t06b-gagal-ringkasan"
@@ -312,7 +312,11 @@
       "slice": "server",
       "value": "high",
       "size": "m",
-      "done": "attention.js fungsi murni: jenis, kunci stabil, teks, pilihan jawaban, waktu, kapan hilang; beberapa pemicu bersamaan. Uji unit tiap jenis dan kunci tidak berubah antar snapshot."
+      "done": "attention.js fungsi murni: jenis, kunci stabil, teks, pilihan jawaban, waktu, kapan hilang; beberapa pemicu bersamaan. Uji unit tiap jenis dan kunci tidak berubah antar snapshot.",
+      "attempts": 1,
+      "startedAt": "2026-11-04T00:37:58.824Z",
+      "evidence": "node --test test/unit/attention.test.js: 9 lulus, 0 gagal; server/attention.js ada",
+      "finishedAt": "2026-11-04T00:38:59.509Z"
     },
     {
       "status": "todo",
@@ -2014,7 +2018,7 @@
       "notes": "PRD F10 = Nanti. Asal: T24 TASKS dihapus dari UI v2; endpoint /report tetap ada tanpa menu. Keluarkan bila pemilik menyetujui (agent prd perlu menaikkan prioritas F10)"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "t10a-guard"
       ],
@@ -2034,13 +2038,17 @@
       "type": "be",
       "agent": "be",
       "slice": "bug-laporan",
-      "value": "high",
+      "value": "urgent",
       "size": "s",
       "done": "/report/tokens.md|.json hanya menerima project yang ada di daftar proyek yang dikenal server (hasil guard/ProjectStore); nilai lain, kosong, atau bernada path (../, path absolut asing) -> 400 pesan biasa, tanpa memakai folder kerja terakhir sebagai cadangan, dan tidak ada file ditulis di luar folder proyek terdaftar (writeTokenFile). Uji unit/HTTP: project=../../x, absolut asing, kosong, proyek lain terdaftar (terpisah). Bukti: output tes.",
-      "notes": "Bug keamanan: input dari luar (?project=) langsung dipakai sebagai folder baca dan tulis. Urutan 1 (paling awal)."
+      "notes": "Bug keamanan: input dari luar (?project=) langsung dipakai sebagai folder baca dan tulis. Urutan 1 (paling awal).",
+      "attempts": 1,
+      "startedAt": "2026-11-04T00:37:55.256Z",
+      "evidence": "node --test test/unit/*.test.js: 69 lulus, 0 gagal (agent); report-project.test.js: 2 lulus, 0 gagal (dicek ulang)",
+      "finishedAt": "2026-11-04T00:39:19.731Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "fix-sec-laporan-project"
       ],
@@ -2058,12 +2066,16 @@
       "type": "qa",
       "agent": "qa",
       "slice": "bug-laporan",
-      "value": "high",
+      "value": "urgent",
       "size": "s",
-      "done": "Tes regresi test/http: project tak dikenal/path berbahaya/kosong -> 400 dan tidak ada file ditulis; project terdaftar -> 200 dan memuat hanya run proyek itu. Gagal bila perbaikan dibalik. Bukti: output tes."
+      "done": "Tes regresi test/http: project tak dikenal/path berbahaya/kosong -> 400 dan tidak ada file ditulis; project terdaftar -> 200 dan memuat hanya run proyek itu. Gagal bila perbaikan dibalik. Bukti: output tes.",
+      "attempts": 1,
+      "startedAt": "2026-11-04T00:39:23.118Z",
+      "evidence": "node --test test/http/report-project.http.test.js: 2 lulus, 0 gagal; uji balik (perbaikan dibalik) gagal 1 sesuai harapan",
+      "finishedAt": "2026-11-04T00:40:16.549Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "fix-sec-laporan-project"
       ],
@@ -2080,12 +2092,16 @@
       "type": "sec",
       "agent": "cyber",
       "slice": "bug-laporan",
-      "value": "high",
+      "value": "urgent",
       "size": "s",
-      "done": "Uji tembus manual endpoint /report/tokens.* (traversal, path absolut, symlink, Host/Origin asing, n= besar), cek tulis .flow-viewer/laporan-token.md hanya di folder proyek terdaftar. Daftar temuan bertingkat; tidak ada temuan tinggi terbuka; menengah dijadikan item. Bukti: perintah uji + hasil."
+      "done": "Uji tembus manual endpoint /report/tokens.* (traversal, path absolut, symlink, Host/Origin asing, n= besar), cek tulis .flow-viewer/laporan-token.md hanya di folder proyek terdaftar. Daftar temuan bertingkat; tidak ada temuan tinggi terbuka; menengah dijadikan item. Bukti: perintah uji + hasil.",
+      "attempts": 1,
+      "startedAt": "2026-11-04T00:39:26.002Z",
+      "evidence": "Uji tembus curl di server sementara: traversal, path absolut, kosong, %00 -> 400; tulis hanya di folder terdaftar; n besar aman. 0 critical/high, 2 medium, 2 low (dijadikan item)",
+      "finishedAt": "2026-11-04T00:41:10.742Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "fix-sec-laporan-project"
       ],
@@ -2105,10 +2121,14 @@
       "type": "fe",
       "agent": "fe",
       "slice": "bug-laporan",
-      "value": "high",
+      "value": "urgent",
       "size": "s",
       "done": "Tidak ada tombol Laporan di baris run; satu tombol \"Laporan token\" di kepala Riwayat (nama proyek dikirim dari proyek Riwayat, bukan cadangan), Buka di baris membuka run itu. Lulus uji regresi UX §8 T6 R1 (Playwright, minimal 2 run selesai): klik Buka tidak membuka laporan. Bukti: output Playwright + path screenshot.",
-      "notes": "Urutan 2: sengaja menunggu fix-sec-laporan-project agar dua bug awal berurutan. Bentuk selebar layar menyusul di t23a."
+      "notes": "Urutan 2: sengaja menunggu fix-sec-laporan-project agar dua bug awal berurutan. Bentuk selebar layar menyusul di t23a.",
+      "attempts": 1,
+      "startedAt": "2026-11-04T00:41:38.388Z",
+      "evidence": "node --test test/ui/ui.test.mjs: 25 lulus, 0 gagal (agent, playwright sementara); screenshot test/ui/r1-buka.png. Terbuka: R1(c) lebar 1200 menunggu t23a; klik pakai force:true",
+      "finishedAt": "2026-11-04T00:45:13.828Z"
     },
     {
       "status": "todo",
@@ -2129,7 +2149,7 @@
       "type": "qa",
       "agent": "qa",
       "slice": "bug-laporan",
-      "value": "high",
+      "value": "urgent",
       "size": "s",
       "done": "Uji regresi R1 di test/ui/ui.test.mjs: (a) 0 tombol Laporan di baris, \"Laporan token\" hanya di kepala; (b) klik Buka membuka run; (c) laporan berjudul proyek Riwayat. Gagal bila perbaikan dibalik. Bukti: output tes."
     },
@@ -2647,7 +2667,30 @@
       "value": "high",
       "size": "s",
       "done": "Review ui-critic atas layar nyata (screenshot Playwright 1440x900 dan 900x780, terang dan gelap), bukan mockup; dinilai sebagai layar dashboard (UX Penggolongan + dial per jenis area). Putaran maksimal 2 per kelompok. Bukti: daftar temuan bertingkat + path screenshot."
+    },
+    {
+      "id": "fix-sec-laporan-host-origin",
+      "title": "Perketat keamanan server lokal: tolak situs asing mendaftarkan folder, membaca laporan, atau mereset",
+      "type": "be",
+      "agent": "be",
+      "status": "todo",
+      "needs": [
+        "sec-laporan-project"
+      ],
+      "criteria": [
+        "PRD-8"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#8.1 Permukaan [SEC]",
+        "docs/ARCHITECTURE.md#8.2 Threat model",
+        "server/server.js"
+      ],
+      "value": "mid",
+      "size": "s",
+      "done": "Tes HTTP lulus untuk tiap perbaikan, tes yang ada tetap lulus. (1) POST /event hanya bila Origin kosong/localhost dan Content-Type application/json (text/plain dari web asing ditolak); folder dikenal wajib punya docs/ atau .claude/ atau pernah berisi sesi nyata (server.js:77, :290). (2) Host selain localhost:PORT/127.0.0.1:PORT -> 403 (cegah DNS rebinding pada /report/tokens.json, /history, /report.md, POST /reset); Origin non-localhost pada semua POST -> 403 (:335). (3) Symlink/junction: realpath lalu bandingkan (:296-299). (4) 500 tidak membocorkan err.message; store.list di-cache sebagai Set proyek, tidak dipindai tiap request (:363/:369).",
+      "slice": "bug-laporan",
+      "model": "opus"
     }
   ],
-  "updatedAt": "2026-11-04T00:34:36.290Z"
+  "updatedAt": "2026-11-04T00:45:13.830Z"
 }

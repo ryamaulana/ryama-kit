@@ -286,9 +286,11 @@ function tokenBuild(project, n = 60) {
   return { rows: rows.length, R: tokenReport.build(runs, project) };
 }
 // Salinan markdown untuk dibaca AI di folder proyek: <proyek>/.flow-viewer/laporan-token.md (folder itu meng-ignore dirinya sendiri).
+// Hanya proyek yang tercatat di riwayat run; nilai dari luar (?project=) tidak pernah dipakai mentah sebagai folder.
+function knownProject(p) { return typeof p === 'string' && p !== '' && store.list('', 1000).some((r) => r.project === p); }
 function writeTokenFile(project) {
   try {
-    if (!project || !fs.statSync(project).isDirectory()) return;
+    if (!knownProject(project) || !fs.statSync(project).isDirectory()) return;
     const { rows, R } = tokenBuild(project);
     if (!rows) return;
     const dir = path.join(project, '.flow-viewer');
@@ -357,7 +359,8 @@ const server = http.createServer((req, res) => {
   }
   if (url === '/report/tokens.md' || url === '/report/tokens.json') {
     const q = new URLSearchParams(req.url.split('?')[1] || '');
-    const project = q.get('project') || cwdNow;
+    const project = q.get('project');
+    if (!knownProject(project)) { res.writeHead(400, { 'Content-Type': 'text/plain; charset=utf-8' }); res.end('Proyek tidak dikenal. Pilih proyek dari riwayat run.'); return; }
     try {
       const { rows, R } = tokenBuild(project, Math.min(200, Number(q.get('n')) || 60));
       if (rows && q.get('write') !== '0') writeTokenFile(project);

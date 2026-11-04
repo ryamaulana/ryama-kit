@@ -2,17 +2,17 @@
 
 Diperbarui otomatis oleh backlog.js. Jangan edit tangan; ubah lewat perintah atau agent backlog.
 
-**Progres: 14/101 selesai** · berjalan 0 · siap 6 · menunggu 81 · gagal 0
+**Progres: 19/102 selesai** · berjalan 0 · siap 6 · menunggu 77 · gagal 0
 
 ## Siap dikerjakan
 
 | ID | Jenis | Judul | Agent | Nilai/Usaha |
 |---|---|---|---|---|
-| t07-attention | be | Server menghitung item pemberitahuan (pertanyaan, izin, keputusan, gagal, selesai) | be | high/m |
+| qa-kunci-riwayat-buka-r1 | qa | Kunci uji: klik Buka di Riwayat membuka run, bukan laporan (R1) | qa | urgent/s |
 | t08-store | be | Riwayat tersimpan per proyek, 200 run per proyek | be | high/m |
 | design-dial-dan-rujukan | ui | Lengkapi DESIGN: bagian Dial per jenis area dan rujukan detail satu kolom (§8 butir 5) | ui-designer (sonnet) | high/s |
+| fix-sec-laporan-host-origin | be | Perketat keamanan server lokal: tolak situs asing mendaftarkan folder, membaca laporan, atau mereset | be (opus) | mid/s |
 | t13a-kerangka-html | fe | Pecah index.html: kerangka markup semua id, huruf, boot.js | fe | high/m |
-| fix-sec-laporan-project | be | Perbaiki celah keamanan: Laporan token menerima alamat proyek mentah dari luar | be | high/s |
 | t34a-backlog-bagian-server | be | Backlog per bagian: keadaan bagian, baris jawaban, urutan item (server) | be | high/m |
 
 ## Menunggu dependensi
@@ -20,13 +20,13 @@ Diperbarui otomatis oleh backlog.js. Jangan edit tangan; ubah lewat perintah ata
 | ID | Judul | Menunggu |
 |---|---|---|
 | t09a-projects-kunci | Server memisahkan proyek: kunci, ikatan sesi, aktif 6 jam | t08-store |
-| t09b-snapshot-proyek | Snapshot ditambah proyek, progres, token pembanding, pemberitahuan | t09a-projects-kunci, t07-attention |
+| t09b-snapshot-proyek | Snapshot ditambah proyek, progres, token pembanding, pemberitahuan | t09a-projects-kunci |
 | t10b-server-endpoint | Server melayani banyak proyek: /projects, ?p=, stream lama, batas koneksi | t09b-snapshot-proyek |
 | t11-uji-http | Uji HTTP: proyek terisolasi, alamat lama, serangan umum | t10b-server-endpoint |
 | t12-replay-nyata | Replay event nyata (73 Stop) sebelum layar dibangun | t10b-server-endpoint |
 | k-ambang-selesai | Seberapa ketat tanda "Selesai" setelah hasil replay nyata | t12-replay-nyata |
 | sec-server-hardening | Cyber: hardening server (Host/Origin, CSP, path traversal, batas ukuran) | t11-uji-http, t10b-server-endpoint |
-| review-kode-server | Cyber: review kode kelompok server (run, projects, attention, server) | t10b-server-endpoint, t09b-snapshot-proyek, t07-attention, t33a-laporan-server, t34a-backlog-bagian-server, sec-laporan-project |
+| review-kode-server | Cyber: review kode kelompok server (run, projects, attention, server) | t10b-server-endpoint, t09b-snapshot-proyek, t33a-laporan-server, t34a-backlog-bagian-server |
 | t13b-rute-app | Rute halaman: daftar proyek, tampilan proyek, Riwayat, buka otomatis bila satu proyek | t13a-kerangka-html |
 | t14a-dom-format | Dasar tampilan aman: dom.js (escape otomatis), format, ikon | t13a-kerangka-html |
 | t14b-api-sse | Klien data live: SSE, sambung ulang, bilah terputus dengan jam pembaruan | t14a-dom-format |
@@ -39,7 +39,7 @@ Diperbarui otomatis oleh backlog.js. Jangan edit tangan; ubah lewat perintah ata
 | t18a-panel-rel-percakapan-backlog | Panel samping dan rel (enam kunci) + tab Percakapan | t16b-graph-zoom, t14b-api-sse |
 | t19a-detail-mode | Detail agent di panel: satu kolom, status lipat disimpan, Esc tidak menggeser grafik | t18a-panel-rel-percakapan-backlog |
 | t24-tema-menu-lainnya | Tema dan menu Lainnya (Reset run dua langkah); Laporan teks dihapus | t17-indikator |
-| t20a-kotak-pemberitahuan | Kotak Butuh input dan Gagal di Live, lengkap dengan pilihan jawaban | t17-indikator, t07-attention, t12-replay-nyata |
+| t20a-kotak-pemberitahuan | Kotak Butuh input dan Gagal di Live, lengkap dengan pilihan jawaban | t17-indikator, t12-replay-nyata |
 | t20b-notifikasi-bunyi | Judul tab berkedip, bunyi, dan notifikasi desktop | t20a-kotak-pemberitahuan, k-ambang-selesai |
 | t21-ringkasan-run | Ringkasan run otomatis dan lewat tombol "Ringkasan" | t20a-kotak-pemberitahuan |
 | critic-live-r1 | Kritik tampilan Live nyata (putaran 1) | t16c-live-tinggi-laptop, t17-indikator, t18a-panel-rel-percakapan-backlog, t19a-detail-mode, t24-tema-menu-lainnya |
@@ -59,7 +59,7 @@ Diperbarui otomatis oleh backlog.js. Jangan edit tangan; ubah lewat perintah ata
 | ui-b-state-global | Desain state global: kosong, memuat, terputus, tanpa flow, notifikasi diblokir | critic-live-r2, critic-notif-r2 |
 | ui-b-sempit | Desain tampilan di bawah 900 px: daftar kartu agent dan lapisan panel | critic-live-r2, critic-notif-r2 |
 | t22-daftar-proyek | Bangun Daftar proyek, pengalih proyek, judul tab | ui-b-daftar-proyek, t14b-api-sse, t13b-rute-app, t10b-server-endpoint |
-| t23a-riwayat | Bangun Riwayat selebar layar: tabel 6 kolom, selisih + Boros, tren, banding, hapus | ui-b-riwayat-runlama-audit, t21-ringkasan-run, t10b-server-endpoint, t08-store, fix-riwayat-laporan-baris |
+| t23a-riwayat | Bangun Riwayat selebar layar: tabel 6 kolom, selisih + Boros, tren, banding, hapus | ui-b-riwayat-runlama-audit, t21-ringkasan-run, t10b-server-endpoint, t08-store |
 | t23b-run-lama | Bangun tampilan run lama (hanya baca) | t23a-riwayat, t19a-detail-mode |
 | t18b-tab-file-skill-state | Bangun tab File (diff di tempat), Skill, dan state lengkap Percakapan/Backlog | ui-b-tab-data, t18a-panel-rel-percakapan-backlog |
 | t18c-tab-token-log | Bangun tab Token (tabel per agent) dan Log (linimasa) | ui-b-tab-token-log, t18a-panel-rel-percakapan-backlog |
@@ -80,17 +80,13 @@ Diperbarui otomatis oleh backlog.js. Jangan edit tangan; ubah lewat perintah ata
 | t30-rilis | Rilis v2.0.0: README, versi, status proyek | t11-uji-http, qa-b-acceptance, qa-audit-visual, qa-perf, sec-klien-xss, review-kode-server, review-kode-klien |
 | audit-akhir | Cyber: audit akhir seluruh kode v2 | t30-rilis, qa-b-acceptance, fix-teks-butuh-input |
 | k-terima-rilis | Pemilik menerima v2.0.0 setelah mencoba dengan pekerjaan nyata | audit-akhir |
-| qa-kunci-laporan-project | Kunci uji: Laporan token menolak proyek tak dikenal | fix-sec-laporan-project |
-| sec-laporan-project | Cyber: uji tembus Laporan token (alamat proyek, tulis file salinan) | fix-sec-laporan-project |
-| fix-riwayat-laporan-baris | Perbaiki Riwayat: tombol Laporan per baris tidak lagi menimpa tombol Buka | fix-sec-laporan-project |
-| qa-kunci-riwayat-buka-r1 | Kunci uji: klik Buka di Riwayat membuka run, bukan laporan (R1) | fix-riwayat-laporan-baris |
 | fix-teks-butuh-input | Samakan teks "butuh jawabanmu" dengan istilah Butuh input (UX §10) di tampilan dan uji | t20a-kotak-pemberitahuan, t18a-panel-rel-percakapan-backlog |
 | ui-b-detail-state-audit | Audit desain detail agent satu kolom (ui-craft, antislop, kontras) | ui-b-detail-state |
 | qa-detail-satu-kolom | Uji detail agent satu kolom: T4 (2 langkah lalu 1) dan T9 (alasan gagal 1 klik) | t19b-detail-lengkap |
 | ui-b-riwayat-runlama-audit | Audit desain Riwayat selebar layar dan run lama | ui-b-riwayat-runlama |
 | ui-b-laporan-token | Desain Laporan token proyek di atas Riwayat (bangun) | critic-live-r2, critic-notif-r2, design-dial-dan-rujukan |
 | ui-b-laporan-token-audit | Audit desain Laporan token proyek | ui-b-laporan-token |
-| t33a-laporan-server | Laporan token: proyek tepat, persen dari setara, tiga penyumbang teratas, batas 200 run | fix-sec-laporan-project, t08-store |
+| t33a-laporan-server | Laporan token: proyek tepat, persen dari setara, tiga penyumbang teratas, batas 200 run | t08-store |
 | t33b-laporan-fe | Bangun Laporan token di atas Riwayat: tombol per proyek, state, tutup tanpa kehilangan posisi | ui-b-laporan-token-audit, t33a-laporan-server, t23a-riwayat |
 | qa-laporan-token | Uji penerimaan Laporan token (F12) | t33a-laporan-server, t33b-laporan-fe |
 | ui-b-backlog-bagian | Desain panel Backlog per bagian (bangun) | critic-live-r2, critic-notif-r2, design-dial-dan-rujukan |
@@ -116,8 +112,13 @@ Diperbarui otomatis oleh backlog.js. Jangan edit tangan; ubah lewat perintah ata
 | t05b-run-detail-percakapan | Pindahkan detail, percakapan, dan laporan lama ke run.js | node --test: 43 lulus 0 gagal; pending jadi daftar per pengirim di run.js |
 | t06a-fase-run | Aturan fase run: berjalan, jeda, selesai, run baru per prompt | node --test: 52 lulus 0 gagal; node --check server.js bersih; fase running/paused/finished dengan jam palsu. Belum diuji: HTTP/SSE, replay T12 |
 | t06b-gagal-ringkasan | Aturan gagal dan data Ringkasan run | node --test: 58 lulus 0 gagal (6 tes baru); status Gagal dan summary di run.js |
+| t07-attention | Server menghitung item pemberitahuan (pertanyaan, izin, keputusan, gagal, selesai) | node --test test/unit/attention.test.js: 9 lulus, 0 gagal; server/attention.js ada |
 | t10a-guard | Penjaga keamanan server: Host, Origin, header, CSP, file statis aman | node --test test/unit/guard.test.js: 11 pass 0 fail (diperiksa orkestrator); server/guard.js baru, belum tersambung ke server.js; catatan: skrip tema inline di index.html harus dipindah sebelum CSP dipasang (masuk t13a/penyambungan) |
 | k-pulihkan-run | Perlukah run yang sedang jalan dipulihkan bila server diganti di tengah? | Keputusan pemilik: tidak (T31 ditolak) |
+| fix-sec-laporan-project | Perbaiki celah keamanan: Laporan token menerima alamat proyek mentah dari luar | node --test test/unit/*.test.js: 69 lulus, 0 gagal (agent); report-project.test.js: 2 lulus, 0 gagal (dicek ulang) |
+| qa-kunci-laporan-project | Kunci uji: Laporan token menolak proyek tak dikenal | node --test test/http/report-project.http.test.js: 2 lulus, 0 gagal; uji balik (perbaikan dibalik) gagal 1 sesuai harapan |
+| sec-laporan-project | Cyber: uji tembus Laporan token (alamat proyek, tulis file salinan) | Uji tembus curl di server sementara: traversal, path absolut, kosong, %00 -> 400; tulis hanya di folder terdaftar; n besar aman. 0 critical/high, 2 medium, 2 low (dijadikan item) |
+| fix-riwayat-laporan-baris | Perbaiki Riwayat: tombol Laporan per baris tidak lagi menimpa tombol Buka | node --test test/ui/ui.test.mjs: 25 lulus, 0 gagal (agent, playwright sementara); screenshot test/ui/r1-buka.png. Terbuka: R1(c) lebar 1200 menunggu t23a; klik pakai force:true |
 | rujukan-tasks-detail | Selaraskan TASKS.md: T19 detail satu kolom (bukan empat tab) dan nomor bagian UX | TASKS.md: 'empat tab' 0 hit, fv-dsec 1 hit, T32-T34 ditambah; +8/-5 baris |
 
 ## Ide / nanti (diparkir, belum dikerjakan)

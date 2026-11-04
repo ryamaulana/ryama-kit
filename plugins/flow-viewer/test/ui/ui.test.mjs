@@ -132,3 +132,17 @@ test('tanpa skrip inline (CSP script-src self)', async () => {
   assert.equal(await p.locator('script:not([src])').count(), 0);
   await p.close();
 });
+
+test('R1 Riwayat: tanpa Laporan per baris, Buka membuka run (bukan laporan), Laporan token di kepala', async () => {
+  const p = await open('done');
+  await p.click('#rail button[data-v=history]');
+  await p.waitForSelector('.ck[data-run]'); await p.waitForTimeout(500);
+  assert.equal(await p.locator('.ck [data-act=trep]').count(), 0);
+  assert.equal(await p.locator('#pi [data-act=trep]').count(), 1);
+  assert.equal(await p.locator('#pi [data-act=trep]').getAttribute('data-project'), 'demo');
+  await p.click('.ck[data-run="1"] [data-act=hopen]', { force: true }); // force: mock SSE merender panel terus, tetap klik koordinat nyata
+  await p.waitForTimeout(300);
+  assert.equal(await p.locator('#modal.on').count(), 0, 'Buka tidak boleh membuka laporan');
+  await p.screenshot({ path: new URL('./r1-buka.png', import.meta.url).pathname.replace(/^\/(\w:)/, '$1') });
+  await p.close();
+});
