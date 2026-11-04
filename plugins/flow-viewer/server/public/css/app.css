@@ -401,9 +401,19 @@ h1, h2, h3, h4 { font-weight: var(--w-semibold); }
 .more { font-size: var(--fs-12); color: var(--ink2); margin-top: var(--sp-4); }
 
 /* ---------- Grafik (t16a): ukuran kanvas diatur JS; padding kanvas memberi ruang port yang menonjol 4 px ---------- */
+/* Tinggi laptop (t16c, DESIGN masalah #1): Live tidak menggulung sebagai halaman. Bilah atas dan pita menurut tinggi isi,
+   baris utama minmax(0,1fr), rel dan panel menggulung di dalam, bukan memperbesar baris. */
 body { display: flex; flex-direction: column; }
-main { flex: 1; min-height: 0; display: flex; gap: var(--sp-12); padding: 0 var(--sp-16) var(--sp-16); }
-#stage { flex: 1; min-width: 0; }
+body > header, #offline, #strip, #histbar { flex: none; }
+#strip { min-height: 0; }
+main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: minmax(0, 1fr); gap: var(--sp-12); padding: 0 var(--sp-16) var(--sp-16); }
+main > * { min-width: 0; min-height: 0; }
+#plist { grid-column: 1 / -1; }
+#plist, #history { overflow-y: auto; overscroll-behavior: contain; }
+#side { display: flex; gap: var(--sp-12); max-height: 100%; }
+#pan, #drawer { width: var(--panel-w); display: flex; flex-direction: column; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+#drawer[hidden] { display: none; }
+#rail { display: flex; flex-direction: column; flex: none; align-self: flex-start; max-height: 100%; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; }
 .canvas { left: var(--sp-16); top: var(--sp-16); }
 .stage:focus-visible { outline-offset: calc(-1 * var(--bw-3)); }
 .g-empty {
@@ -430,7 +440,7 @@ main { flex: 1; min-height: 0; display: flex; gap: var(--sp-12); padding: 0 var(
   .who-n { min-width: 84px; }
   .choices { grid-template-columns: 1fr; }
   .notice { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); }
-  .side { width: var(--panel-w-m); }
+  .side, #pan, #drawer { width: var(--panel-w-m); }
   .tabs { padding-inline: var(--sp-16); }
   .tabs button { padding: 0 var(--sp-8); }
   .tiles { grid-template-columns: repeat(2, 1fr); }
@@ -444,3 +454,11 @@ main { flex: 1; min-height: 0; display: flex; gap: var(--sp-12); padding: 0 var(
   .dot { animation: none; offset-distance: 50%; }
   *, *::before, *::after { transition-duration: 0ms !important; }
 }
+
+/* ---------- Pita menempel (t17): di luar area yang menggulung; sticky menjaganya terlihat bila ada ancestor yang menggulung ---------- */
+#strip { position: sticky; top: 0; z-index: 5; margin: 0 var(--sp-16) var(--sp-12); }
+.who-n { font: inherit; font-weight: var(--w-semibold); text-align: left; }
+.who-n:hover { color: var(--accent); }
+.k-big { overflow-wrap: anywhere; }
+.k-tok header .lnk, .k-prog header .lnk { margin-left: auto; }
+.kpi header { flex-wrap: wrap; }

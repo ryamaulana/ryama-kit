@@ -2,34 +2,30 @@
 
 Diperbarui otomatis oleh backlog.js. Jangan edit tangan; ubah lewat perintah atau agent backlog.
 
-**Progres: 46/107 selesai** · berjalan 0 · siap 3 · menunggu 58 · gagal 0
+**Progres: 51/107 selesai** · berjalan 0 · siap 4 · menunggu 52 · gagal 0
 
 ## Siap dikerjakan
 
 | ID | Jenis | Judul | Agent | Nilai/Usaha |
 |---|---|---|---|---|
-| t16c-live-tinggi-laptop | fe | Tampilan Live muat di layar laptop nyata (tinggi pendek) | fe | high/m |
-| t17-indikator | fe | Tiga indikator besar: siapa kerja, progres, token (menempel) | fe | high/m |
-| t18a-panel-rel-percakapan-backlog | fe | Panel samping dan rel (enam kunci) + tab Percakapan | fe | high/m |
+| t20b-notifikasi-bunyi | fe | Judul tab berkedip, bunyi, dan notifikasi desktop | fe | high/m |
+| fix-teks-butuh-input | fe | Samakan teks "butuh jawabanmu" dengan istilah Butuh input (UX §10) di tampilan dan uji | fe | low/s |
+| t21-ringkasan-run | fe | Ringkasan run otomatis dan lewat tombol "Ringkasan" | fe | high/m |
+| t24-tema-menu-lainnya | fe | Tema dan menu Lainnya (Reset run dua langkah); Laporan teks dihapus | fe | mid/s |
 
 ## Menunggu dependensi
 
 | ID | Judul | Menunggu |
 |---|---|---|
-| t19a-detail-mode | Detail agent di panel: satu kolom, status lipat disimpan, Esc tidak menggeser grafik | t18a-panel-rel-percakapan-backlog |
-| t24-tema-menu-lainnya | Tema dan menu Lainnya (Reset run dua langkah); Laporan teks dihapus | t17-indikator |
-| t20a-kotak-pemberitahuan | Kotak Butuh input dan Gagal di Live, lengkap dengan pilihan jawaban | t17-indikator |
-| t20b-notifikasi-bunyi | Judul tab berkedip, bunyi, dan notifikasi desktop | t20a-kotak-pemberitahuan |
-| t21-ringkasan-run | Ringkasan run otomatis dan lewat tombol "Ringkasan" | t20a-kotak-pemberitahuan |
-| critic-live-r1 | Kritik tampilan Live nyata (putaran 1) | t16c-live-tinggi-laptop, t17-indikator, t18a-panel-rel-percakapan-backlog, t19a-detail-mode, t24-tema-menu-lainnya |
+| critic-live-r1 | Kritik tampilan Live nyata (putaran 1) | t24-tema-menu-lainnya |
 | fix-live | Perbaiki temuan wajib kritikus Live | critic-live-r1 |
 | critic-live-r2 | Kritik tampilan Live nyata (putaran 2, terakhir) | fix-live |
-| critic-notif-r1 | Kritik kotak pemberitahuan dan Ringkasan run nyata (putaran 1) | t20a-kotak-pemberitahuan, t20b-notifikasi-bunyi, t21-ringkasan-run |
+| critic-notif-r1 | Kritik kotak pemberitahuan dan Ringkasan run nyata (putaran 1) | t20b-notifikasi-bunyi, t21-ringkasan-run |
 | fix-notif | Perbaiki temuan wajib kritikus pemberitahuan dan Ringkasan | critic-notif-r1 |
 | critic-notif-r2 | Kritik kotak pemberitahuan dan Ringkasan (putaran 2, terakhir) | fix-notif |
 | qa-a-fixture-feed | Uji UI: fixture feed.js dan skrip tes lama dipindah ke test/ui/ | critic-live-r2, critic-notif-r2 |
 | qa-a-acceptance | Uji penerimaan layar Live: F2, F3, F4, F5, F6, F7 + tinggi laptop | qa-a-fixture-feed |
-| review-kode-klien | Cyber: review kode klien Tahap A (graph, panel, alerts, notify, summary) | t18a-panel-rel-percakapan-backlog, t19a-detail-mode, t20b-notifikasi-bunyi, t21-ringkasan-run, t33b-laporan-fe, t34b-backlog-fe, t19b-detail-lengkap |
+| review-kode-klien | Cyber: review kode klien Tahap A (graph, panel, alerts, notify, summary) | t20b-notifikasi-bunyi, t21-ringkasan-run, t33b-laporan-fe, t34b-backlog-fe, t19b-detail-lengkap |
 | ui-b-daftar-proyek | Desain Daftar proyek (/), keadaan kosong, memuat, terputus | critic-live-r2, critic-notif-r2 |
 | ui-b-riwayat-runlama | Desain Riwayat selebar layar (6 kolom, selisih + Boros) dan run lama (bangun) | critic-live-r2, critic-notif-r2 |
 | ui-b-tab-data | Desain tab File (diff), Skill, dan state lengkap Percakapan/Backlog | critic-live-r2, critic-notif-r2 |
@@ -39,13 +35,13 @@ Diperbarui otomatis oleh backlog.js. Jangan edit tangan; ubah lewat perintah ata
 | ui-b-sempit | Desain tampilan di bawah 900 px: daftar kartu agent dan lapisan panel | critic-live-r2, critic-notif-r2 |
 | t22-daftar-proyek | Bangun Daftar proyek, pengalih proyek, judul tab | ui-b-daftar-proyek |
 | t23a-riwayat | Bangun Riwayat selebar layar: tabel 6 kolom, selisih + Boros, tren, banding, hapus | ui-b-riwayat-runlama-audit, t21-ringkasan-run |
-| t23b-run-lama | Bangun tampilan run lama (hanya baca) | t23a-riwayat, t19a-detail-mode |
-| t18b-tab-file-skill-state | Bangun tab File (diff di tempat), Skill, dan state lengkap Percakapan/Backlog | ui-b-tab-data, t18a-panel-rel-percakapan-backlog |
-| t18c-tab-token-log | Bangun tab Token (tabel per agent) dan Log (linimasa) | ui-b-tab-token-log, t18a-panel-rel-percakapan-backlog |
-| t19b-detail-lengkap | Bangun isi detail agent: kepala, peringatan, jawaban, tiga angka, delapan bagian berlipat | ui-b-detail-state-audit, t19a-detail-mode |
+| t23b-run-lama | Bangun tampilan run lama (hanya baca) | t23a-riwayat |
+| t18b-tab-file-skill-state | Bangun tab File (diff di tempat), Skill, dan state lengkap Percakapan/Backlog | ui-b-tab-data |
+| t18c-tab-token-log | Bangun tab Token (tabel per agent) dan Log (linimasa) | ui-b-tab-token-log |
+| t19b-detail-lengkap | Bangun isi detail agent: kepala, peringatan, jawaban, tiga angka, delapan bagian berlipat | ui-b-detail-state-audit |
 | t25a-state-global | Bangun state global: kosong, memuat, terputus, tanpa flow, notifikasi diblokir | ui-b-state-global, t20b-notifikasi-bunyi |
 | t25b-agent-luar-flow | Bangun penandaan agent di luar flow | ui-b-detail-state-audit |
-| t25c-sempit | Bangun tampilan di bawah 900 px | ui-b-sempit, t18a-panel-rel-percakapan-backlog, t19a-detail-mode |
+| t25c-sempit | Bangun tampilan di bawah 900 px | ui-b-sempit |
 | critic-b1-r1 | Kritik Daftar proyek, Riwayat, dan run lama (putaran 1) | t22-daftar-proyek, t23a-riwayat, t23b-run-lama |
 | fix-b1 | Perbaiki temuan wajib kritikus: proyek, Riwayat, run lama | critic-b1-r1 |
 | critic-b1-r2 | Kritik Daftar proyek, Riwayat, run lama (putaran 2, terakhir) | fix-b1 |
@@ -59,7 +55,6 @@ Diperbarui otomatis oleh backlog.js. Jangan edit tangan; ubah lewat perintah ata
 | t30-rilis | Rilis v2.0.0: README, versi, status proyek | qa-b-acceptance, qa-audit-visual, qa-perf, sec-klien-xss, review-kode-klien |
 | audit-akhir | Cyber: audit akhir seluruh kode v2 | t30-rilis, qa-b-acceptance, fix-teks-butuh-input |
 | k-terima-rilis | Pemilik menerima v2.0.0 setelah mencoba dengan pekerjaan nyata | audit-akhir |
-| fix-teks-butuh-input | Samakan teks "butuh jawabanmu" dengan istilah Butuh input (UX §10) di tampilan dan uji | t20a-kotak-pemberitahuan, t18a-panel-rel-percakapan-backlog |
 | ui-b-detail-state-audit | Audit desain detail agent satu kolom (ui-craft, antislop, kontras) | ui-b-detail-state |
 | qa-detail-satu-kolom | Uji detail agent satu kolom: T4 (2 langkah lalu 1) dan T9 (alasan gagal 1 klik) | t19b-detail-lengkap |
 | ui-b-riwayat-runlama-audit | Audit desain Riwayat selebar layar dan run lama | ui-b-riwayat-runlama |
@@ -69,7 +64,7 @@ Diperbarui otomatis oleh backlog.js. Jangan edit tangan; ubah lewat perintah ata
 | qa-laporan-token | Uji penerimaan Laporan token (F12) | t33b-laporan-fe |
 | ui-b-backlog-bagian | Desain panel Backlog per bagian (bangun) | critic-live-r2, critic-notif-r2 |
 | ui-b-backlog-bagian-audit | Audit desain panel Backlog per bagian | ui-b-backlog-bagian |
-| t34b-backlog-fe | Bangun panel Backlog per bagian (menggantikan daftar datar per jenis) | ui-b-backlog-bagian-audit, t18a-panel-rel-percakapan-backlog |
+| t34b-backlog-fe | Bangun panel Backlog per bagian (menggantikan daftar datar per jenis) | ui-b-backlog-bagian-audit |
 | qa-backlog-bagian | Uji penerimaan Backlog per bagian (F11) | t34b-backlog-fe |
 | critic-b3-r1 | Review ui-critic: Riwayat selebar layar, Laporan token, Backlog per bagian | t23a-riwayat, t33b-laporan-fe, t34b-backlog-fe |
 | fix-b3 | Tutup temuan wajib review Riwayat, Laporan token, Backlog | critic-b3-r1 |
@@ -109,6 +104,11 @@ Diperbarui otomatis oleh backlog.js. Jangan edit tangan; ubah lewat perintah ata
 | t15b-komponen-dasar | Komponen dasar: bilah atas, pita, kotak, panel, rel, node, tab | server/public/css/app.css 30447 B; 6 screenshot di docs/mockups/t15b/screenshots/ (1440x900 dan 900x780, terang/gelap); run-audit --widths 900,1440 --tokens: tinggi 0, kontras 0, VERDICT LULUS (audit-light/dark.json) |
 | t16a-graph-layout | Grafik workflow live: layout node, konektor, crew bawaan | node --test test/unit: 165 lulus 0 gagal (10 baru graph.test.js); Playwright test/ui/graph.test.mjs: 6 lulus 0 gagal (14 node 0 tumpang tindih, teks min 12 px di 1440 dan 900, update 13 ms); screenshot test/ui/t16a-1440.png, t16a-900.png |
 | t16b-graph-zoom | Zoom, pan, pas layar, seleksi, dan keyboard pada grafik | Playwright graph-zoom.test.mjs + graph.test.mjs: 13 lulus 0 gagal (zoom min 74%, jalur kontrol 48 px, tumpang tindih 0, Tab/Enter/Esc, outline 3 px ink); node --test test/unit: 165 lulus 0 gagal |
+| t16c-live-tinggi-laptop | Tampilan Live muat di layar laptop nyata (tinggi pendek) | Playwright live-tinggi.test.mjs 4/4 lulus; halaman gulung 0px di 1366x657, 1440x780, 900x780, 1440x900; screenshot test/ui/t16c-*.png |
+| t17-indikator | Tiga indikator besar: siapa kerja, progres, token (menempel) | unit indicators.test.js 7/7 lulus (172 total per agent), Playwright indicators 5/5 per agent, screenshot test/ui/t17-1440.png t17-900.png t17-menempel.png |
+| t18a-panel-rel-percakapan-backlog | Panel samping dan rel (enam kunci) + tab Percakapan | unit panel.test.js 11/11, Playwright panel.test.mjs 4/4 lulus; screenshot test/ui/t18a-900.png t18a-1440.png |
+| t19a-detail-mode | Detail agent di panel: satu kolom, status lipat disimpan, Esc tidak menggeser grafik | unit agent.test.js dan Playwright agent-detail.test.mjs lulus (agent: 45 lulus 0 gagal di 7 berkas terkait); zoom/posisi grafik sama sebelum dan sesudah Esc di 900px |
+| t20a-kotak-pemberitahuan | Kotak Butuh input dan Gagal di Live, lengkap dengan pilihan jawaban | unit alerts.test.js 5/5, Playwright alerts.test.mjs 3/3 lulus (urutan, maks 2 +N, dedupe, pilihan keputusan, garis 1px, 28px/24px); screenshot test/ui/t20a-1440.png t20a-900.png. Agent tidak sempat lapor akhir (galat API), diverifikasi dari tes. |
 | k-pulihkan-run | Perlukah run yang sedang jalan dipulihkan bila server diganti di tengah? | Keputusan pemilik: tidak (T31 ditolak) |
 | fix-sec-laporan-project | Perbaiki celah keamanan: Laporan token menerima alamat proyek mentah dari luar | node --test test/unit/*.test.js: 69 lulus, 0 gagal (agent); report-project.test.js: 2 lulus, 0 gagal (dicek ulang) |
 | qa-kunci-laporan-project | Kunci uji: Laporan token menolak proyek tak dikenal | node --test test/http/report-project.http.test.js: 2 lulus, 0 gagal; uji balik (perbaikan dibalik) gagal 1 sesuai harapan |
@@ -154,6 +154,9 @@ Diperbarui otomatis oleh backlog.js. Jangan edit tangan; ubah lewat perintah ata
 - t16a-diam-luar-flow: Penanda 'Diam N mnt' di node dan tampilan agent di luar flow yang redup; ukur ulang lebar panggung saat panel dan rel terhubung (t16c, t18a) - asal: t16a-graph-layout. Di luar F2-1/3/4
 - t16b-ui-test-pw: test/ui/ui.test.mjs gagal: mengimpor playwright langsung, tidak membaca env PW; pasang playwright di proyek atau satukan pemuat - asal: t16b-graph-zoom; kegagalan sudah ada sebelum item. Gabung dengan t14b-sisa-klien
 - t16b-simpan-zoom: Simpan pengaturan zoom di localStorage (PRD Pengaturan tampilan, opsional); fv-pick belum didengarkan panel (t18a) - asal: t16b-graph-zoom. Maks zoom 200% asumsi agent (tidak ada di DESIGN)
+- perbaiki-impor-model-header: Perbaiki impor rusak di model.js dan header.js - asal: t18a. model.js mengimpor DN dan metaOf yang tidak diekspor icons.js; header.js mengimpor $ dan colorOf yang tidak ada.
+- bersihkan-css-lama-panel: Hapus aturan CSS panel lama di app.css yang ditimpa panel.css - asal: t18a
+- perbarui-tes-live-tinggi-900: Perbarui tes live-tinggi 900x780 karena panel tertutup bawaan - asal: t19a. Asersi 'panel menggulung di dalam baris' gagal sejak t18a.
 
 ## Ditolak
 

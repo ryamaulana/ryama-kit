@@ -1,0 +1,23 @@
+/* Panel samping + rel (t18a). Tata letak saja; semua nilai dari tokens.css dan variabel tata letak app.css.
+   Markup: #dock.dock > aside#side.side(.collapsed) [#rz.rz, #pan.dp, #drawer] + nav#rail.rail > button.rb[aria-pressed] > .badge(.badge-warn) */
+
+/* Tertutup = hanya rel yang tersisa (ARCH 10.2a: #side.collapsed). Di 900-1199 panel terbuka mendorong grafik (kolom grid). */
+/* ID dipakai karena app.css (kerangka t13a) masih memuat #side, #pan, #drawer dari markup lama (panel dan rel satu wadah) */
+#side { position: relative; gap: 0; }
+#side.collapsed { display: none; }
+#pan { flex: 1; width: 100%; min-height: 0; overflow: visible; }
+.dp-head { padding-bottom: var(--sp-8); }
+.dp-body > * + * { margin-top: var(--sp-12); }
+.dp-body .opts { margin-top: var(--sp-4); }
+.dp-body p.more { margin-top: var(--sp-4); }
+.bl li { align-items: baseline; justify-content: space-between; }
+.bl .tag { flex: none; }
+.msgs .lnk { margin-left: var(--sp-4); }
+.msgs .m p + p { margin-top: var(--sp-4); }
+
+/* Pegangan lebar: garis tipis di tepi kiri panel, hanya di 1200+ */
+.rz { position: absolute; z-index: 2; top: 0; bottom: 0; left: 0; width: var(--sp-8); cursor: col-resize; touch-action: none; }
+.rz:hover, .rz[data-on] { background: var(--accent-soft); }
+.rz:focus-visible { outline-offset: calc(-1 * var(--bw-3)); }
+@media (max-width: 1199px) { .rz { display: none; } }
+#pan[hidden] { display: none; } /* #pan { display } di app.css mengalahkan atribut hidden; #drawer menggantikannya saat detail agent */

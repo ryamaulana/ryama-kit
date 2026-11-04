@@ -3,6 +3,9 @@ import { html, patch } from './dom.js';
 import { parseRoute, routeUrl, soleActive, migrateView } from './route.js';
 import { initLive } from './api.js';
 import { initGraph } from './graph.js';
+import { initPanel } from './panel.js';
+import { initIndicators } from './indicators.js';
+import { initAlerts } from './alerts.js';
 
 const $ = (s) => document.querySelector(s);
 const show = (sel, on) => { const el = $(sel); if (el) el.hidden = !on; };
@@ -56,4 +59,7 @@ $('#plist').addEventListener('click', (e) => { if (e.target.closest('[data-act=r
 addEventListener('popstate', render);
 initLive();
 initGraph();
+initIndicators();
+initAlerts();
+initPanel();
 render();

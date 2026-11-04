@@ -7,6 +7,8 @@
 <link rel="stylesheet" href="/css/fonts.css">
 <link rel="stylesheet" href="/css/tokens.css">
 <link rel="stylesheet" href="/css/app.css">
+<link rel="stylesheet" href="/css/panel.css">
+<link rel="stylesheet" href="/css/alerts.css">
 <script src="/boot.js"></script>
 </head>
 <body>
@@ -24,7 +26,12 @@
   <div id="pmenu" hidden><button id="reset" type="button">Reset run</button></div>
 </header>
 <div id="offline" role="status">Terputus dari server. Menyambung ulang otomatis; data di layar mungkin sudah lama.</div>
-<div id="strip"><div id="now" aria-live="polite"></div><span id="verdict"></span></div>
+<section id="strip" class="ribbon" aria-label="Tiga indikator run">
+  <article id="now" class="kpi k-who" aria-live="polite"></article>
+  <article id="prog" class="kpi k-prog"></article>
+  <article id="tok" class="kpi k-tok"></article>
+</section>
+<section id="alerts" aria-label="Pemberitahuan" aria-live="polite" hidden></section>
 <div id="histbar" role="status" hidden></div>
 <main>
   <section id="plist" aria-label="Daftar proyek" hidden></section>
@@ -42,24 +49,30 @@
     <div id="htrend"></div>
     <div id="hrows"></div>
   </section>
-  <aside id="side" aria-label="Panel samping">
-    <div id="pan"><div id="pi"></div></div>
-    <div id="drawer" hidden>
-      <div id="dhead"></div>
-      <div id="dwarn"></div>
-      <div id="dans"></div>
-      <div id="dnums"></div>
-      <div id="dsecs"></div>
-    </div>
-    <nav id="rail" aria-label="Panel">
-      <button type="button" data-v="chat">Percakapan</button>
-      <button type="button" data-v="backlog">Backlog</button>
-      <button type="button" data-v="files">File</button>
-      <button type="button" data-v="skill">Skill</button>
-      <button type="button" data-v="token">Token</button>
-      <button type="button" data-v="log">Log</button>
+  <div id="dock" class="dock" hidden>
+    <aside id="side" class="side" aria-label="Panel samping">
+      <div id="rz" class="rz" role="separator" aria-orientation="vertical" aria-label="Lebar panel" tabindex="0"></div>
+      <div id="pan" class="dp">
+        <header class="dp-head"><div class="dp-title"><h3 id="ptitle"></h3></div></header>
+        <div id="pi" class="dp-body"></div>
+      </div>
+      <div id="drawer" hidden>
+        <div id="dhead"></div>
+        <div id="dwarn"></div>
+        <div id="dans"></div>
+        <div id="dnums"></div>
+        <div id="dsecs"></div>
+      </div>
+    </aside>
+    <nav id="rail" class="rail" aria-label="Panel">
+      <button type="button" class="rb" data-v="chat">Percakapan</button>
+      <button type="button" class="rb" data-v="backlog">Backlog</button>
+      <button type="button" class="rb" data-v="files">File</button>
+      <button type="button" class="rb" data-v="skill">Skill</button>
+      <button type="button" class="rb" data-v="token">Token</button>
+      <button type="button" class="rb" data-v="log">Log</button>
     </nav>
-  </aside>
+  </div>
 </main>
 <div id="pop"></div>
 <div id="modal" hidden><div id="mc" role="dialog" aria-modal="true" tabindex="-1"></div></div>

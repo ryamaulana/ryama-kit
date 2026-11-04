@@ -1,0 +1,7 @@
+/* Kotak pemberitahuan (t20a): hanya tata letak tambahan; warna, huruf, garis dari .notice / .n-f di app.css (token DESIGN). */
+#alerts { flex: none; margin: 0 var(--sp-16) var(--sp-12); }
+.notice:not(:has(.n-fs)) { grid-template-columns: minmax(0, 1fr); }
+.n-fs { display: flex; flex-direction: column; gap: var(--sp-8); min-width: 0; align-self: start; }
+.n-fs.solo { max-height: 30vh; overflow-y: auto; overscroll-behavior: contain; }
+.n-sub .n-ctx, .n-sub .choices { flex: 1 1 100%; margin: 0; }
+.n-more { grid-column: 1 / -1; }

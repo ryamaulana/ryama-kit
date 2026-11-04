@@ -13,7 +13,7 @@ export const DIM = { full: { w: 232, h: 122, gx: 40, gy: 14 }, compact: { w: 188
 export const MIN_COMPACT = 0.89; // DESIGN 4: 14 px x 0,89 = 12,5 px; di bawahnya grafik dipan, tidak dikecilkan
 const GUIDE = 'Belum ada run. Mulai sesi Claude di proyek ini, lalu agent menyala di sini saat bekerja.';
 
-const asks = (S) => (Array.isArray(S.attention) ? S.attention : S.pending && S.pending.text ? [S.pending] : [])
+export const asks = (S) => (Array.isArray(S.attention) ? S.attention : S.pending && S.pending.text ? [S.pending] : [])
   .filter((a) => !a.kind || a.kind === 'question' || a.kind === 'permission');
 export const ranAny = (S) => Object.values(S.nodes || {}).some((n) => n.count > 0 || n.status === 'running' || n.status === 'done');
 export const isEmptyRun = (S) => !S.prompt && !ranAny(S) && (S.main || {}).status !== 'running';
@@ -248,6 +248,14 @@ export function initGraph() {
   document.addEventListener('fv-state', (e) => { S = e.detail; draw(); });
   document.addEventListener('fv-route', (e) => { if (e.detail.p !== project) { project = e.detail.p; S = null; manual = null; selId = null; } });
   document.addEventListener('fv-unpick', () => setSel(null));
+  // Panel 900-1199 mendorong grafik: simpan zoom + posisi sebelum node dipilih, pulihkan saat panel menutup.
+  let saved = null;
+  document.addEventListener('fv-view-save', () => { saved = { manual, sl: scroller.scrollLeft, st: scroller.scrollTop }; });
+  document.addEventListener('fv-view-restore', () => {
+    if (!saved) return;
+    manual = saved.manual; draw();
+    scroller.scrollLeft = saved.sl; scroller.scrollTop = saved.st; saved = null;
+  });
   canvas.addEventListener('click', (e) => {
     const b = e.target.closest('.hit');
     if (!b || dragged) return;

@@ -838,7 +838,7 @@
       "finishedAt": "2026-11-04T02:27:22.471Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "t16b-graph-zoom"
       ],
@@ -860,10 +860,14 @@
       "screen": "Tampilan proyek (live)",
       "value": "high",
       "size": "m",
-      "done": "Masalah #1: tinggi baris minmax(0,1fr), rel max-height:100% overflow-y:auto, kotak Butuh input maks 30% tinggi dengan gulir di dalamnya; grafik tidak terpotong dan kontrol zoom terjangkau di 1366x657, 1440x780, 900x780, 1440x900; Live tidak menggulung sebagai halaman. Bukti: screenshot dan ukur bounding box Playwright di keempat tinggi."
+      "done": "Masalah #1: tinggi baris minmax(0,1fr), rel max-height:100% overflow-y:auto, kotak Butuh input maks 30% tinggi dengan gulir di dalamnya; grafik tidak terpotong dan kontrol zoom terjangkau di 1366x657, 1440x780, 900x780, 1440x900; Live tidak menggulung sebagai halaman. Bukti: screenshot dan ukur bounding box Playwright di keempat tinggi.",
+      "attempts": 1,
+      "startedAt": "2026-11-04T03:49:20.851Z",
+      "evidence": "Playwright live-tinggi.test.mjs 4/4 lulus; halaman gulung 0px di 1366x657, 1440x780, 900x780, 1440x900; screenshot test/ui/t16c-*.png",
+      "finishedAt": "2026-11-04T03:57:47.956Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "t16b-graph-zoom",
         "t14b-api-sse"
@@ -888,10 +892,14 @@
       "screen": "Tampilan proyek (live)",
       "value": "high",
       "size": "m",
-      "done": "indicators.js: Siapa kerja (copy \"Tidak ada agent yang berjalan.\" dan \"Agent be berhenti di putaran 2.\"), Progres (backlog atau langkah wajib atau \"-\"), Token + selisih netral (\"menunggu data\" bila belum terbaca), angka pembanding white-space:nowrap (masalah #7), pita menempel, jalan pintas ke tab. Playwright: pita tetap terlihat saat panel digulung dan detail terbuka."
+      "done": "indicators.js: Siapa kerja (copy \"Tidak ada agent yang berjalan.\" dan \"Agent be berhenti di putaran 2.\"), Progres (backlog atau langkah wajib atau \"-\"), Token + selisih netral (\"menunggu data\" bila belum terbaca), angka pembanding white-space:nowrap (masalah #7), pita menempel, jalan pintas ke tab. Playwright: pita tetap terlihat saat panel digulung dan detail terbuka.",
+      "attempts": 1,
+      "startedAt": "2026-11-04T03:49:20.918Z",
+      "evidence": "unit indicators.test.js 7/7 lulus (172 total per agent), Playwright indicators 5/5 per agent, screenshot test/ui/t17-1440.png t17-900.png t17-menempel.png",
+      "finishedAt": "2026-11-04T03:57:36.141Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "t16b-graph-zoom",
         "t14b-api-sse"
@@ -914,10 +922,14 @@
       "screen": "Tampilan proyek (live)",
       "value": "high",
       "size": "m",
-      "done": "panel.js: rel + lencana (warn hanya Percakapan bertanya dan Backlog keputusan), rel hanya chat, backlog, files, skill, token, log (agent dan history keluar dari rel, ARCH 10.2a), lebar diingat, tertutup default 900-1199 dan mendorong grafik; masalah #5: node terpilih di-scroll ke terlihat, baris tab nowrap padding 8 px; tab Percakapan dengan data 1.7.1 (#chat); tab Backlog sementara memakai data 1.7.1 sampai t34b. Bukti: Playwright 900 dan 1440, daftar data 1.7.1 vs klik (UX §8) dicentang."
+      "done": "panel.js: rel + lencana (warn hanya Percakapan bertanya dan Backlog keputusan), rel hanya chat, backlog, files, skill, token, log (agent dan history keluar dari rel, ARCH 10.2a), lebar diingat, tertutup default 900-1199 dan mendorong grafik; masalah #5: node terpilih di-scroll ke terlihat, baris tab nowrap padding 8 px; tab Percakapan dengan data 1.7.1 (#chat); tab Backlog sementara memakai data 1.7.1 sampai t34b. Bukti: Playwright 900 dan 1440, daftar data 1.7.1 vs klik (UX §8) dicentang.",
+      "attempts": 1,
+      "startedAt": "2026-11-04T03:49:21.057Z",
+      "evidence": "unit panel.test.js 11/11, Playwright panel.test.mjs 4/4 lulus; screenshot test/ui/t18a-900.png t18a-1440.png",
+      "finishedAt": "2026-11-04T04:01:03.683Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "t18a-panel-rel-percakapan-backlog"
       ],
@@ -940,7 +952,11 @@
       "value": "high",
       "size": "m",
       "done": "agent.js: wadah #drawer di #side, tanpa #agtabs/[data-tab]/ctx.agentTab; status lipat fv-dsec (bawaan hasil dan files terbuka) berlaku untuk semua agent dan bertahan antar node; masalah #6: Esc di 1200+ kembali ke tab data terakhir, di 900-1199 posisi dan zoom grafik disimpan lalu dipakai ulang. Playwright: zoom dan posisi grafik sama sebelum dan sesudah Esc.",
-      "notes": "Kerangka satu kolom. Isi bagian dan peringatan di t19b."
+      "notes": "Kerangka satu kolom. Isi bagian dan peringatan di t19b.",
+      "attempts": 1,
+      "startedAt": "2026-11-04T04:01:09.600Z",
+      "evidence": "unit agent.test.js dan Playwright agent-detail.test.mjs lulus (agent: 45 lulus 0 gagal di 7 berkas terkait); zoom/posisi grafik sama sebelum dan sesudah Esc di 900px",
+      "finishedAt": "2026-11-04T04:09:32.003Z"
     },
     {
       "status": "todo",
@@ -970,7 +986,7 @@
       "notes": "Penyesuaian dari TASKS T24: Laporan teks dihapus."
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "t17-indikator",
         "t07-attention",
@@ -996,7 +1012,11 @@
       "screen": "Tampilan proyek (live)",
       "value": "high",
       "size": "l",
-      "done": "alerts.js: kotak per pemicu, terbaru di atas, maks 2 lalu \"+N lainnya\", dedupe kunci, hilang saat terjawab, node terkait bertanda; masalah #2: kartu Gagal border 1 px --bad-line, kotak border 1 px --warn-line, judul pertanyaan 28 px dan angka KPI 24 px selama kotak terbuka; masalah #8: pilihan jawaban keputusan backlog tampil di Live (F5 AC5); copy \"Butuh input (2)\". Playwright dengan fixture butuh input dan gagal."
+      "done": "alerts.js: kotak per pemicu, terbaru di atas, maks 2 lalu \"+N lainnya\", dedupe kunci, hilang saat terjawab, node terkait bertanda; masalah #2: kartu Gagal border 1 px --bad-line, kotak border 1 px --warn-line, judul pertanyaan 28 px dan angka KPI 24 px selama kotak terbuka; masalah #8: pilihan jawaban keputusan backlog tampil di Live (F5 AC5); copy \"Butuh input (2)\". Playwright dengan fixture butuh input dan gagal.",
+      "attempts": 1,
+      "startedAt": "2026-11-04T04:01:12.273Z",
+      "evidence": "unit alerts.test.js 5/5, Playwright alerts.test.mjs 3/3 lulus (urutan, maks 2 +N, dedupe, pilihan keputusan, garis 1px, 28px/24px); screenshot test/ui/t20a-1440.png t20a-900.png. Agent tidak sempat lapor akhir (galat API), diverifikasi dari tes.",
+      "finishedAt": "2026-11-04T05:23:12.303Z"
     },
     {
       "status": "todo",
@@ -3214,7 +3234,49 @@
       "value": "mid",
       "size": "m",
       "notes": "asal: t16b-graph-zoom. Maks zoom 200% asumsi agent (tidak ada di DESIGN)"
+    },
+    {
+      "id": "perbaiki-impor-model-header",
+      "title": "Perbaiki impor rusak di model.js dan header.js",
+      "type": "fe",
+      "agent": "fe",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "done": "model.js dan header.js dimuat tanpa galat impor (DN, metaOf, $, colorOf diekspor atau diganti); tes memuat modul lulus",
+      "notes": "asal: t18a. model.js mengimpor DN dan metaOf yang tidak diekspor icons.js; header.js mengimpor $ dan colorOf yang tidak ada."
+    },
+    {
+      "id": "bersihkan-css-lama-panel",
+      "title": "Hapus aturan CSS panel lama di app.css yang ditimpa panel.css",
+      "type": "fe",
+      "agent": "fe",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "done": "aturan #side #pan #drawer #rail lama di app.css (sekitar baris 413-443) dihapus; tes live-tinggi dan panel tetap lulus",
+      "notes": "asal: t18a"
+    },
+    {
+      "id": "perbarui-tes-live-tinggi-900",
+      "title": "Perbarui tes live-tinggi 900x780 karena panel tertutup bawaan",
+      "type": "fe",
+      "agent": "fe",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "done": "live-tinggi.test.mjs kasus 900x780 lulus dengan panel tertutup bawaan",
+      "notes": "asal: t19a. Asersi 'panel menggulung di dalam baris' gagal sejak t18a."
     }
   ],
-  "updatedAt": "2026-11-04T02:27:22.648Z"
+  "updatedAt": "2026-11-04T05:23:12.307Z"
 }
