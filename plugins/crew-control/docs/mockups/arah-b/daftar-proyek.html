@@ -1,0 +1,592 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#F1F3F5" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#171B21" media="(prefers-color-scheme: dark)">
+<title>(1) Butuh kamu · Proyek · Crew Control</title>
+<link rel="preload" href="fonts/overpass-latin-wght.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="tokens.css">
+<style>
+/*
+  Daftar proyek (/), arah B "Peta jalur". Rancangan: DESIGN.md bagian "Rancangan layar: (c) Daftar proyek".
+  Penyimpangan dari pola dashboard-design: tidak ada kartu angka terpisah (angka dideret di kepala, DESIGN.md
+  melarang kartu KPI); masalah ditandai di baris proyeknya sendiri, tanpa baris perhatian terpisah.
+  Keadaan lain: ?keadaan=kosong | memuat | galat | diam
+*/
+@font-face { font-family: "Overpass"; src: url(fonts/overpass-latin-wght.woff2) format("woff2"); font-weight: 400 700; font-display: swap; }
+@font-face { font-family: "Overpass Mono"; src: url(fonts/overpass-mono-latin-400.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; }
+html { color-scheme: light dark; }
+body {
+  font-family: var(--font-sans); font-size: var(--fs-14); line-height: var(--lh-body);
+  color: var(--text); background: var(--bg); font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+button { font: inherit; color: inherit; touch-action: manipulation; }
+a { color: inherit; }
+h1, h2, p { margin: 0; }
+ul, ol { margin: 0; padding: 0; list-style: none; }
+.sep { display: inline-block; width: var(--sp-4); height: var(--sp-4); margin: 0 var(--line-w); border-radius: var(--radius-round); background: currentColor; vertical-align: middle; }
+.skip { position: absolute; min-height: var(--tap); display: inline-flex; align-items: center; left: var(--sp-8); top: calc(var(--sp-48) * -1); z-index: 9; background: var(--ink); color: var(--on-ink); padding: var(--sp-8) var(--sp-12); border-radius: var(--radius-s); }
+.skip:focus { top: var(--sp-8); }
+.mono { font-family: var(--font-mono); }
+.vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; margin: 0; }
+:focus-visible { outline: var(--focus-w) solid var(--focus); outline-offset: var(--focus-w); }
+[hidden] { display: none !important; }
+
+/* ---------- Kerangka ---------- */
+.app { display: grid; grid-template-columns: var(--rail-w) minmax(0, 1fr); min-height: 100vh; }
+
+.rail {
+  position: sticky; top: 0; height: 100vh; background: var(--sunk);
+  display: flex; flex-direction: column; align-items: center; gap: var(--sp-4); padding: var(--sp-12) 0;
+}
+.rail a {
+  position: relative; display: grid; place-items: center;
+  width: calc(var(--sp-32) + var(--sp-8)); height: calc(var(--sp-32) + var(--sp-8));
+  border-radius: var(--radius-s); color: var(--text-2); text-decoration: none;
+  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.rail a:hover { background: var(--line); color: var(--text); }
+.rail a[aria-current="page"] { background: var(--surface); color: var(--text); }
+.rail svg, .tabbar svg, .icon-btn svg { width: calc(var(--sp-16) + var(--sp-4)); height: calc(var(--sp-16) + var(--sp-4)); }
+.rail .new { background: var(--ink); color: var(--on-ink); margin-bottom: var(--sp-12); }
+.rail .new:hover { background: var(--text-2); color: var(--on-ink); }
+.rail .end { margin-top: auto; }
+.badge {
+  position: absolute; top: var(--sp-4); right: var(--sp-4);
+  min-width: var(--sp-16); height: var(--sp-16); padding: 0 var(--sp-4); border-radius: var(--radius-round);
+  background: var(--ask); color: var(--on-ink); font-size: var(--fs-12); font-weight: var(--fw-bold);
+  line-height: var(--sp-16); text-align: center;
+}
+
+.page { min-width: 0; padding: var(--sp-24) var(--sp-32) var(--sp-48); }
+
+/* ---------- Kepala ---------- */
+.head { display: flex; align-items: center; gap: var(--sp-32); }
+.title { display: flex; align-items: baseline; gap: var(--sp-12); flex: none; }
+.title h1 { font-size: var(--fs-18); font-weight: var(--fw-semibold); line-height: var(--lh-title); }
+.sample { font-size: var(--fs-12); color: var(--text-3); white-space: nowrap; }
+.icon-btn {
+  display: none; place-items: center; width: var(--tap); height: var(--tap); margin-left: auto;
+  border-radius: var(--radius-s); color: var(--text-2); text-decoration: none;
+}
+.icon-btn:hover { background: var(--sunk); color: var(--text); }
+
+.kpis { display: flex; align-items: center; gap: var(--sp-4); margin-left: auto; }
+.kpi {
+  display: inline-flex; align-items: center; gap: var(--sp-8); min-height: calc(var(--sp-32) + var(--sp-4));
+  padding: 0 var(--sp-12); border-radius: var(--radius-s); text-decoration: none; white-space: nowrap;
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+.kpi:hover { background: var(--sunk); }
+.kpi .k-num { font-size: var(--fs-18); font-weight: var(--fw-semibold); line-height: var(--lh-title); }
+.kpi .k-num small { font-size: var(--fs-14); font-weight: var(--fw-regular); color: var(--text-3); }
+.kpi .k-label { color: var(--text-2); }
+.kpi .k-sub { font-size: var(--fs-13); color: var(--text-3); }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--sp-8);
+  height: calc(var(--sp-32) + var(--sp-4)); padding: 0 var(--sp-16); border-radius: var(--radius-s);
+  border: var(--line-w) solid var(--edge); background: transparent; cursor: pointer; font-weight: var(--fw-semibold);
+  text-decoration: none; white-space: nowrap;
+  transition: background-color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+}
+.btn:hover { background: var(--sunk); }
+.btn:active { transform: translateY(1px); }
+.btn.primary { background: var(--ink); color: var(--on-ink); border-color: var(--ink); }
+.btn.primary:hover { background: var(--text-2); border-color: var(--text-2); }
+.btn.ask { background: var(--ask); border-color: var(--ask); color: var(--on-ink); }
+.btn.ask:hover { background: var(--text); border-color: var(--text); }
+.link-btn {
+  border: 0; background: none; padding: var(--sp-4); margin: 0 calc(var(--sp-4) * -1); cursor: pointer;
+  color: var(--text-2); text-decoration: underline; text-underline-offset: var(--sp-4); text-decoration-thickness: var(--line-w);
+  font-size: var(--fs-13); border-radius: var(--radius-s); white-space: nowrap;
+}
+.link-btn:hover { color: var(--text); }
+
+.notice {
+  display: flex; align-items: center; gap: var(--sp-12); margin-top: var(--sp-12);
+  font-size: var(--fs-13); color: var(--text-2);
+}
+.notice .btn { height: calc(var(--sp-32)); padding: 0 var(--sp-12); }
+.notice .x { border: 0; background: none; cursor: pointer; display: grid; place-items: center; width: var(--sp-32); height: var(--sp-32); border-radius: var(--radius-s); color: var(--text-3); }
+.notice .x:hover { background: var(--sunk); color: var(--text); }
+.notice .x svg { width: var(--sp-16); height: var(--sp-16); }
+.stale { display: flex; align-items: center; gap: var(--sp-12); margin-top: var(--sp-12); font-size: var(--fs-13); color: var(--text); }
+.stale svg { width: var(--sp-16); height: var(--sp-16); color: var(--bad); flex: none; }
+
+/* ---------- Papan jalur ---------- */
+.board { margin-top: var(--sp-32); }
+.row, .cols {
+  display: grid; align-items: center; column-gap: var(--sp-24);
+  grid-template-columns: var(--station) minmax(0, 1fr) var(--col-proj-state) var(--col-proj-track) var(--col-proj-run) var(--col-proj-time) var(--col-proj-act);
+  padding: var(--sp-12) var(--sp-16);
+}
+.cols { padding-top: 0; padding-bottom: var(--sp-8); font-size: var(--fs-13); color: var(--text-3); }
+.cols > span:nth-child(6) { text-align: right; }
+
+.group + .group { margin-top: var(--sp-32); }
+.g-head { display: flex; align-items: baseline; gap: var(--sp-8); padding: 0 var(--sp-16) var(--sp-8); }
+.g-head h2 { font-size: var(--fs-14); font-weight: var(--fw-semibold); }
+.g-head span { font-size: var(--fs-13); color: var(--text-3); }
+.g-head.cols { display: grid; column-gap: var(--sp-24); padding: 0 var(--sp-16) var(--sp-8); align-items: baseline; }
+.g-title { display: flex; align-items: baseline; gap: var(--sp-8); }
+.g-sub { display: flex; align-items: baseline; gap: var(--sp-8); margin: var(--sp-16) 0 0; padding: 0 var(--sp-16) var(--sp-8); font-size: var(--fs-13); font-weight: var(--fw-semibold); color: var(--text-3); }
+.g-sub span { font-weight: var(--fw-regular); }
+.panel { background: var(--surface); border-radius: var(--radius-m); }
+.panel .row + .row { border-top: var(--line-w) solid var(--line); }
+
+.row { position: relative; min-height: var(--row-proj); }
+.row.quiet { min-height: var(--row-proj-quiet); padding-top: var(--sp-8); padding-bottom: var(--sp-8); color: var(--text-2); }
+.quiet + .quiet { border-top: var(--line-w) solid var(--line); }
+.row:hover { background: var(--sunk); }
+.panel .row:first-child { border-radius: var(--radius-m) var(--radius-m) 0 0; }
+.panel .row:last-child { border-radius: 0 0 var(--radius-m) var(--radius-m); }
+
+.who { min-width: 0; display: flex; flex-direction: column; }
+.name { font-size: var(--fs-16); font-weight: var(--fw-semibold); text-decoration: none; overflow-wrap: anywhere; align-self: flex-start;
+  padding: var(--sp-12) 0; margin: calc(var(--sp-12) * -1) 0; }
+.name::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
+.name:focus-visible { outline: none; }
+.name:focus-visible::after { outline: var(--focus-w) solid var(--focus); outline-offset: calc(var(--focus-w) * -1); }
+.path { font-size: var(--fs-13); color: var(--text-3); }
+.quiet .who { flex-direction: row; align-items: baseline; gap: var(--sp-12); }
+.quiet .name { font-size: var(--fs-14); color: var(--text); flex: none; }
+.quiet .path { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+
+.state { display: flex; flex-direction: column; min-width: 0; }
+.st { font-weight: var(--fw-semibold); display: inline-flex; align-items: center; gap: var(--sp-8); }
+.det { font-size: var(--fs-13); color: var(--text-2); }
+.ask .st { color: var(--ask); }
+.bad .st { color: var(--bad); }
+.run-row .st { color: var(--run); }
+.chip { font-size: var(--fs-12); font-weight: var(--fw-regular); color: var(--text-2); background: var(--sunk); padding: 0 var(--sp-8); border-radius: var(--radius-s); }
+.quiet .st { font-weight: var(--fw-regular); color: var(--text-2); }
+
+.ms { display: flex; flex-direction: column; gap: var(--sp-4); min-width: 0; }
+.ms-t { font-size: var(--fs-13); color: var(--text-2); }
+.ms-t b { font-weight: var(--fw-semibold); color: var(--text); }
+.pips { display: flex; gap: var(--sp-4); height: var(--sp-8); align-items: center; }
+.pips li { width: var(--pip); height: var(--pip); border-radius: var(--radius-round); border: calc(var(--line-w) * 2) solid var(--edge); flex: none; }
+.pips li.d { background: var(--ink); border-color: var(--ink); }
+.pips li.n { background: var(--run); border-color: var(--run); }
+.pips li.x { background: var(--bad); border-color: var(--bad); }
+
+.runinfo { display: flex; flex-direction: column; font-size: var(--fs-13); color: var(--text-2); min-width: 0; }
+.runinfo span:first-child { color: var(--text); }
+.quiet .runinfo span:first-child { color: var(--text-2); }
+.when { font-size: var(--fs-13); color: var(--text-2); text-align: right; white-space: nowrap; }
+.act { display: flex; flex-direction: column; align-items: flex-end; gap: var(--sp-4); position: relative; z-index: 1; }
+
+.reason {
+  grid-column: 2 / -1; margin-top: var(--sp-12); padding: var(--sp-12) var(--sp-16); border-radius: var(--radius-s);
+  background: var(--bad-soft); font-size: var(--fs-13); color: var(--text); position: relative; z-index: 1;
+}
+.reason code { font-family: var(--font-mono); }
+
+/* Simbol stasiun 16 px: bentuk sama dengan peta di Layar proyek */
+.mark { width: var(--station); height: var(--station); border-radius: var(--radius-round); flex: none; display: grid; place-items: center; }
+.m-ask { border: var(--ring-w) solid var(--ask); }
+.m-review { border: var(--ring-w) solid var(--ink); }
+.m-review::after { content: ""; width: var(--pip); height: var(--pip); border-radius: var(--radius-round); background: var(--ink); }
+.m-bad { border: calc(var(--line-w) * 2) solid var(--bad); color: var(--bad); }
+.m-bad svg { width: var(--sp-8); height: var(--sp-8); }
+.m-run { background: var(--run); }
+.m-limit { border: calc(var(--line-w) * 2) dashed var(--edge); }
+.m-done { background: var(--ink); color: var(--on-ink); }
+.m-done svg { width: calc(var(--sp-8) + var(--line-w) * 2); height: calc(var(--sp-8) + var(--line-w) * 2); }
+.m-stop { border-radius: var(--radius-s); background: var(--edge); width: var(--dot); height: var(--dot); margin: calc(var(--line-w) * 2); }
+.k-mark { width: var(--dot); height: var(--dot); }
+.k-mark.m-ask, .k-mark.m-review { border-width: calc(var(--line-w) * 2); }
+.k-mark.m-review::after { width: var(--sp-4); height: var(--sp-4); }
+.k-mark.m-bad svg { width: var(--pip); height: var(--pip); }
+
+/* Kosong dan memuat */
+.empty { margin-top: var(--sp-48); max-width: calc(var(--sp-48) * 8); }
+.empty p { font-size: var(--fs-16); margin-bottom: var(--sp-16); }
+.empty .line { display: flex; align-items: center; gap: var(--sp-8); margin-bottom: var(--sp-24); }
+.empty .line i { width: var(--station); height: var(--station); border-radius: var(--radius-round); border: calc(var(--line-w) * 2) solid var(--edge); }
+.empty .line b { flex: 1; height: var(--track-w); background: var(--edge); border-radius: var(--radius-round); }
+.sk .row { pointer-events: none; }
+.sk span { display: block; height: var(--sp-12); border-radius: var(--radius-s); background: var(--sunk); }
+.sk .mark { background: var(--sunk); }
+
+.live { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+/* Tab bawah HP */
+.tabbar { display: none; }
+
+/* ---------- 900-1279: kolom Run pindah ke baris kedua ---------- */
+@media (min-width: 900px) and (max-width: 1279px) {
+  .row, .cols { grid-template-columns: var(--station) minmax(0, 1fr) var(--col-proj-state) var(--col-proj-track) var(--col-proj-time) var(--col-proj-act); }
+  .cols > span:nth-child(5) { display: none; }
+  .row:not(.quiet) .runinfo { grid-column: 2 / 4; grid-row: 2; flex-direction: row; gap: var(--sp-12); margin-top: var(--sp-4); }
+  .row:not(.quiet) .when { grid-row: 1; grid-column: 5; }
+  .row:not(.quiet) .act { grid-row: 1 / 3; grid-column: 6; }
+  .row:not(.quiet) .ms { grid-row: 1; grid-column: 4; }
+  .row:not(.quiet) .state { grid-row: 1; grid-column: 3; }
+  .quiet .runinfo { display: none; }
+  .head { flex-wrap: wrap; row-gap: var(--sp-16); }
+  .kpis { order: 3; margin-left: 0; width: 100%; }
+  .head .btn.primary { margin-left: auto; }
+}
+
+/* ---------- HP (< 900) ---------- */
+@media (max-width: 899px) {
+  .app { grid-template-columns: minmax(0, 1fr); }
+  .rail { display: none; }
+  .page { padding: var(--sp-16) var(--sp-16) calc(var(--tabbar-h) + var(--sp-32) + env(safe-area-inset-bottom)); }
+  .head { gap: var(--sp-12); flex-wrap: wrap; row-gap: var(--sp-16); }
+  .title { flex: 1; flex-direction: column; gap: 0; }
+  .title h1 { font-size: var(--fs-18); }
+  .icon-btn { display: grid; flex: none; }
+  .head .btn.primary { display: none; }
+  /* Lima angka: kisi 3 kolom tanpa batas langsung di latar; label boleh dua baris */
+  .kpis { order: 3; width: 100%; margin: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 var(--sp-8); }
+  .kpi { min-height: var(--tap); height: 100%; padding: 0 var(--sp-4); margin: 0 calc(var(--sp-4) * -1); gap: var(--sp-8); white-space: normal; }
+  .kpi .k-label { font-size: var(--fs-13); line-height: var(--lh-title); }
+  .kpi .k-sub { display: none; }
+  .head { row-gap: var(--sp-8); }
+  .notice { margin-top: var(--sp-4); gap: var(--sp-8); }
+  .notice .n-text { flex: 1; min-width: 0; }
+  .notice .btn { height: var(--tap); }
+  .board { margin-top: var(--sp-24); }
+  .g-head.cols { display: flex; padding: 0 0 var(--sp-8); }
+  .g-head.cols > span:not(.g-title) { display: none; }
+  .g-head, .g-sub { padding: 0 0 var(--sp-8); }
+  .group + .group { margin-top: var(--sp-24); }
+
+  .row, .row.quiet {
+    grid-template-columns: var(--station) minmax(0, 1fr) auto;
+    grid-template-areas: "mark who act" ". state state" ". ms ms" ". meta meta";
+    column-gap: var(--sp-12); row-gap: var(--sp-8); padding: var(--sp-12);
+  }
+  .row .mark { grid-area: mark; align-self: start; margin-top: var(--sp-4); }
+  .row .who { grid-area: who; }
+  .row .state { grid-area: state; }
+  .row .ms { grid-area: ms; }
+  .row .runinfo { grid-area: meta; flex-direction: row; flex-wrap: wrap; gap: 0 var(--sp-12); }
+  .row .when { grid-area: act; align-self: start; }
+  .row .act { grid-area: act; align-self: start; }
+  .row:not(.quiet) .when { display: none; }
+  .row .act .btn { height: var(--tap); }
+  .row .link-btn { min-height: var(--tap); }
+  .notice .btn, .notice .x { min-height: var(--tap); min-width: var(--tap); }
+  html { scroll-padding-bottom: calc(var(--tabbar-h) + var(--sp-16)); }
+  .reason { grid-column: 2 / -1; grid-row: auto; }
+  .act { flex-direction: column; }
+
+  .quiet { min-height: var(--row-proj); }
+  .quiet .who { flex-direction: column; gap: 0; }
+  .quiet .path { white-space: normal; }
+  .quiet .state { flex-direction: row; flex-wrap: wrap; gap: 0 var(--sp-12); }
+  .quiet .ms { display: none; }
+  .quiet .runinfo { display: none; }
+
+  .pips { gap: var(--sp-4); height: var(--sp-8); width: 100%; }
+  .pips li { flex: 1; width: auto; height: var(--sp-4); border: 0; background: var(--edge); }
+  .pips.short li { flex: none; width: calc((100% - var(--sp-4) * 23) / 24); }
+
+  .tabbar {
+    display: grid; grid-template-columns: repeat(3, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 5;
+    height: calc(var(--tabbar-h) + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom);
+    background: var(--surface); border-top: var(--line-w) solid var(--line);
+  }
+  .tabbar a {
+    position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--sp-4);
+    font-size: var(--fs-12); color: var(--text-2); text-decoration: none; min-height: var(--tap);
+  }
+  .tabbar a[aria-current="page"] { color: var(--text); font-weight: var(--fw-semibold); }
+  .tabbar .badge { top: var(--sp-4); right: auto; left: calc(50% + var(--sp-8)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition-duration: 0ms !important; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#papan">Langsung ke daftar proyek</a>
+<div class="app">
+
+  <nav class="rail" aria-label="Navigasi utama">
+    <a class="new" href="/baru" aria-label="Run baru" title="Run baru">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M10 4v12M4 10h12"/></svg>
+    </a>
+    <a href="daftar-proyek.html" aria-current="page" aria-label="Proyek, 1 butuh kamu" title="Proyek">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round" aria-hidden="true"><path d="M3 6.5a1.5 1.5 0 0 1 1.5-1.5h3.2l1.6 2h6.2A1.5 1.5 0 0 1 17 8.5v6a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 3 14.5z"/></svg>
+      <span class="badge js-ask-count" aria-hidden="true">1</span>
+    </a>
+    <a href="/riwayat" aria-label="Riwayat" title="Riwayat">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><circle cx="10" cy="10" r="7"/><path d="M10 6v4l2.5 2"/></svg>
+    </a>
+    <a href="/kesehatan" aria-label="Kesehatan kit" title="Kesehatan kit">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 15h14M5 15V9M10 15V5M15 15v-4"/></svg>
+    </a>
+    <a class="end" href="?pengaturan=1" aria-label="Pengaturan" title="Pengaturan">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><circle cx="10" cy="10" r="2.5"/><path d="M10 2.5v2M10 15.5v2M2.5 10h2M15.5 10h2M4.7 4.7l1.4 1.4M13.9 13.9l1.4 1.4M4.7 15.3l1.4-1.4M13.9 6.1l1.4-1.4"/></svg>
+    </a>
+  </nav>
+
+  <main class="page" id="main">
+    <header class="head">
+      <div class="title">
+        <h1>Proyek</h1>
+        <span class="sample">Data contoh, kecuali 07_Sandbox</span>
+      </div>
+      <a class="icon-btn" href="?pengaturan=1" aria-label="Pengaturan">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><circle cx="10" cy="10" r="2.5"/><path d="M10 2.5v2M10 15.5v2M2.5 10h2M15.5 10h2M4.7 4.7l1.4 1.4M13.9 13.9l1.4 1.4M4.7 15.3l1.4-1.4M13.9 6.1l1.4-1.4"/></svg>
+      </a>
+      <ul class="kpis" aria-label="Ringkasan semua proyek">
+        <li data-kpi="ask"><a class="kpi" href="#perlu">
+          <span class="mark k-mark m-ask" aria-hidden="true"></span><b class="k-num" id="k-ask">1</b><span class="k-label">Butuh kamu</span></a></li>
+        <li data-kpi="review"><a class="kpi" href="#perlu">
+          <span class="mark k-mark m-review" aria-hidden="true"></span><b class="k-num">1</b><span class="k-label">Siap review</span></a></li>
+        <li data-kpi="run"><a class="kpi" href="#jalan" title="Run yang sedang memakai slot, dari batas 3 run bersamaan. toconnect ikut dihitung walau menunggu jawabanmu.">
+          <span class="mark k-mark m-run" aria-hidden="true"></span><b class="k-num"><span id="k-run">2</span><small>/3</small></b><span class="k-label">Run aktif</span></a></li>
+        <li data-kpi="bad"><a class="kpi" href="#perlu">
+          <span class="mark k-mark m-bad" aria-hidden="true"><svg viewBox="0 0 8 8" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M1.5 1.5l5 5M6.5 1.5l-5 5"/></svg></span><b class="k-num" id="k-bad">1</b><span class="k-label">Gagal atau terputus</span></a></li>
+        <li data-kpi="limit"><a class="kpi" href="#jalan" title="Run berhenti karena batas pemakaian dan lanjut sendiri">
+          <span class="mark k-mark m-limit" aria-hidden="true"></span><b class="k-num">1</b><span class="k-label">Jeda limit</span><span class="k-sub">lanjut 17.00</span></a></li>
+      </ul>
+      <a class="btn primary" href="/baru">Run baru</a>
+    </header>
+
+    <p class="notice" id="notice">
+      <span class="n-text">Pemberitahuan ke HP belum aktif.</span>
+      <button class="btn" type="button" id="notice-on">Aktifkan</button>
+      <button class="x" type="button" id="notice-x" aria-label="Tutup pemberitahuan">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+      </button>
+    </p>
+    <p class="stale" id="stale" hidden>
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="6.5"/><path d="M8 4.5v4M8 11v.5"/></svg>
+      <span>Tidak bisa memuat ulang. Ini data terakhir pukul 10.48.</span>
+      <button class="link-btn" type="button" id="retry">Coba lagi</button>
+    </p>
+
+    <div class="board" id="papan" tabindex="-1">
+      <section class="group" id="perlu" aria-labelledby="perlu-h">
+        <div class="g-head cols"><span></span><span class="g-title"><h2 id="perlu-h">Perlu diurus</h2><span id="perlu-n">3</span></span><span aria-hidden="true">Keadaan</span><span aria-hidden="true">Milestone</span><span aria-hidden="true">Run</span><span aria-hidden="true">Terakhir</span><span></span></div>
+        <ul class="panel" id="perlu-list">
+          <li class="row ask">
+            <span class="mark m-ask" aria-hidden="true"></span>
+            <div class="who"><a class="name" translate="no" href="layar-proyek.html">toconnect</a><span class="path mono" translate="no">clients › toconnect</span></div>
+            <div class="state"><span class="st">Butuh kamu</span><span class="det">Pertanyaan dari ui-designer</span></div>
+            <div class="ms"><ol class="pips" data-total="24" data-done="7" data-now="2"></ol><span class="ms-t"><b>UI · 7/24 item</b> · batch 2</span></div>
+            <div class="runinfo"><span>fe, be jalan</span><span>412,6 rb token · 1 j 48 mnt</span></div>
+            <span class="when">10.42</span>
+            <div class="act"><a class="btn ask" href="layar-proyek.html#chat">Jawab</a></div>
+          </li>
+          <li class="row review">
+            <span class="mark m-review" aria-hidden="true"></span>
+            <div class="who"><a class="name" translate="no" href="/proyek/ryama-kit">ryama-kit</a><span class="path mono" translate="no">ryama-kit</span></div>
+            <div class="state"><span class="st">Siap review</span><span class="det">Menunggu persetujuanmu</span></div>
+            <div class="ms"><ol class="pips" data-total="12" data-done="12"></ol><span class="ms-t"><b>Rilis 0.9 · 12/12 item</b></span></div>
+            <div class="runinfo"><span>Run selesai</span><span>238,1 rb token · 3 j 5 mnt</span></div>
+            <span class="when">09.57</span>
+            <div class="act"><a class="btn" href="/proyek/ryama-kit/review">Review</a></div>
+          </li>
+          <li class="row bad" id="row-absensi">
+            <span class="mark m-bad" aria-hidden="true"><svg viewBox="0 0 8 8" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M1.5 1.5l5 5M6.5 1.5l-5 5"/></svg></span>
+            <div class="who"><a class="name" translate="no" href="/proyek/absensi-cabang">absensi-cabang</a><span class="path mono" translate="no">clients › absensi-cabang</span></div>
+            <div class="state"><span class="st">Gagal</span><span class="det">Item 5 Rekap per cabang · putaran 3</span></div>
+            <div class="ms"><ol class="pips" data-total="9" data-done="4" data-bad="1"></ol><span class="ms-t"><b>Inti · 4/9 item</b></span></div>
+            <div class="runinfo"><span>Run berhenti</span><span>96,4 rb token · 41 mnt</span></div>
+            <span class="when">09.15</span>
+            <div class="act">
+              <button class="btn" type="button" id="resume">Lanjutkan</button>
+              <button class="link-btn" type="button" id="why" aria-expanded="false" aria-controls="why-absensi">Lihat alasan</button>
+            </div>
+            <p class="reason" id="why-absensi" hidden>Tes <code translate="no">npm test -- rekap</code> masih gagal setelah putaran 3: total jam cabang Bekasi selisih 1 hari.</p>
+          </li>
+        </ul>
+      </section>
+
+      <section class="group" id="jalan" aria-labelledby="jalan-h">
+        <div class="g-head"><h2 id="jalan-h">Jalan</h2><span id="jalan-n">1</span></div>
+        <ul class="panel" id="jalan-list">
+          <li class="row run-row">
+            <span class="mark m-run" aria-hidden="true"></span>
+            <div class="who"><a class="name" translate="no" href="/proyek/crew-control">crew-control</a><span class="path mono" translate="no">ryama-kit › plugins › crew-control</span></div>
+            <div class="state"><span class="st">Jalan</span><span class="det">be · Endpoint daftar proyek</span></div>
+            <div class="ms"><ol class="pips" data-total="10" data-done="3" data-now="1"></ol><span class="ms-t"><b>Server · 3/10 item</b> · batch 1</span></div>
+            <div class="runinfo"><span>be jalan</span><span>54,0 rb token · 22 mnt</span></div>
+            <span class="when">10.47</span>
+            <div class="act"></div>
+          </li>
+        </ul>
+        <h3 class="g-sub" id="limit-h">Jeda limit<span>1</span></h3>
+        <ul class="panel" aria-labelledby="limit-h">
+          <li class="row limit">
+            <span class="mark m-limit" aria-hidden="true"></span>
+            <div class="who"><a class="name" translate="no" href="/proyek/katalog-toko">katalog-toko</a><span class="path mono" translate="no">clients › katalog-toko</span></div>
+            <div class="state"><span class="st">Jeda limit</span><span class="det">Lanjut sendiri pukul 17.00</span></div>
+            <div class="ms"><ol class="pips" data-total="8" data-done="5"></ol><span class="ms-t"><b>Katalog · 5/8 item</b></span></div>
+            <div class="runinfo"><span>Run dijeda</span><span>181,7 rb token · 1 j 12 mnt</span></div>
+            <span class="when">10.05</span>
+            <div class="act"></div>
+          </li>
+        </ul>
+      </section>
+
+      <section class="group" id="diam" aria-labelledby="diam-h">
+        <div class="g-head"><h2 id="diam-h">Diam</h2><span>3</span></div>
+        <ul>
+          <li class="row quiet">
+            <span class="mark m-done" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4"/></svg></span>
+            <div class="who"><a class="name" translate="no" href="/proyek/flow-viewer">flow-viewer</a><span class="path mono" translate="no" title="ryama-kit › plugins › flow-viewer">ryama-kit › plugins › flow-viewer</span></div>
+            <div class="state"><span class="st">Selesai <span class="chip">dari desktop</span></span></div>
+            <div class="ms"><span class="ms-t">Prompt bebas · 31 langkah</span></div>
+            <div class="runinfo"><span>77,9 rb token · 26 mnt</span></div>
+            <span class="when">Kemarin 16.20</span>
+            <div class="act"></div>
+          </li>
+          <li class="row quiet">
+            <span class="mark m-stop" aria-hidden="true"></span>
+            <div class="who"><a class="name" translate="no" href="/proyek/07_Sandbox">07_Sandbox</a><span class="path mono" translate="no">07_Sandbox</span></div>
+            <div class="state"><span class="st">Dihentikan</span></div>
+            <div class="ms"><span class="ms-t">Prompt bebas · 9 langkah</span></div>
+            <div class="runinfo"><span>1,2 rb token · 2 mnt 9 dtk</span></div>
+            <span class="when">Kemarin 14.39</span>
+            <div class="act"></div>
+          </li>
+          <li class="row quiet">
+            <span class="mark m-done" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2 2 4-4.4"/></svg></span>
+            <div class="who"><a class="name" translate="no" href="/proyek/absensi-lama">absensi-lama</a><span class="path mono" translate="no" title="clients › arsip › absensi-lama">clients › arsip › absensi-lama</span></div>
+            <div class="state"><span class="st">Selesai</span></div>
+            <div class="ms"><span class="ms-t">Inti · 6/6 item</span></div>
+            <div class="runinfo"><span>140,3 rb token · 2 j 10 mnt</span></div>
+            <span class="when">2 Nov</span>
+            <div class="act"></div>
+          </li>
+        </ul>
+      </section>
+    </div>
+
+    <div class="board sk" id="memuat" hidden aria-busy="true" aria-label="Memuat proyek…">
+      <ul class="panel">
+        <li class="row"><span class="mark"></span><span></span><span></span><span></span><span></span><span></span><span></span></li>
+        <li class="row"><span class="mark"></span><span></span><span></span><span></span><span></span><span></span><span></span></li>
+        <li class="row"><span class="mark"></span><span></span><span></span><span></span><span></span><span></span><span></span></li>
+      </ul>
+    </div>
+
+    <section class="empty" id="kosong" hidden aria-labelledby="kosong-h">
+      <div class="line" aria-hidden="true"><i></i><b></b><i></i></div>
+      <p id="kosong-h">Belum ada run.</p>
+      <a class="btn primary" href="/baru">Run baru</a>
+    </section>
+
+    <p class="live" id="live" role="status" aria-live="polite"></p>
+  </main>
+
+  <nav class="tabbar" aria-label="Navigasi utama HP">
+    <a href="daftar-proyek.html" aria-current="page" aria-label="Proyek, 1 butuh kamu">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round" aria-hidden="true"><path d="M3 6.5a1.5 1.5 0 0 1 1.5-1.5h3.2l1.6 2h6.2A1.5 1.5 0 0 1 17 8.5v6a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 3 14.5z"/></svg>
+      <span aria-hidden="true">Proyek</span><span class="badge js-ask-count" aria-hidden="true">1</span>
+    </a>
+    <a href="/baru">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M10 4v12M4 10h12"/></svg>
+      <span>Run baru</span>
+    </a>
+    <a href="/riwayat">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><circle cx="10" cy="10" r="7"/><path d="M10 6v4l2.5 2"/></svg>
+      <span>Riwayat</span>
+    </a>
+  </nav>
+</div>
+
+<script>
+(() => {
+  const $ = (s) => document.querySelector(s);
+
+  // Deret milestone: satu titik satu item (d = selesai, n = dikerjakan, x = gagal)
+  document.querySelectorAll('.pips').forEach((ol) => {
+    const t = +ol.dataset.total, d = +(ol.dataset.done || 0), n = +(ol.dataset.now || 0), x = +(ol.dataset.bad || 0);
+    for (let i = 0; i < t; i++) {
+      const li = document.createElement('li');
+      li.className = i < d ? 'd' : i < d + n ? 'n' : i < d + n + x ? 'x' : '';
+      ol.append(li);
+    }
+    if (t < 24) ol.classList.add('short');
+    const parts = [d + ' selesai'];
+    if (n) parts.push(n + ' dikerjakan');
+    if (x) parts.push(x + ' gagal');
+    parts.push((t - d - n - x) + ' sisa');
+    ol.setAttribute('aria-label', 'Item milestone: ' + parts.join(', ') + ' dari ' + t);
+  });
+
+  // Titik tengah Overpass menempel ke kata sesudahnya: ganti dengan bulatan kecil (sama dengan Layar proyek)
+  const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, { acceptNode: (n) => n.nodeValue.includes(' · ') && !n.parentElement.closest('svg, title') ? 1 : 2 });
+  const ns = []; while (w.nextNode()) ns.push(w.currentNode);
+  ns.forEach((n) => { const f = document.createElement('span'); n.nodeValue.split(' · ').forEach((t, i) => { if (i) { const sp = document.createElement('span'); sp.className = 'sep'; sp.setAttribute('aria-hidden', 'true'); f.append(' ', sp, ' '); } f.append(t); }); n.replaceWith(f); });
+
+  // Angka 0 diciutkan
+  const collapseZeros = () => {
+    document.querySelectorAll('[data-kpi]').forEach((li) => {
+      const v = li.querySelector('.k-num').textContent.trim();
+      li.hidden = /^0(\/|$)/.test(v) || v === '0';
+    });
+  };
+
+  // Pemberitahuan
+  const notice = $('#notice');
+  const hideNotice = () => { notice.hidden = true; try { localStorage.setItem('cc-notice-tutup', '1'); } catch (e) {} };
+  try { if (localStorage.getItem('cc-notice-tutup')) notice.hidden = true; } catch (e) {}
+  $('#notice-x').addEventListener('click', hideNotice);
+  $('#notice-on').addEventListener('click', async () => {
+    if ('Notification' in window) { try { await Notification.requestPermission(); } catch (e) {} }
+    hideNotice();
+    $('#live').textContent = 'Pemberitahuan diminta. Pilih Izinkan di peramban.';
+  });
+
+  // Lihat alasan
+  const why = $('#why');
+  why.addEventListener('click', () => {
+    const r = $('#why-absensi'), open = r.hidden;
+    r.hidden = !open; why.setAttribute('aria-expanded', String(open));
+    why.textContent = open ? 'Tutup alasan' : 'Lihat alasan';
+  });
+
+  // Lanjutkan: sesi baru di run yang sama; baris pindah ke Jalan
+  $('#resume').addEventListener('click', () => {
+    const row = $('#row-absensi');
+    row.classList.remove('bad'); row.classList.add('run-row');
+    row.querySelector('.mark').className = 'mark m-run';
+    row.querySelector('.mark').innerHTML = '';
+    row.querySelector('.st').textContent = 'Jalan';
+    row.querySelector('.det').textContent = 'Sesi baru dari item 5';
+    row.querySelector('.runinfo span').textContent = 'fe jalan';
+    row.querySelector('.when').textContent = '10.48';
+    row.querySelector('.act').innerHTML = '';
+    row.querySelector('.reason')?.remove();
+    const x = row.querySelector('.pips li.x'); if (x) x.className = 'n';
+    $('#jalan-list').prepend(row);
+    $('#perlu-n').textContent = '2'; $('#jalan-n').textContent = '2';
+    $('#k-bad').textContent = '0'; $('#k-run').textContent = '3';
+    collapseZeros();
+    $('#live').textContent = 'absensi-cabang dilanjutkan dengan sesi baru.';
+    row.querySelector('.name').focus();
+  });
+
+  // Keadaan lain untuk mockup: ?keadaan=kosong | memuat | galat | diam
+  const k = new URLSearchParams(location.search).get('keadaan');
+  if (k === 'kosong') { $('.kpis').hidden = true; $('#papan').hidden = true; $('#kosong').hidden = false; document.querySelectorAll('.js-ask-count').forEach((b) => b.hidden = true); document.title = 'Proyek · Crew Control'; }
+  if (k === 'memuat') { document.querySelectorAll('.js-ask-count').forEach((b) => b.hidden = true); $('.kpis').hidden = true; $('#papan').hidden = true; $('#memuat').hidden = false; }
+  if (k === 'galat') { $('#stale').hidden = false; $('#notice').hidden = true; }
+  if (k === 'diam') {
+    $('#perlu').hidden = true; $('#jalan').hidden = true; $('.kpis').hidden = true;
+    document.querySelectorAll('.js-ask-count').forEach((b) => b.hidden = true); document.title = 'Proyek · Crew Control';
+  }
+  $('#retry').addEventListener('click', () => { $('#stale').hidden = true; $('#live').textContent = 'Data dimuat ulang pukul 10.48.'; });
+  collapseZeros();
+})();
+</script>
+</body>
+</html>

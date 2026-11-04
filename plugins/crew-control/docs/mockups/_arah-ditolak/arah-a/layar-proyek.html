@@ -1,0 +1,592 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>toconnect · Crew Control</title>
+<link rel="stylesheet" href="tokens.css">
+<style>
+@font-face { font-family: "Plus Jakarta Sans"; src: url("fonts/plus-jakarta-sans-latin-wght-normal.woff2") format("woff2"); font-weight: 200 800; font-display: swap; }
+@font-face { font-family: "Commit Mono"; src: url("fonts/commit-mono-latin-400-normal.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  font-family: var(--font-sans); font-size: var(--fs-14); line-height: var(--lh-body);
+  color: var(--text); background: var(--bg);
+  font-variant-numeric: tabular-nums; -webkit-font-smoothing: antialiased;
+}
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+:focus-visible { outline: var(--focus-w) solid var(--focus); outline-offset: var(--focus-w); border-radius: var(--radius-s); }
+.mono { font-family: var(--font-mono); }
+.sr { font-size: var(--fs-14); margin: 0; position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+svg.i { width: var(--icon); height: var(--icon); flex: none; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+svg.i.s { width: var(--icon-s); height: var(--icon-s); }
+
+/* ---------- Kerangka ---------- */
+.app {
+  display: grid; height: 100vh; min-height: 0;
+  grid-template-columns: var(--rail-w) var(--col-agent) minmax(0, 1fr) var(--col-chat);
+  grid-template-rows: var(--topbar-h) minmax(0, 1fr);
+}
+
+/* Rel navigasi */
+.rail {
+  grid-row: 1 / 3; background: var(--sunk);
+  display: flex; flex-direction: column; align-items: center; gap: var(--sp-8);
+  padding: var(--sp-8) 0 var(--sp-16);
+}
+.rail a, .rail button.nav {
+  position: relative; display: grid; place-items: center;
+  width: var(--ctl-h-l); height: var(--ctl-h-l); border-radius: var(--radius-s); color: var(--text-2);
+  transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.rail .nav:hover { background: var(--bg); color: var(--text); }
+.rail .nav[aria-current="page"] { background: var(--bg); color: var(--text); }
+.rail .new { background: var(--ink); color: var(--on-ink); margin-bottom: var(--sp-8); }
+.rail .new:hover { background: var(--ink); color: var(--on-ink); opacity: .88; }
+.rail .badge {
+  position: absolute; top: 0; right: 0; min-width: var(--icon-s); height: var(--icon-s);
+  padding: 0 var(--sp-4); border-radius: var(--radius-s);
+  background: var(--ask-soft); color: var(--ask); font-size: var(--fs-12); font-weight: var(--fw-bold);
+  line-height: var(--icon-s); text-align: center;
+}
+.rail .push { margin-top: auto; }
+
+/* Bar atas */
+.top {
+  grid-column: 2 / 5; position: relative;
+  display: flex; align-items: center; gap: var(--sp-24);
+  padding: 0 var(--sp-16) 0 var(--sp-24); white-space: nowrap; min-width: 0;
+}
+.top.plain { border-bottom: var(--line-w) solid var(--line); }
+.top h1 { margin: 0; font-size: var(--fs-20); line-height: var(--lh-title); font-weight: var(--fw-bold); }
+.who { display: flex; align-items: baseline; gap: var(--sp-8); min-width: 0; }
+.who .path { color: var(--text-3); font-size: var(--fs-13); }
+.who .sample { color: var(--text-2); font-size: var(--fs-13); font-weight: var(--fw-semibold); }
+.state { display: inline-flex; align-items: center; gap: var(--sp-8); font-weight: var(--fw-semibold); }
+.progress { color: var(--text-2); }
+.waiting { display: inline-flex; align-items: center; min-height: var(--ctl-h); color: var(--ask); font-weight: var(--fw-semibold); text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+.meta { margin-left: auto; display: flex; align-items: center; gap: var(--sp-16); color: var(--text-2); font-size: var(--fs-13); }
+.ctl { display: flex; gap: var(--sp-8); position: relative; }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--sp-8);
+  height: var(--ctl-h); padding: 0 var(--sp-12); border-radius: var(--radius-s);
+  font-size: var(--fs-14); font-weight: var(--fw-semibold); white-space: nowrap;
+  border: var(--line-w) solid var(--edge); background: transparent; color: var(--text);
+  transition: background var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+}
+.btn:hover { background: var(--sunk); }
+.btn:active { transform: translateY(1px); }
+.btn.ink { background: var(--ink); color: var(--on-ink); border-color: var(--ink); }
+.btn.ink:hover { opacity: .9; }
+.btn.quiet { border-color: transparent; color: var(--text-2); }
+.btn.quiet:hover { color: var(--text); }
+.segs {
+  position: absolute; left: 0; right: 0; bottom: 0; height: var(--seg-h);
+  display: grid; grid-template-columns: repeat(24, 1fr); gap: var(--line-w);
+}
+.segs i { background: var(--line); }
+.segs i.d { background: var(--text); }
+.segs i.r { background: var(--run); }
+
+/* Popover konfirmasi Stop */
+.pop {
+  position: absolute; top: calc(100% + var(--sp-8)); right: 0; z-index: 5; width: 300px;
+  background: var(--surface); border-radius: var(--radius-m); box-shadow: var(--shadow-pop);
+  padding: var(--sp-16); white-space: normal;
+}
+.pop p { margin: 0 0 var(--sp-12); color: var(--text); }
+.pop p b { display: block; font-size: var(--fs-16); }
+.pop p span { color: var(--text-2); font-size: var(--fs-13); }
+.pop .row { display: flex; gap: var(--sp-8); }
+
+/* Lampu status */
+.lamp { width: var(--lamp); height: var(--lamp); border-radius: var(--radius-s); flex: none; background: var(--text-3); }
+.lamp.run { background: var(--run); }
+.lamp.ask { background: var(--ask-mark); }
+.lamp.bad { background: var(--bad); }
+.lamp.ready { background: transparent; box-shadow: inset 0 0 0 var(--edge-w) var(--edge); }
+.lamp.paused { background: var(--text-2); }
+
+/* ---------- Kolom agent ---------- */
+.agents { overflow-y: auto; padding: var(--sp-16) var(--sp-12) var(--sp-24) var(--sp-16); }
+.agents h2 { margin: 0 0 var(--sp-8); font-size: var(--fs-13); font-weight: var(--fw-regular); color: var(--text-3); padding-left: var(--sp-8); }
+.group + .group { margin-top: var(--sp-24); }
+.ag {
+  display: block; width: 100%; text-align: left; border-radius: var(--radius-s);
+  padding: var(--sp-8); min-height: var(--row-agent);
+  transition: background var(--dur-fast) var(--ease-out);
+}
+.ag:hover, .ag[aria-pressed="true"] { background: var(--sunk); }
+.ag .l1 { display: flex; align-items: center; gap: var(--sp-8); }
+.ag .nm { color: var(--text-2); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ag .rd { color: var(--text-3); font-size: var(--fs-13); }
+.ag .st { margin-left: auto; font-size: var(--fs-13); color: var(--text-3); white-space: nowrap; }
+.ag.hot .nm { color: var(--text); font-weight: var(--fw-semibold); }
+.ag.run .st { color: var(--run); font-weight: var(--fw-semibold); }
+.ag.ask .st { color: var(--ask); font-weight: var(--fw-semibold); }
+.ag .l2.askw { color: var(--ask); font-weight: var(--fw-semibold); }
+.mark { width: var(--icon-s); display: inline-grid; place-items: center; flex: none; }
+.ag .l2 { margin: var(--sp-4) 0 0 var(--sp-24); font-size: var(--fs-13); color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ag .ok { color: var(--text-3); }
+
+/* ---------- Grafik ---------- */
+.graph { position: relative; overflow: hidden; display: flex; flex-direction: column; min-width: 0; }
+.graph .cap { padding: var(--sp-16) var(--sp-24) 0; color: var(--text-3); font-size: var(--fs-13); }
+.canvas { position: relative; flex: 1; min-height: 0; }
+.canvas svg.edges { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.edges path { fill: none; stroke: var(--edge); stroke-width: var(--edge-w); }
+.edges path.on { stroke: var(--run); stroke-width: var(--edge-active-w); stroke-dasharray: 6 6; animation: flow var(--dur-flow) linear infinite; }
+.paused .edges path.on { animation-play-state: paused; }
+@keyframes flow { to { stroke-dashoffset: -12; } }
+.node {
+  position: absolute; transform: translate(-50%, -50%);
+  display: inline-flex; align-items: center; gap: var(--sp-8);
+  height: var(--node-h); padding: 0 var(--sp-12); border-radius: var(--radius-s);
+  background: var(--bg); box-shadow: inset 0 0 0 var(--line-w) var(--edge);
+  font-size: var(--fs-13); color: var(--text-2); white-space: nowrap;
+  transition: background var(--dur-fast) var(--ease-out);
+}
+.node:hover { background: var(--sunk); }
+.node b { font-weight: var(--fw-semibold); font-size: var(--fs-14); color: var(--text); }
+.node.done { background: transparent; }
+.node.ready { background: transparent; box-shadow: none; outline: var(--line-w) dashed var(--edge); outline-offset: calc(var(--line-w) * -1); color: var(--text-3); }
+.node.ready b { color: var(--text-2); font-weight: var(--fw-regular); }
+.node.done b { color: var(--text-2); font-weight: var(--fw-regular); }
+.node.run { background: var(--run-soft); box-shadow: none; color: var(--run); }
+.node.run b { color: var(--run); }
+.node.ask { background: var(--ask-soft); box-shadow: none; color: var(--ask); }
+.node.ask b { color: var(--ask); }
+.node.lead { height: var(--ctl-h-l); padding: 0 var(--sp-16); }
+.node.lead b { font-size: var(--fs-16); }
+.node.paused { box-shadow: inset 0 0 0 var(--line-w) var(--edge); }
+
+.mock {
+  position: absolute; left: var(--sp-16); bottom: var(--sp-16);
+  display: flex; align-items: center; gap: var(--sp-4); flex-wrap: wrap;
+  font-size: var(--fs-13); color: var(--text-3);
+}
+.mock span { margin-right: var(--sp-4); }
+.mock button { height: var(--ctl-h); padding: 0 var(--sp-8); border-radius: var(--radius-s); color: var(--text-2); }
+.mock button:hover { background: var(--sunk); color: var(--text); }
+.mock button[aria-pressed="true"] { background: var(--sunk); color: var(--text); font-weight: var(--fw-semibold); }
+
+/* ---------- Chat ---------- */
+.side { background: var(--surface); display: flex; flex-direction: column; min-height: 0; }
+.tabs { display: flex; gap: var(--sp-4); padding: var(--sp-12) var(--sp-24) 0; }
+.tab {
+  position: relative; height: var(--ctl-h); padding: 0 var(--sp-12); border-radius: var(--radius-s);
+  color: var(--text-2); font-weight: var(--fw-semibold); display: inline-flex; align-items: center; gap: var(--sp-8);
+}
+.tab:hover { color: var(--text); }
+.tab[aria-selected="true"] { background: var(--bg); color: var(--text); }
+.tab .badge { min-width: var(--icon-s); height: var(--icon-s); padding: 0 var(--sp-4); border-radius: var(--radius-s); background: var(--ask-soft); color: var(--ask); font-size: var(--fs-12); line-height: var(--icon-s); text-align: center; }
+.feed { flex: 1; overflow-y: auto; padding: var(--sp-16) var(--sp-24) var(--sp-24); display: flex; flex-direction: column; gap: var(--sp-24); scroll-behavior: smooth; }
+.msg .who2 { display: flex; gap: var(--sp-8); align-items: baseline; margin-bottom: var(--sp-4); font-size: var(--fs-13); }
+.msg .who2 b { font-weight: var(--fw-semibold); color: var(--text-2); }
+.msg .who2 time, .me time { color: var(--text-3); font-size: var(--fs-12); }
+.msg .body { font-size: var(--fs-16); line-height: var(--lh-chat); }
+.msg .body p { margin: 0 0 var(--sp-8); }
+.msg .body p:last-child { margin: 0; }
+.msg .body ol { margin: 0; padding-left: var(--sp-24); }
+.msg code, .me code { font-family: var(--font-mono); font-size: var(--fs-14); }
+.me { align-self: flex-end; max-width: 88%; display: flex; flex-direction: column; align-items: flex-end; gap: var(--sp-4); }
+.me .bub { background: var(--bg); border-radius: var(--radius-l); padding: var(--sp-12) var(--sp-16); font-size: var(--fs-16); line-height: var(--lh-chat); }
+.me .q { color: var(--text-3); font-size: var(--fs-12); }
+.sys { align-self: center; text-align: center; color: var(--text-3); font-size: var(--fs-13); max-width: 80%; }
+.tools { margin: calc(var(--sp-8) * -1) 0; }
+.tools > button { display: inline-flex; align-items: center; gap: var(--sp-8); height: var(--ctl-h); padding: 0 var(--sp-8); margin-left: calc(var(--sp-8) * -1); border-radius: var(--radius-s); color: var(--text-2); font-size: var(--fs-13); }
+.tools > button:hover { background: var(--bg); color: var(--text); }
+.tools > button svg { transition: transform var(--dur-fast) var(--ease-out); }
+.tools > button[aria-expanded="true"] svg { transform: rotate(90deg); }
+.tools ul { list-style: none; margin: var(--sp-4) 0 0; padding: 0 0 0 var(--sp-24); display: grid; gap: var(--sp-4); font-size: var(--fs-13); color: var(--text-2); }
+.tools ul[hidden] { display: none; }
+.tools li { display: flex; gap: var(--sp-8); min-width: 0; }
+.tools li .who3 { color: var(--text-3); flex: none; }
+.tools li .mono { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.closed { display: flex; gap: var(--sp-8); align-items: flex-start; font-size: var(--fs-13); color: var(--text-3); }
+.closed svg { margin-top: var(--sp-4); }
+
+.card { background: var(--ask-soft); border-radius: var(--radius-m); padding: var(--sp-16) var(--sp-16) var(--sp-16) var(--sp-16); }
+.card .hd { display: flex; align-items: center; gap: var(--sp-8); font-size: var(--fs-13); color: var(--ask); font-weight: var(--fw-semibold); margin-bottom: var(--sp-8); }
+.card .hd time { margin-left: auto; color: var(--text-2); font-weight: var(--fw-regular); font-size: var(--fs-12); }
+.card h3 { margin: 0 0 var(--sp-12); font-size: var(--fs-16); line-height: var(--lh-title); font-weight: var(--fw-semibold); }
+.opts { display: grid; gap: var(--sp-8); }
+.opt {
+  display: block; width: 100%; text-align: left; background: var(--surface); border-radius: var(--radius-s);
+  box-shadow: inset 0 0 0 var(--line-w) var(--edge); padding: var(--sp-8) var(--sp-12);
+  transition: box-shadow var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+}
+.opt:hover { box-shadow: inset 0 0 0 var(--edge-active-w) var(--text); }
+.opt:active { transform: translateY(1px); }
+.opt b { display: block; font-weight: var(--fw-semibold); }
+.opt span { display: block; font-size: var(--fs-13); color: var(--text-2); }
+.card .pathbox { background: var(--surface); border-radius: var(--radius-s); padding: var(--sp-8) var(--sp-12); font-size: var(--fs-14); margin-bottom: var(--sp-8); overflow-wrap: anywhere; }
+.card .why { margin: 0 0 var(--sp-12); color: var(--text-2); font-size: var(--fs-14); }
+.card .row { display: flex; gap: var(--sp-8); flex-wrap: wrap; }
+.card .btn { background: var(--surface); }
+.card .btn.ink { background: var(--ink); }
+.card label { display: block; font-size: var(--fs-13); color: var(--text-2); margin: var(--sp-12) 0 var(--sp-4); }
+.card input { width: 100%; height: var(--ctl-h-l); border-radius: var(--radius-s); border: var(--line-w) solid var(--edge); background: var(--surface); padding: 0 var(--sp-12); font: inherit; color: var(--text); }
+
+.dock { padding: 0 var(--sp-24) var(--sp-24); display: grid; gap: var(--sp-8); }
+.jump { justify-self: center; height: var(--ctl-h); padding: 0 var(--sp-12); border-radius: var(--radius-s); background: var(--ask-soft); color: var(--ask); font-weight: var(--fw-semibold); font-size: var(--fs-13); }
+.note { font-size: var(--fs-13); color: var(--text-3); }
+.composer { display: flex; align-items: flex-end; gap: var(--sp-8); border-radius: var(--radius-m); box-shadow: inset 0 0 0 var(--line-w) var(--edge); padding: var(--sp-8) var(--sp-8) var(--sp-8) var(--sp-16); background: var(--surface); }
+.composer:focus-within { box-shadow: inset 0 0 0 var(--edge-active-w) var(--text); }
+.composer textarea { flex: 1; border: 0; resize: none; background: transparent; font: inherit; font-size: var(--fs-16); line-height: var(--lh-body); color: var(--text); padding: var(--sp-4) 0; min-height: var(--ctl-h); max-height: 30vh; }
+.composer textarea:focus { outline: none; }
+.composer textarea::placeholder { color: var(--text-3); }
+.send { width: var(--ctl-h); height: var(--ctl-h); border-radius: var(--radius-s); background: var(--ink); color: var(--on-ink); display: grid; place-items: center; flex: none; }
+.ended { border-radius: var(--radius-m); background: var(--bg); padding: var(--sp-16); display: flex; align-items: center; gap: var(--sp-12); justify-content: space-between; }
+.ended p { margin: 0; color: var(--text-2); }
+
+/* Detail agent */
+.detail { flex: 1; overflow-y: auto; padding: var(--sp-16) var(--sp-24) var(--sp-24); }
+.detail h2 { margin: 0; font-size: var(--fs-20); line-height: var(--lh-title); }
+.detail .sub { display: flex; align-items: center; gap: var(--sp-8); margin: var(--sp-4) 0 var(--sp-24); color: var(--text-2); }
+.detail dl { margin: 0; display: grid; grid-template-columns: 9.5em 1fr; gap: var(--sp-12) var(--sp-16); }
+.detail dt { color: var(--text-3); font-size: var(--fs-13); padding-top: 1px; }
+.detail dd { margin: 0; }
+.detail .none { color: var(--text-3); }
+
+.toast { position: fixed; left: 50%; bottom: var(--sp-24); transform: translate(-50%, var(--sp-8)); opacity: 0; pointer-events: none; background: var(--ink); color: var(--on-ink); padding: var(--sp-8) var(--sp-16); border-radius: var(--radius-s); box-shadow: var(--shadow-pop); transition: opacity var(--dur-base) var(--ease-out), transform var(--dur-base) var(--ease-out); }
+.toast.on { opacity: 1; transform: translate(-50%, 0); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0ms !important; }
+  .edges path.on { animation: none; }
+  .feed { scroll-behavior: auto; }
+}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <nav class="rail" aria-label="Navigasi utama">
+    <button class="nav new" data-soon="Run baru" aria-label="Run baru" title="Run baru"><svg aria-hidden="true" focusable="false" class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+    <button class="nav" aria-current="page" aria-label="Proyek, 1 butuh kamu" title="Proyek"><svg aria-hidden="true" focusable="false" class="i" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span class="badge" id="railBadge" aria-hidden="true">1</span></button>
+    <button class="nav" data-soon="Riwayat" aria-label="Riwayat" title="Riwayat"><svg aria-hidden="true" focusable="false" class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg></button>
+    <button class="nav" data-soon="Kesehatan kit" aria-label="Kesehatan kit" title="Kesehatan kit"><svg aria-hidden="true" focusable="false" class="i" viewBox="0 0 24 24"><path d="M3 12h4l2.5-6 5 12 2.5-6h4"/></svg></button>
+    <button class="nav push" data-soon="Pengaturan" aria-label="Pengaturan" title="Pengaturan"><svg aria-hidden="true" focusable="false" class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M21.5 12h-3M5.5 12h-3M18.7 5.3l-2.1 2.1M7.4 16.6l-2.1 2.1M18.7 18.7l-2.1-2.1M7.4 7.4 5.3 5.3"/></svg></button>
+  </nav>
+
+  <header class="top" id="top"></header>
+
+  <section class="agents" id="agents" aria-label="Agent"></section>
+
+  <section class="graph" id="graph" aria-label="Grafik alur tim">
+    <div class="cap" id="cap"></div>
+    <div class="canvas" id="canvas"><svg class="edges" id="edges" aria-hidden="true"></svg></div>
+    <div class="mock" role="group" aria-label="Keadaan mockup">
+      <span>Mockup:</span>
+      <button data-state="berat">Keadaan berat</button>
+      <button data-state="a">a · Pertanyaan</button>
+      <button data-state="b">b · Izin</button>
+      <button data-state="c">c · Dijeda</button>
+      <button data-state="d">d · Dihentikan</button>
+    </div>
+  </section>
+
+  <aside class="side" aria-label="Percakapan">
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" id="tabChat" aria-selected="true" aria-controls="panelChat">Chat <span class="badge" id="chatBadge" hidden></span></button>
+      <button class="tab" role="tab" id="tabDetail" aria-selected="false" aria-controls="panelDetail">Detail agent</button>
+    </div>
+    <div id="panelChat" role="tabpanel" aria-labelledby="tabChat" style="display:flex;flex-direction:column;flex:1;min-height:0">
+      <h2 class="sr">Percakapan dengan orkestrator</h2>
+      <div class="feed" id="feed" aria-live="polite"></div>
+      <div class="dock" id="dock"></div>
+    </div>
+    <div id="panelDetail" role="tabpanel" aria-labelledby="tabDetail" class="detail" hidden></div>
+  </aside>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const IC = {
+  check: '<svg aria-hidden="true" focusable="false" class="i s" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>',
+  chev: '<svg aria-hidden="true" focusable="false" class="i s" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>',
+  pause: '<svg aria-hidden="true" focusable="false" class="i s" viewBox="0 0 24 24"><path d="M9 6v12M15 6v12"/></svg>',
+  stop: '<svg aria-hidden="true" focusable="false" class="i s" viewBox="0 0 24 24"><rect x="6.5" y="6.5" width="11" height="11" rx="1.5"/></svg>',
+  send: '<svg aria-hidden="true" focusable="false" class="i s" viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg>',
+  x: '<svg aria-hidden="true" focusable="false" class="i s" viewBox="0 0 24 24"><path d="M7 7l10 10M17 7 7 17"/></svg>'
+};
+const TEAM = ['prd','ux','architect','backlog','ui-designer','fe','be','ui-critic','qa','cyber'];
+const MODEL = { prd:'Opus', ux:'Opus', architect:'Opus', backlog:'Sonnet', 'ui-designer':'Opus', fe:'Sonnet', be:'Sonnet', 'ui-critic':'Opus', qa:'Sonnet', cyber:'Sonnet' };
+const WORD = { run:'Jalan', ask:'Butuh kamu', done:'Selesai', ready:'Siap', paused:'Dijeda', stopped:'Dihentikan', bad:'Gagal' };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---------- Data (docs/mockups/data-mockup.md) ---------- */
+const PROMPT = 'Ini tes Crew Control. Buat folder crew-tes dan kerja di dalamnya saja. Sebelum mulai, tanya saya dulu pakai pilihan ganda: warna apa untuk file warna.txt (Merah, Biru, Hijau). Setelah saya jawab, tulis warna itu ke crew-tes/warna.txt. Lalu coba tulis file ke ../../luar-tes.txt.';
+const Q_WARNA = { t:'ask', id:'warna', from:'orkestrator', time:'14.37', q:'Warna apa untuk file warna.txt?', answerTime:'14.37',
+  options:[ {l:'Merah', d:'Tulis "Merah" ke crew-tes/warna.txt'}, {l:'Biru', d:'Tulis "Biru" ke crew-tes/warna.txt'}, {l:'Hijau', d:'Tulis "Hijau" ke crew-tes/warna.txt'} ] };
+const T1 = { t:'tools', steps:[ {tool:'Bash', arg:'mkdir -p crew-tes && ls -ld crew-tes'}, {tool:'Write', arg:'D:\\01_Workspace\\07_Sandbox\\crew-tes\\warna.txt'} ] };
+const P_LUAR = { t:'perm', id:'luar', from:'orkestrator', time:'14.37', tool:'Write', arg:'D:\\luar-tes.txt', why:'Path di luar folder proyek' };
+const A1 = { t:'agent', from:'orkestrator', time:'14.37', html:'<p>Folder <code>crew-tes</code> sudah dibuat dan <code>crew-tes/warna.txt</code> berisi <code>Biru</code>. Penulisan ke <code>../../luar-tes.txt</code> ditolak dengan pesan "Jangan tulis di luar folder proyek. Selesai saja."</p><p>Saya tidak mencoba jalan lain, dan tidak ada file yang ditulis di luar <code>crew-tes</code>.</p>' };
+const ME2 = { t:'me', time:'14.38', text:'Di crew-tes: tulis a.txt, lalu jalankan ping -n 20 127.0.0.1, lalu tulis b.txt, lalu c.txt. Satu per satu.' };
+const T2 = { t:'tools', steps:[ {tool:'Write', arg:'crew-tes\\a.txt'}, {tool:'Bash', arg:'ping -n 20 127.0.0.1'} ] };
+
+function sandbox(k){
+  const base = { project:'07_Sandbox', path:'01_Workspace › 07_Sandbox', sample:false, team:'Tim Fullstack · Prompt bebas · orkestrator Haiku', orchModel:'Haiku',
+    agents: Object.fromEntries(TEAM.map(n => [n, {st:'ready'}])) };
+  const chat0 = [ {t:'me', time:'14.37', text:PROMPT} ];
+  if (k === 'a') return { ...base, run:'run', orch:'ask', steps:0, token:null, dur:'7 dtk', chat:[...chat0, {...Q_WARNA}] };
+  const done1 = { t:'done', text:'Warna apa untuk file warna.txt? → Biru · kamu, 14.37' };
+  if (k === 'b') return { ...base, run:'run', orch:'ask', steps:2, token:null, dur:'24 dtk', chat:[...chat0, done1, T1, {...P_LUAR}] };
+  const done2 = { t:'done', text:'Izin Write D:\\luar-tes.txt · Ditolak: Jangan tulis di luar folder proyek. Selesai saja.' };
+  const mid = [...chat0, done1, T1, done2, A1, {t:'sys', text:'Run selesai, 14.38.'}, ME2, T2];
+  if (k === 'c') return { ...base, run:'paused', orch:'paused', steps:5, token:null, dur:'1 mnt 10 dtk', chat:[...mid, {t:'sys', text:'Run dijeda, 14.38. Langkah yang sedang jalan diselesaikan dulu.'}] };
+  return { ...base, run:'stopped', orch:'stopped', steps:8, token:'1,2 rb', tokenNote:'Input 2, output 114, cache tulis 1.070. Cache baca 49,7 rb tidak dihitung.', dur:'2 mnt 9 dtk',
+    chat:[...mid, {t:'sys', text:'Run dijeda, 14.38.'}, {t:'tools', steps:[{tool:'Write', arg:'crew-tes\\b.txt'}]}, {t:'sys', text:'Run dilanjutkan, 14.38.'}, {t:'tools', steps:[{tool:'Write', arg:'crew-tes\\c.txt'}]},
+      {t:'agent', from:'orkestrator', time:'14.39', html:'<p>Selesai, berurutan, semua di <code>crew-tes</code>:</p><ol><li><code>a.txt</code> dibuat.</li><li><code>ping -n 20 127.0.0.1</code> jalan: 20 dari 20 paket diterima, 0% loss.</li><li><code>b.txt</code> dibuat.</li><li><code>c.txt</code> dibuat.</li></ol>'},
+      {t:'sys', text:'Run selesai, 14.39.'}, {t:'me', time:'14.39', text:'Jalankan ping -n 60 127.0.0.1 lalu tulis d.txt di crew-tes.'},
+      {t:'tools', steps:[{tool:'Bash', arg:'ping -n 60 127.0.0.1'}]}, {t:'sys', text:'Run dihentikan oleh pemilik, 14.39.'} ] };
+}
+function berat(){
+  return { project:'toconnect', path:'clients › toconnect', sample:true, team:'Tim Fullstack · Lanjut backlog · orkestrator Sonnet', orchModel:'Sonnet',
+    run:'run', orch:'run', milestone:{name:'UI', done:7, total:24, batch:2, running:2}, token:'412,6 rb', tokenNote:'Input + output + cache tulis.', dur:'1 j 48 mnt',
+    agents:{ prd:{st:'done'}, ux:{st:'done'}, architect:{st:'done'}, backlog:{st:'done'},
+      'ui-designer':{st:'ask'}, fe:{st:'run', round:3, item:'Kerangka layar Riwayat', last:'Write web/src/riwayat/RiwayatList.tsx'},
+      be:{st:'run', round:2, item:'Paginasi daftar run', last:'Bash npm test -- runs'}, 'ui-critic':{st:'ready'}, qa:{st:'ready'}, cyber:{st:'ready'} },
+    chat:[
+      {t:'me', time:'12.51', text:'Lanjut backlog'},
+      {t:'sys', text:'Batch 1 selesai · 7 item · UI 7 dari 24, 14.29.'},
+      {t:'agent', from:'orkestrator', time:'14.31', html:'<p>Batch 2 mulai. fe mengerjakan <b>Kerangka layar Riwayat</b>, be mengerjakan <b>Paginasi daftar run</b>, dan ui-designer menyiapkan kartu bukti untuk Review.</p>'},
+      {t:'tools', steps:[ {who:'fe', tool:'Write', arg:'web/src/riwayat/RiwayatList.tsx'}, {who:'be', tool:'Bash', arg:'npm test -- runs'} ]},
+      {t:'ask', id:'bukti', from:'orkestrator', via:'ui-designer', time:'14.36', answerTime:'14.39', q:'Kartu bukti yang tidak punya gambar: tampilkan apa?',
+        options:[ {l:'Ringkasan teks', d:'Potongan laporan item dari agent'}, {l:'Ikon jenis berkas', d:'Satu ikon abu sesuai jenis bukti'}, {l:'Keduanya', d:'Ikon di atas, ringkasan di bawahnya'} ] }
+    ] };
+}
+
+/* ---------- Keadaan ---------- */
+let key = (location.hash || '#berat').slice(1);
+let S, tab = 'chat', sel = null, stopOpen = false, rejecting = null;
+function load(k){ key = ['a','b','c','d','berat'].includes(k) ? k : 'berat'; S = key === 'berat' ? berat() : sandbox(key); sel = null; stopOpen = false; rejecting = null; history.replaceState(null, '', '#' + key); render(); }
+const pending = () => S.chat.filter(m => (m.t === 'ask' || m.t === 'perm')).length;
+const orchStatus = () => S.orch;
+
+function render(){ renderTop(); renderAgents(); renderGraph(); renderChat(); renderDetail(); renderTabs();
+  document.querySelectorAll('.mock button').forEach(b => b.setAttribute('aria-pressed', b.dataset.state === key));
+  document.getElementById('graph').classList.toggle('paused', S.run !== 'run');
+  const n = pending(); const rb = document.getElementById('railBadge'); rb.hidden = !n; rb.textContent = n;
+  rb.parentElement.setAttribute('aria-label', n ? `Proyek, ${n} butuh kamu` : 'Proyek');
+  document.title = `${S.project} · Crew Control`;
+}
+
+function renderTop(){
+  const t = document.getElementById('top'); const n = pending();
+  const st = S.run === 'paused' ? `<span class="state">${IC.pause} Dijeda</span>`
+    : S.run === 'stopped' ? `<span class="state" style="color:var(--text-2)">${IC.stop} Dihentikan</span>`
+    : `<span class="state" style="color:var(--run)"><span class="lamp run"></span>Jalan</span>`;
+  const prog = S.milestone ? `${S.milestone.name} · ${S.milestone.done} dari ${S.milestone.total} item · batch ${S.milestone.batch}`
+    : `Prompt bebas · ${S.steps ? S.steps + ' langkah' : 'belum ada langkah'}`;
+  const ctl = S.run === 'stopped' ? '' : `<div class="ctl">
+      <button class="btn" id="pauseBtn">${S.run === 'paused' ? 'Lanjut' : 'Jeda'}</button>
+      <button class="btn" id="stopBtn" aria-expanded="${stopOpen}" aria-controls="stopPop">Stop</button>
+      ${stopOpen ? `<div class="pop" id="stopPop" role="dialog" aria-label="Hentikan run"><p><b>Hentikan run?</b><span>Pekerjaan yang belum di-commit tetap di folder.</span></p><div class="row"><button class="btn ink" id="stopYes">Hentikan</button><button class="btn" id="stopNo">Batal</button></div></div>` : ''}
+    </div>`;
+  t.className = 'top' + (S.milestone ? '' : ' plain');
+  t.innerHTML = `<div class="who"><h1>${esc(S.project)}</h1><span class="path">${esc(S.path)}</span>${S.sample ? '<span class="sample">Data contoh</span>' : ''}</div>
+    ${st}<span class="progress">${prog}</span>
+    ${n ? `<button class="waiting" id="waitLink">${n} menunggu kamu</button>` : ''}
+    <div class="meta"><span ${S.token ? `title="${esc(S.tokenNote)}"` : 'title="Belum tercatat di data mockup untuk saat ini"'}>${S.token ? S.token : '–'} token</span><span>${S.dur}</span></div>
+    ${ctl}
+    ${S.milestone ? `<div class="segs" role="img" aria-label="${S.milestone.done} item selesai, ${S.milestone.running} jalan, dari ${S.milestone.total}">${Array.from({length:S.milestone.total}, (_, i) => `<i class="${i < S.milestone.done ? 'd' : i < S.milestone.done + S.milestone.running && S.run === 'run' ? 'r' : ''}"></i>`).join('')}</div>` : ''}`;
+  const p = document.getElementById('pauseBtn'); if (p) p.onclick = togglePause;
+  const s = document.getElementById('stopBtn'); if (s) s.onclick = () => { stopOpen = !stopOpen; renderTop(); if (stopOpen) document.getElementById('stopYes').focus(); };
+  const y = document.getElementById('stopYes'); if (y) { y.onclick = doStop; document.getElementById('stopNo').onclick = () => { stopOpen = false; renderTop(); document.getElementById('stopBtn').focus(); }; }
+  const w = document.getElementById('waitLink'); if (w) w.onclick = jumpToPending;
+}
+
+function agentRow(name, a, model){
+  const st = a.st; const hot = st === 'run' || st === 'ask';
+  const lamp = `<span class="mark">${st === 'done' ? `<span class="ok">${IC.check}</span>` : `<span class="lamp ${st}"></span>`}</span>`;
+  const l2 = st === 'ask' ? `<div class="l2 askw">Butuh kamu</div>` : model ? `<div class="l2">${esc(model)}</div>` : st === 'run' && a.item ? `<div class="l2">${esc(a.item)}</div>` : '';
+  return `<button class="ag ${hot ? 'hot ' : ''}${st}" data-agent="${name}" aria-pressed="${sel === name && tab === 'detail'}">
+    <span class="l1">${lamp}<span class="nm">${esc(name)}</span>${a.round > 1 ? `<span class="rd">×${a.round}</span>` : ''}${st === 'ask' ? '' : `<span class="st">${WORD[st]}</span>`}</span>${l2}</button>`;
+}
+function orchAgent(){ const o = orchStatus(); return { st: pending() ? 'ask' : o === 'run' && S.milestone ? 'run' : o }; }
+function renderAgents(){
+  const el = document.getElementById('agents');
+  const order = ['ask','bad','run'];
+  const active = TEAM.filter(n => order.includes(S.agents[n].st)).sort((x, y) => order.indexOf(S.agents[x].st) - order.indexOf(S.agents[y].st));
+  const rest = TEAM.filter(n => !order.includes(S.agents[n].st));
+  const o = orchAgent(); const oDisp = { ...o, st: S.milestone && !pending() ? o.st : o.st };
+  if (S.milestone) oDisp.st = S.run === 'paused' ? 'paused' : S.run === 'stopped' ? 'stopped' : 'run';
+  el.innerHTML = `<h2>${TEAM.length} agent · ${TEAM.filter(n => S.agents[n].st === 'run').length} jalan</h2>
+    <div class="group">${agentRow('orkestrator', oDisp, S.orchModel)}${active.map(n => agentRow(n, S.agents[n])).join('')}</div>
+    <div class="group">${rest.map(n => agentRow(n, S.agents[n])).join('')}</div>`;
+  el.querySelectorAll('.ag').forEach(b => b.onclick = () => { sel = b.dataset.agent; tab = 'detail'; render(); document.getElementById('tabDetail').focus(); });
+}
+
+/* Grafik: posisi dalam persen lebar dan px tinggi */
+const POS = { orkestrator:[50, 40], prd:[15, 128], ux:[37, 128], architect:[61, 128], backlog:[85, 128],
+  'ui-designer':[24, 236], fe:[50, 236], be:[76, 236], 'ui-critic':[30, 344], qa:[52, 344], cyber:[74, 344] };
+const EDGES = [ ['orkestrator','prd','v'], ['prd','ux','h'], ['ux','architect','h'], ['architect','backlog','h'],
+  ['backlog','ui-designer','v'], ['backlog','fe','v'], ['backlog','be','v'],
+  ['ui-designer','ui-critic','v'], ['fe','ui-critic','v'], ['be','ui-critic','v'], ['ui-critic','qa','h'], ['qa','cyber','h'] ];
+function renderGraph(){
+  document.getElementById('cap').textContent = S.team;
+  const c = document.getElementById('canvas');
+  c.querySelectorAll('.node').forEach(n => n.remove());
+  const o = orchAgent(); const ost = S.milestone ? (S.run === 'run' ? 'run' : S.run) : o.st;
+  const all = { orkestrator:{st:ost}, ...S.agents };
+  for (const [name, a] of Object.entries(all)){
+    const b = document.createElement('button');
+    const st = a.st; b.className = `node ${st}${name === 'orkestrator' ? ' lead' : ''}`;
+    b.dataset.n = name; b.dataset.agent = name;
+    const word = WORD[st];
+    b.innerHTML = `<b>${esc(name)}</b><span>${word}</span>${a.round > 1 ? `<span>×${a.round}</span>` : ''}`;
+    b.setAttribute('aria-label', `${name}, ${word}${a.round > 1 ? ', putaran ' + a.round : ''}`);
+    b.onclick = () => { sel = name; tab = 'detail'; render(); };
+    c.appendChild(b);
+  }
+  layoutGraph();
+}
+function layoutGraph(){
+  const c = document.getElementById('canvas'); const W = c.clientWidth, H = c.clientHeight;
+  const top = Math.max(24, (H - 400) / 2 - 64);
+  const pt = {};
+  c.querySelectorAll('.node').forEach(n => { const [x, y] = POS[n.dataset.n]; n.style.left = x + '%'; n.style.top = (top + y) + 'px';
+    pt[n.dataset.n] = { x: W * x / 100, y: top + y, w: n.offsetWidth, h: n.offsetHeight }; });
+  const all = { orkestrator:{st:'x'}, ...S.agents };
+  const live = S.run === 'run';
+  document.getElementById('edges').innerHTML = EDGES.map(([a, b, d]) => {
+    const p = pt[a], q = pt[b]; let path;
+    if (d === 'h') path = `M${p.x + p.w / 2} ${p.y} L${q.x - q.w / 2} ${q.y}`;
+    else { const y1 = p.y + p.h / 2, y2 = q.y - q.h / 2, m = (y1 + y2) / 2; path = `M${p.x} ${y1} C${p.x} ${m} ${q.x} ${m} ${q.x} ${y2}`; }
+    const on = all[b].st === 'run' && live;
+    return `<path d="${path}" class="${on ? 'on' : ''}"/>`;
+  }).join('');
+}
+addEventListener('resize', layoutGraph);
+
+/* Chat */
+function item(m){
+  if (m.t === 'me') return `<div class="me"><div class="bub">${esc(m.text)}</div>${m.queued ? '<span class="q">Menunggu Lanjut</span>' : `<time>${m.time}</time>`}</div>`;
+  if (m.t === 'sys') return `<p class="sys">${esc(m.text)}</p>`;
+  if (m.t === 'done') return `<p class="closed">${IC.check}<span>${esc(m.text)}</span></p>`;
+  if (m.t === 'agent') return `<div class="msg"><div class="who2"><b>${m.from}</b><time>${m.time}</time></div><div class="body">${m.html}</div></div>`;
+  if (m.t === 'tools'){
+    const names = [...new Set(m.steps.map(s => s.tool))].join(', ');
+    return `<div class="tools"><button aria-expanded="false">${IC.chev}${m.steps.length} langkah · ${names}</button><ul hidden>${m.steps.map(s => `<li>${s.who ? `<span class="who3">${s.who}</span>` : ''}<span>${s.tool}</span><span class="mono" title="${esc(s.arg)}">${esc(s.arg)}</span></li>`).join('')}</ul></div>`;
+  }
+  if (m.t === 'ask') return `<section class="card" id="card-${m.id}" aria-labelledby="q-${m.id}"><div class="hd"><span class="lamp ask"></span>${m.from}${m.via ? ` · dari ${m.via}` : ''}<time>${m.time}</time></div>
+    <h3 id="q-${m.id}">${esc(m.q)}</h3><div class="opts">${m.options.map(o => `<button class="opt" data-ans="${esc(o.l)}"><b>${esc(o.l)}</b><span>${esc(o.d)}</span></button>`).join('')}</div></section>`;
+  if (m.t === 'perm') return `<section class="card" id="card-${m.id}" aria-labelledby="q-${m.id}"><div class="hd"><span class="lamp ask"></span>${m.from}<time>${m.time}</time></div>
+    <h3 id="q-${m.id}">Izin untuk ${m.tool}</h3><div class="pathbox mono">${esc(m.arg)}</div><p class="why">Ditanya karena: ${esc(m.why)}.</p>
+    ${rejecting === m.id ? `<label for="rej-${m.id}">Alasan menolak (boleh kosong)</label><input id="rej-${m.id}" autocomplete="off"><div class="row" style="margin-top:var(--sp-8)"><button class="btn ink" data-rej-send="${m.id}">Kirim penolakan</button><button class="btn quiet" data-rej-cancel>Batal</button></div>`
+      : `<div class="row"><button class="btn ink" data-perm="ok">Setujui</button><button class="btn" data-perm="no">Tolak</button><button class="btn" data-perm="always">Selalu setujui</button></div>`}</section>`;
+}
+function renderChat(){
+  const f = document.getElementById('feed');
+  f.innerHTML = S.chat.map(item).join('');
+  f.querySelectorAll('.tools > button').forEach(b => b.onclick = () => { const x = b.getAttribute('aria-expanded') === 'true'; b.setAttribute('aria-expanded', !x); b.nextElementSibling.hidden = x; });
+  f.querySelectorAll('.opt').forEach(b => b.onclick = () => answer(b.closest('.card').id.slice(5), b.dataset.ans));
+  f.querySelectorAll('[data-perm]').forEach(b => b.onclick = () => perm(b.closest('.card').id.slice(5), b.dataset.perm));
+  f.querySelectorAll('[data-rej-send]').forEach(b => b.onclick = () => reject(b.dataset.rejSend));
+  f.querySelectorAll('[data-rej-cancel]').forEach(b => b.onclick = () => { rejecting = null; renderChat(); });
+  const inp = f.querySelector('input'); if (inp){ inp.focus(); inp.onkeydown = e => { if (e.key === 'Enter') reject(rejecting); if (e.key === 'Escape') { rejecting = null; renderChat(); } }; }
+  renderDock();
+  const card = f.querySelector('.card');
+  requestAnimationFrame(() => { f.scrollTop = card ? card.offsetTop - f.offsetTop - 16 : f.scrollHeight; updateJump(); });
+  f.onscroll = updateJump;
+}
+function renderDock(){
+  const d = document.getElementById('dock'); const n = pending();
+  if (S.run === 'stopped'){
+    d.innerHTML = `<div class="ended"><p>Run dihentikan. Mulai run baru untuk lanjut.</p><button class="btn ink" data-soon="Run baru">Run baru</button></div>`;
+  } else {
+    const note = S.run === 'paused' ? 'Pesanmu terkirim saat Lanjut.' : 'Pesan masuk setelah langkah yang sedang jalan selesai.';
+    d.innerHTML = `${n ? `<button class="jump" id="jump" hidden>${n} menunggu kamu ↓</button>` : ''}<p class="note" id="composerNote">${note}</p>
+      <form class="composer" id="composer"><label class="sr" for="msg">Pesan ke orkestrator</label><textarea id="msg" rows="1" name="pesan" placeholder="Tulis ke orkestrator…"></textarea><button class="send" type="submit" aria-label="Kirim pesan">${IC.send}</button></form>`;
+    const ta = document.getElementById('msg');
+    ta.oninput = () => { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; };
+    ta.onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } };
+    document.getElementById('composer').onsubmit = e => { e.preventDefault(); send(); };
+    const j = document.getElementById('jump'); if (j) j.onclick = jumpToPending;
+  }
+  d.querySelectorAll('[data-soon]').forEach(soonBtn);
+}
+function updateJump(){
+  const j = document.getElementById('jump'); const f = document.getElementById('feed'); const c = f.querySelector('.card');
+  if (!j || !c) return; const r = c.getBoundingClientRect(), fr = f.getBoundingClientRect();
+  j.hidden = r.bottom > fr.top + 24 && r.top < fr.bottom - 24;
+}
+function jumpToPending(){ tab = 'chat'; renderTabs(); const c = document.querySelector('#feed .card'); if (c){ c.scrollIntoView({block:'start'}); const b = c.querySelector('button'); if (b) b.focus({preventScroll:true}); } }
+
+/* Aksi */
+function settle(id, text){
+  const i = S.chat.findIndex(m => m.id === id); if (i < 0) return;
+  S.chat[i] = { t:'done', text };
+  if (!pending()){
+    if (S.milestone) for (const n of TEAM) if (S.agents[n].st === 'ask') S.agents[n].st = 'run';
+    if (S.orch === 'ask') S.orch = 'run';
+  }
+  render();
+}
+function answer(id, ans){ const m = S.chat.find(x => x.id === id); settle(id, `${m.q} → ${ans} · kamu, ${m.answerTime}`); }
+function perm(id, how){
+  const m = S.chat.find(x => x.id === id);
+  if (how === 'no'){ rejecting = id; renderChat(); return; }
+  if (how === 'ok') settle(id, `Izin ${m.tool} ${m.arg} · Disetujui`);
+  if (how === 'always'){ settle(id, `Izin ${m.tool} ${m.arg} · Disetujui`); S.chat.push({t:'sys', text:`Aturan disimpan untuk proyek ini: ${m.tool} di luar folder proyek.`}); renderChat(); }
+}
+function reject(id){ const m = S.chat.find(x => x.id === id); const v = (document.getElementById('rej-' + id) || {}).value || ''; rejecting = null;
+  settle(id, `Izin ${m.tool} ${m.arg} · Ditolak${v.trim() ? ': ' + v.trim() : ''}`); }
+function togglePause(){
+  if (S.run === 'paused'){ S.run = 'run'; S.orch = pending() ? 'ask' : 'run'; S.chat.forEach(m => { if (m.queued) m.queued = false; }); S.chat.push({t:'sys', text:'Run dilanjutkan.'}); }
+  else { S.run = 'paused'; S.orch = 'paused'; S.chat.push({t:'sys', text:'Run dijeda. Langkah yang sedang jalan diselesaikan dulu.'}); }
+  render(); document.getElementById('pauseBtn').focus();
+}
+function doStop(){
+  stopOpen = false; S.run = 'stopped'; S.orch = 'stopped';
+  S.chat = S.chat.map(m => (m.t === 'ask' || m.t === 'perm') ? { t:'done', text:`${m.q || 'Izin ' + m.tool + ' ' + m.arg} · Dibatalkan: run berakhir` } : m);
+  for (const n of TEAM) if (['run','ask'].includes(S.agents[n].st)) S.agents[n].st = 'stopped';
+  S.chat.push({t:'sys', text:'Run dihentikan oleh pemilik.'}); render();
+}
+function send(){
+  const ta = document.getElementById('msg'); const v = ta.value.trim(); if (!v) return;
+  S.chat.push({ t:'me', time:'sekarang', text:v, queued: S.run === 'paused' }); renderChat(); document.getElementById('msg').focus();
+}
+
+/* Tab */
+function renderTabs(){
+  const chat = tab === 'chat';
+  document.getElementById('tabChat').setAttribute('aria-selected', chat);
+  document.getElementById('tabDetail').setAttribute('aria-selected', !chat);
+  document.getElementById('panelChat').style.display = chat ? 'flex' : 'none';
+  document.getElementById('panelDetail').hidden = chat;
+  const b = document.getElementById('chatBadge'); const n = pending();
+  b.hidden = chat || !n; b.textContent = n; b.setAttribute('aria-label', n + ' menunggu');
+  document.querySelectorAll('.ag').forEach(x => x.setAttribute('aria-pressed', !chat && x.dataset.agent === sel));
+}
+document.getElementById('tabChat').onclick = () => { tab = 'chat'; renderTabs(); };
+document.getElementById('tabDetail').onclick = () => { tab = 'detail'; if (!sel) sel = 'orkestrator'; renderDetail(); renderTabs(); };
+document.querySelector('[role=tablist]').onkeydown = e => { if (e.key === 'ArrowRight' || e.key === 'ArrowLeft'){ const d = tab === 'chat'; (d ? document.getElementById('tabDetail') : document.getElementById('tabChat')).click(); (d ? document.getElementById('tabDetail') : document.getElementById('tabChat')).focus(); } };
+function renderDetail(){
+  const el = document.getElementById('panelDetail'); const name = sel || 'orkestrator';
+  const a = name === 'orkestrator' ? { st: S.milestone ? (S.run === 'run' ? 'run' : S.run) : orchAgent().st } : S.agents[name];
+  const model = name === 'orkestrator' ? S.orchModel : MODEL[name];
+  const none = '<span class="none">Belum ada di data mockup</span>';
+  const lampHtml = a.st === 'done' ? IC.check : `<span class="lamp ${a.st}"></span>`;
+  el.innerHTML = `<h2>${esc(name)}</h2><div class="sub">${lampHtml}${WORD[a.st] || a.st}${a.round > 1 ? ` · putaran ${a.round}` : ''}</div>
+    <dl><dt>Tugas</dt><dd>${a.item ? esc(a.item) : a.st === 'ready' ? '<span class="none">Belum dipanggil di run ini</span>' : none}</dd>
+    <dt>Model terdeklarasi</dt><dd>${model}</dd><dt>Model terpakai</dt><dd>${a.st === 'ready' ? '<span class="none">–</span>' : model}</dd>
+    <dt>Langkah terakhir</dt><dd>${a.last ? `<span class="mono">${esc(a.last)}</span>` : none}</dd>
+    <dt>Token, durasi</dt><dd>${none}</dd></dl>`;
+}
+
+/* Belum dimockup */
+const toast = document.getElementById('toast'); let tt;
+function soonBtn(b){ b.onclick = () => { toast.textContent = `Layar ${b.dataset.soon} belum ada di mockup arah A.`; toast.classList.add('on'); clearTimeout(tt); tt = setTimeout(() => toast.classList.remove('on'), 2200); }; }
+document.querySelectorAll('.rail [data-soon]').forEach(soonBtn);
+document.querySelectorAll('.mock button').forEach(b => b.onclick = () => load(b.dataset.state));
+addEventListener('hashchange', () => load(location.hash.slice(1)));
+addEventListener('keydown', e => { if (e.key === 'Escape' && stopOpen){ stopOpen = false; renderTop(); document.getElementById('stopBtn').focus(); } });
+load(key);
+</script>
+</body>
+</html>

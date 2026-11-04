@@ -1,0 +1,687 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>toconnect · Crew Control</title>
+<link rel="preload" href="fonts/overpass-latin-wght.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="tokens.css">
+<style>
+@font-face { font-family: "Overpass"; src: url(fonts/overpass-latin-wght.woff2) format("woff2"); font-weight: 400 700; font-display: swap; }
+@font-face { font-family: "Overpass Mono"; src: url(fonts/overpass-mono-latin-400.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  font-family: var(--font-sans); font-size: var(--fs-14); line-height: var(--lh-body);
+  color: var(--text); background: var(--bg); font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+button { font: inherit; color: inherit; touch-action: manipulation; }
+.sep { display: inline-block; width: var(--sp-4); height: var(--sp-4); margin: 0 var(--line-w); border-radius: var(--radius-round); background: currentColor; vertical-align: middle; }
+.skip { position: absolute; left: var(--sp-8); top: calc(var(--sp-48) * -1); z-index: 9; background: var(--ink); color: var(--on-ink); padding: var(--sp-8) var(--sp-12); border-radius: var(--radius-s); }
+.skip:focus { top: var(--sp-8); }
+.mono { font-family: var(--font-mono); }
+.vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; margin: 0; font-size: var(--fs-14); }
+:focus-visible { outline: var(--focus-w) solid var(--focus); outline-offset: var(--focus-w); }
+
+/* ---------- Kerangka ---------- */
+.app {
+  display: grid; height: 100vh; min-height: 640px;
+  grid-template-columns: var(--rail-w) var(--col-agent) minmax(0, 1fr) var(--col-chat);
+  grid-template-rows: var(--topbar-h) minmax(0, 1fr);
+}
+
+/* Rel navigasi */
+.rail {
+  grid-row: 1 / 3; background: var(--sunk); display: flex; flex-direction: column; align-items: center;
+  gap: var(--sp-4); padding: var(--sp-12) 0;
+}
+.rail a {
+  position: relative; display: grid; place-items: center;
+  width: calc(var(--sp-32) + var(--sp-8)); height: calc(var(--sp-32) + var(--sp-8));
+  border-radius: var(--radius-s); color: var(--text-2); text-decoration: none;
+  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.rail a:hover { background: var(--line); color: var(--text); }
+.rail a[aria-current="page"] { background: var(--surface); color: var(--text); }
+.rail svg { width: 20px; height: 20px; }
+.rail .new { background: var(--ink); color: var(--on-ink); margin-bottom: var(--sp-12); }
+.rail .new:hover { background: var(--text-2); color: var(--on-ink); }
+.rail .end { margin-top: auto; }
+.rail .badge {
+  position: absolute; top: var(--sp-4); right: var(--sp-4);
+  min-width: var(--sp-16); height: var(--sp-16); padding: 0 var(--sp-4); border-radius: var(--radius-round);
+  background: var(--ask); color: var(--on-ink); font-size: var(--fs-12); font-weight: var(--fw-bold);
+  line-height: var(--sp-16); text-align: center;
+}
+
+/* Bar atas */
+.top {
+  grid-column: 2 / 5; display: flex; align-items: center; gap: var(--sp-16);
+  padding: 0 var(--sp-16) 0 var(--sp-24); background: var(--surface);
+  border-bottom: var(--line-w) solid var(--line);
+}
+.title { display: flex; align-items: baseline; gap: var(--sp-12); flex: none; }
+.title h1 { margin: 0; font-size: var(--fs-18); font-weight: var(--fw-semibold); line-height: var(--lh-title); }
+.title .path { font-size: var(--fs-13); color: var(--text-3); white-space: nowrap; }
+.title .sample { font-size: var(--fs-12); color: var(--text-3); white-space: nowrap; }
+.status { display: inline-flex; align-items: center; gap: var(--sp-8); font-weight: var(--fw-semibold); white-space: nowrap; }
+.dot { width: var(--dot); height: var(--dot); border-radius: var(--radius-round); flex: none; background: var(--run); }
+.progress { display: flex; align-items: center; gap: var(--sp-12); }
+.track-mini { display: flex; align-items: center; gap: var(--sp-4); margin: 0; padding: 0; list-style: none; }
+.track-mini li { width: var(--sp-8); height: var(--sp-8); border-radius: var(--radius-round); border: 2px solid var(--edge); }
+.track-mini li.done { background: var(--ink); border-color: var(--ink); }
+.track-mini li.now { background: var(--run); border-color: var(--run); }
+.progress-text { white-space: nowrap; color: var(--text-2); }
+.progress-text b { color: var(--text); font-weight: var(--fw-semibold); }
+.meta { display: flex; gap: var(--sp-12); color: var(--text-2); white-space: nowrap; }
+.waiting {
+  display: inline-flex; align-items: center; gap: var(--sp-8); border: 0; background: none; cursor: pointer;
+  color: var(--ask); font-weight: var(--fw-semibold); padding: var(--sp-4) var(--sp-8); margin: 0 calc(var(--sp-8) * -1);
+  border-radius: var(--radius-s); white-space: nowrap;
+}
+.waiting:hover { background: var(--ask-soft); }
+.ring { width: var(--dot); height: var(--dot); border-radius: var(--radius-round); border: var(--ring-w) solid var(--ask); flex: none; }
+.controls { margin-left: auto; display: flex; gap: var(--sp-8); position: relative; }
+.btn {
+  height: calc(var(--sp-32) + var(--sp-4)); padding: 0 var(--sp-16); border-radius: var(--radius-s);
+  border: var(--line-w) solid var(--edge); background: transparent; cursor: pointer; font-weight: var(--fw-semibold);
+  transition: background-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+}
+.btn:hover { background: var(--sunk); }
+.btn:active { transform: translateY(1px); }
+.btn.primary { background: var(--ink); color: var(--on-ink); border-color: var(--ink); }
+.btn.primary:hover { background: var(--text-2); border-color: var(--text-2); }
+.pop {
+  position: absolute; right: 0; top: calc(100% + var(--sp-8)); width: 300px; z-index: 5;
+  background: var(--surface); border-radius: var(--radius-m); box-shadow: var(--shadow-pop);
+  padding: var(--sp-16); display: none;
+}
+.pop.open { display: block; }
+.pop p { margin: 0 0 var(--sp-12); }
+.pop p b { display: block; font-size: var(--fs-16); }
+.pop .row { display: flex; gap: var(--sp-8); }
+
+/* Kolom agent */
+.agents {
+  background: var(--surface); border-right: var(--line-w) solid var(--line); overflow: auto;
+  display: flex; flex-direction: column; padding: var(--sp-16) var(--sp-8);
+}
+.col-head { display: flex; justify-content: space-between; align-items: baseline; padding: 0 var(--sp-8) var(--sp-8); }
+.col-head h2 { margin: 0; font-size: var(--fs-14); font-weight: var(--fw-semibold); }
+.col-head span { font-size: var(--fs-13); color: var(--text-3); }
+.agent-list { list-style: none; margin: 0; padding: 0; }
+.agent {
+  width: 100%; display: grid; grid-template-columns: var(--dot) 1fr; column-gap: var(--sp-12); align-items: center;
+  min-height: var(--row-agent); padding: var(--sp-8); border: 0; background: none; text-align: left;
+  border-radius: var(--radius-s); cursor: pointer; transition: background-color var(--dur-fast) var(--ease-out);
+}
+.agent:hover, .agent[aria-pressed="true"] { background: var(--sunk); }
+.agent .name { display: flex; justify-content: space-between; gap: var(--sp-8); font-weight: var(--fw-semibold); }
+.agent .st { font-weight: var(--fw-regular); color: var(--text-3); font-size: var(--fs-13); }
+.agent .item { grid-column: 2; font-size: var(--fs-13); color: var(--text-2); }
+.agent.ask .st { color: var(--ask); font-weight: var(--fw-semibold); }
+.agent.run .st { color: var(--run); font-weight: var(--fw-semibold); }
+.s-done { background: var(--ink); }
+.s-ready { background: transparent; border: 2px solid var(--edge); }
+.s-ask { background: transparent; border: var(--ring-w) solid var(--ask); }
+.fold { margin-top: var(--sp-8); }
+.fold summary {
+  list-style: none; cursor: pointer; padding: var(--sp-8); border-radius: var(--radius-s); color: var(--text-2);
+  display: flex; align-items: center; gap: var(--sp-8); font-size: var(--fs-13);
+}
+.fold summary::-webkit-details-marker { display: none; }
+.fold summary:hover { background: var(--sunk); }
+.fold summary svg { width: 16px; height: 16px; transition: transform var(--dur-base) var(--ease-out); }
+.fold[open] summary svg { transform: rotate(90deg); }
+.team-meta { margin-top: auto; padding: var(--sp-16) var(--sp-8) 0; font-size: var(--fs-13); color: var(--text-3); }
+.team-meta b { color: var(--text-2); font-weight: var(--fw-semibold); }
+
+/* Peta */
+.map { display: flex; flex-direction: column; padding: var(--sp-24); min-width: 0; overflow: auto; }
+.map-head { display: flex; justify-content: space-between; align-items: baseline; }
+.map-head h2 { margin: 0; font-size: var(--fs-14); font-weight: var(--fw-semibold); }
+.map-head > span { color: var(--text-3); font-size: var(--fs-13); }
+.map-canvas { flex: 1; display: grid; place-items: center; min-height: 0; }
+.map svg { width: 100%; max-width: 712px; height: auto; overflow: visible; }
+.trk { fill: none; stroke-width: var(--track-w); stroke-linecap: round; stroke-linejoin: round; }
+.trk.done { stroke: var(--text-2); }
+.trk.todo { stroke: var(--edge); }
+.trk.live { stroke: var(--run); stroke-width: var(--track-live); transition: stroke var(--dur-base) var(--ease-out); }
+.stn-done { fill: var(--text-2); }
+.stn-run { fill: var(--run); }
+.stn-ask { fill: var(--surface); stroke: var(--ask); stroke-width: var(--ring-w); }
+.stn-ready { fill: var(--bg); stroke: var(--edge); stroke-width: 2; }
+.chk { fill: none; stroke: var(--on-ink); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.q { fill: var(--ask); font-size: var(--fs-12); font-weight: var(--fw-bold); text-anchor: middle; }
+.lbl { fill: var(--text); font-size: var(--fs-13); font-weight: var(--fw-semibold); text-anchor: middle; }
+.sub { fill: var(--text-3); font-size: var(--fs-12); text-anchor: middle; }
+.sub.ask { fill: var(--ask); font-weight: var(--fw-semibold); }
+.sub.run { fill: var(--run); font-weight: var(--fw-semibold); }
+.tool { fill: var(--text-3); font-family: var(--font-mono); font-size: var(--fs-13); text-anchor: middle; }
+.train { fill: var(--run); transform-box: fill-box; animation: ride var(--dur-train) linear infinite; }
+.train.b { animation-delay: calc(var(--dur-train) / -2); }
+@keyframes ride { from { transform: translateX(0); opacity: 0; } 12% { opacity: 1; } 88% { opacity: 1; } to { transform: translateX(48px); opacity: 0; } }
+
+.caption { margin: var(--sp-12) 0 0; font-size: var(--fs-12); color: var(--text-3); }
+
+/* Chat */
+.side { background: var(--surface); border-left: var(--line-w) solid var(--line); display: flex; flex-direction: column; min-height: 0; }
+.tabs { display: flex; gap: var(--sp-4); padding: var(--sp-8) var(--sp-16) 0; border-bottom: var(--line-w) solid var(--line); }
+.tab {
+  border: 0; background: none; cursor: pointer; padding: var(--sp-8) var(--sp-12) var(--sp-12); color: var(--text-2);
+  font-weight: var(--fw-semibold); border-bottom: 2px solid transparent; margin-bottom: calc(var(--line-w) * -1);
+  display: inline-flex; align-items: center; gap: var(--sp-8);
+}
+.tab[aria-selected="true"] { color: var(--text); border-bottom-color: var(--ink); }
+.tab[aria-selected="true"] .tab-badge { display: none; }
+.btn.as-link { display: inline-flex; align-items: center; text-decoration: none; }
+.tab:hover { color: var(--text); }
+.panel { flex: 1; min-height: 0; overflow: auto; }
+.panel[hidden] { display: none; }
+.chat { display: flex; flex-direction: column; gap: var(--sp-16); padding: var(--sp-16); font-size: var(--fs-16); line-height: var(--lh-chat); }
+.msg-me { align-self: flex-end; max-width: 85%; background: var(--sunk); padding: var(--sp-8) var(--sp-12); border-radius: var(--radius-m); }
+.msg-agent .from { font-size: var(--fs-13); color: var(--text-3); margin-bottom: var(--sp-4); }
+.msg-agent .from b { color: var(--text-2); font-weight: var(--fw-semibold); }
+.msg-agent p { margin: 0; }
+.sys { align-self: center; display: inline-flex; align-items: center; gap: var(--sp-8); font-size: var(--fs-13); color: var(--text-3); }
+.sys i { width: 6px; height: 6px; border-radius: var(--radius-round); background: var(--ink); }
+.tools { font-size: var(--fs-13); color: var(--text-2); }
+.tools summary { cursor: pointer; display: inline-flex; align-items: center; gap: var(--sp-8); padding: var(--sp-4) var(--sp-8); margin-left: calc(var(--sp-8) * -1); border-radius: var(--radius-s); list-style: none; }
+.tools summary::-webkit-details-marker { display: none; }
+.tools summary:hover { background: var(--sunk); }
+.tools summary svg { width: 16px; height: 16px; transition: transform var(--dur-base) var(--ease-out); }
+.tools[open] summary svg { transform: rotate(90deg); }
+.tools ul { margin: var(--sp-4) 0 0; padding: 0 0 0 var(--sp-24); list-style: none; }
+.tools li { padding: var(--sp-4) 0; }
+.tools li b { font-weight: var(--fw-semibold); color: var(--text); margin-right: var(--sp-8); }
+.tools code { font-family: var(--font-mono); }
+
+.card { border: 2px solid var(--ask); border-radius: var(--radius-m); padding: var(--sp-16); background: var(--surface); }
+.card .k { display: flex; align-items: center; gap: var(--sp-8); font-size: var(--fs-13); color: var(--ask); font-weight: var(--fw-semibold); margin: 0 0 var(--sp-8); }
+.card h3 { margin: 0 0 var(--sp-16); font-size: var(--fs-16); font-weight: var(--fw-bold); line-height: var(--lh-title); }
+.opts { display: flex; flex-direction: column; gap: var(--sp-8); }
+.opt {
+  text-align: left; padding: var(--sp-8) var(--sp-12); min-height: calc(var(--sp-32) + var(--sp-8));
+  border: var(--line-w) solid var(--edge); border-radius: var(--radius-s); background: transparent; cursor: pointer;
+  font-size: var(--fs-14); font-weight: var(--fw-semibold);
+  transition: background-color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+}
+.opt:hover { background: var(--ask-soft); border-color: var(--ask); }
+.card .hint { margin: var(--sp-12) 0 0; font-size: var(--fs-13); color: var(--text-3); }
+.answered { font-size: var(--fs-13); color: var(--text-3); }
+.answered b { color: var(--text-2); font-weight: var(--fw-semibold); }
+
+.compose { padding: var(--sp-12) var(--sp-16) var(--sp-16); border-top: var(--line-w) solid var(--line); }
+.compose .note { margin: 0 0 var(--sp-8); font-size: var(--fs-12); color: var(--text-3); }
+.box { display: flex; align-items: flex-end; gap: var(--sp-8); border: var(--line-w) solid var(--edge); border-radius: var(--radius-m); padding: var(--sp-8); }
+.box:focus-within { outline: var(--focus-w) solid var(--focus); outline-offset: var(--line-w); }
+.box textarea {
+  flex: 1; border: 0; resize: none; font: inherit; font-size: var(--fs-16); line-height: var(--lh-chat); color: var(--text);
+  background: transparent; padding: var(--sp-4); min-height: calc(var(--sp-48) + var(--sp-8));
+}
+.box textarea:focus { outline: none; }
+/* Kotak kosong: Kirim tenang; jadi tinta setelah ada teks */
+.box.empty .btn.primary { background: var(--sunk); border-color: var(--sunk); color: var(--text-2); }
+.box.empty .btn.primary:hover { background: var(--line); border-color: var(--line); }
+.box textarea::placeholder { color: var(--text-3); }
+.stopped-note { display: none; padding: var(--sp-16); border-top: var(--line-w) solid var(--line); }
+.stopped-note p { margin: 0 0 var(--sp-12); }
+
+.detail { padding: var(--sp-16); }
+.detail h3 { margin: 0 0 var(--sp-4); font-size: var(--fs-18); font-weight: var(--fw-semibold); }
+.detail .lead { margin: 0 0 var(--sp-16); color: var(--text-2); }
+.detail dl { display: grid; grid-template-columns: 136px 1fr; gap: var(--sp-8) var(--sp-12); margin: 0; }
+.detail dt { color: var(--text-3); }
+.detail dd { margin: 0; }
+
+/* Keadaan: dijeda, dihentikan, terjawab */
+body.paused .trk.live, body.stopped .trk.live { stroke: var(--edge); stroke-dasharray: 6 6; }
+body.paused .train, body.stopped .train { display: none; }
+body.paused .stn-run, body.stopped .stn-run { fill: var(--edge); }
+body.paused .dot.top-dot { background: var(--edge); }
+body.stopped .dot.top-dot { background: var(--edge); border-radius: 2px; }
+body.stopped .controls, body.stopped .compose { display: none; }
+body.stopped .stopped-note { display: block; }
+body.paused .m-dots i:not([class]), body.stopped .m-dots i:not([class]) { background: var(--edge); }
+body.answered .waiting, body.answered .rail .badge, body.answered .tab-badge { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .train { display: none; }
+  * { transition-duration: 0ms !important; }
+}
+@media (max-width: 1279px) {
+  .app { grid-template-columns: var(--rail-w) var(--col-agent-narrow) minmax(0, 1fr) var(--col-chat); }
+  .agent .name span:first-child, .agent .item, .agent .st, .col-head span, .fold summary span, .team-meta { display: none; }
+}
+
+/* Laptop sempit 900-1279: bar atas melepas yang paling tidak mendesak supaya tidak melebar */
+@media (max-width: 1279px) { .title .path, .top .meta { display: none; } }
+@media (max-width: 1199px) { .progress .track-mini { display: none; } }
+
+/* ---------- HP (< 900): Chat penuh layar, tanpa peta (PRD F11) ---------- */
+.back, .m-sample, .m-crew { display: none; }
+@media (max-width: 899px) {
+  .app { display: flex; flex-direction: column; height: 100dvh; min-height: 0; }
+  .rail, .agents, .map, .tabs, #panel-detail, .top .meta, .top .waiting, .title .path, .title .sample { display: none; }
+  #panel-chat[hidden] { display: block; }
+
+  .top {
+    flex: none; display: grid; grid-template-columns: var(--tap) minmax(0, 1fr) auto;
+    grid-template-areas: "back title ctl" "back status ctl" "prog prog prog" "crew crew crew";
+    column-gap: var(--sp-8); align-items: center; padding: var(--sp-8) var(--sp-16) 0;
+  }
+  .back {
+    grid-area: back; display: grid; place-items: center; width: var(--tap); height: var(--tap);
+    margin-left: calc(var(--sp-12) * -1); border-radius: var(--radius-s); color: var(--text); text-decoration: none;
+    transition: background-color var(--dur-fast) var(--ease-out);
+  }
+  .back:hover, .back:active { background: var(--sunk); }
+  .back svg { width: 20px; height: 20px; }
+  .title { grid-area: title; align-self: end; min-width: 0; }
+  .title h1 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .status { grid-area: status; align-self: start; font-size: var(--fs-13); }
+  .m-sample { display: inline; font-size: var(--fs-12); font-weight: var(--fw-regular); color: var(--text-3); }
+  .controls { grid-area: ctl; margin-left: 0; }
+  .btn { height: var(--tap); padding: 0 var(--sp-12); }
+  .pop { width: calc(100vw - var(--sp-32)); max-width: calc(var(--measure-chat) / 2); }
+  .pop .row .btn { flex: 1; }
+
+  /* Deret stasiun dipadatkan jadi garis 24 ruas: ruas lewat tebal, sisa tipis seperti rel peta */
+  .progress { grid-area: prog; flex-direction: column; align-items: stretch; gap: var(--sp-8); padding: var(--sp-12) 0; }
+  .progress .track-mini { display: flex; order: 2; gap: var(--seg-thin); }
+  .track-mini li { flex: 1; width: auto; height: var(--seg-thin); border: 0; border-radius: 0; background: var(--edge); }
+  .track-mini li.done, .track-mini li.now { height: var(--sp-4); }
+  .progress-text { font-size: var(--fs-13); }
+
+  /* Baris Agent: pengganti kolom kiri dan peta */
+  .m-crew { display: block; grid-area: crew; margin: 0 calc(var(--sp-16) * -1); border-top: var(--line-w) solid var(--line); }
+  .m-crew summary {
+    list-style: none; cursor: pointer; min-height: var(--tap); display: flex; align-items: center; gap: var(--sp-8);
+    padding: 0 var(--sp-16); font-size: var(--fs-13); color: var(--text-2);
+    transition: background-color var(--dur-fast) var(--ease-out);
+  }
+  .m-crew summary::-webkit-details-marker { display: none; }
+  .m-crew summary:hover, .m-crew summary:active { background: var(--sunk); }
+  .m-crew summary b { font-size: var(--fs-14); font-weight: var(--fw-semibold); color: var(--text); }
+  .m-ask { color: var(--ask); font-weight: var(--fw-semibold); }
+  .m-dots { display: flex; gap: var(--sp-4); margin-left: auto; }
+  .m-dots i { width: var(--sp-8); height: var(--sp-8); border-radius: var(--radius-round); background: var(--run); }
+  .m-dots i.s-done { background: var(--ink); }
+  .m-dots i.s-ready { background: transparent; border: var(--seg-thin) solid var(--edge); }
+  .m-dots i.s-ask { background: transparent; border: var(--seg-thin) solid var(--ask); }
+  .m-crew summary svg { width: 16px; height: 16px; flex: none; transition: transform var(--dur-base) var(--ease-out); }
+  .m-crew[open] summary svg { transform: rotate(90deg); }
+  .m-list { list-style: none; margin: 0; padding: 0 var(--sp-16) var(--sp-8); max-height: 50dvh; overflow: auto; }
+  .m-list li { display: grid; grid-template-columns: var(--dot) minmax(0, 1fr); column-gap: var(--sp-12); align-items: center; padding: var(--sp-8) 0; }
+  .m-list li + li { border-top: var(--line-w) solid var(--line); }
+  .m-list .name { display: flex; justify-content: space-between; gap: var(--sp-8); font-weight: var(--fw-semibold); }
+  .m-list .st { font-size: var(--fs-13); font-weight: var(--fw-regular); color: var(--text-3); }
+  .m-list .run .st { color: var(--run); font-weight: var(--fw-semibold); }
+  .m-list .ask .st { color: var(--ask); font-weight: var(--fw-semibold); }
+  .m-list .item { grid-column: 2; font-size: var(--fs-13); color: var(--text-2); }
+  .m-team { margin: 0; padding: var(--sp-8) var(--sp-16) var(--sp-12); font-size: var(--fs-13); color: var(--text-3); }
+  .m-team b { color: var(--text-2); font-weight: var(--fw-semibold); }
+
+  /* Chat mengisi sisa layar; kotak ketik menempel bawah */
+  .side { flex: 1; min-height: 0; border-left: 0; }
+  .chat, .compose > *, .stopped-note > * { max-width: var(--measure-chat); margin-inline: auto; }
+  .chat { padding: var(--sp-16); }
+  .compose { padding: var(--sp-8) var(--sp-16) max(var(--sp-12), env(safe-area-inset-bottom)); }
+  .compose .note { margin-bottom: var(--sp-8); }
+  .box { padding: var(--sp-4) var(--sp-4) var(--sp-4) var(--sp-8); align-items: center; }
+  .box textarea { min-height: var(--tap); }
+  .stopped-note { padding-bottom: max(var(--sp-16), env(safe-area-inset-bottom)); }
+  .opt { min-height: var(--tap); }
+  .tools summary { min-height: var(--tap); }
+  .skip { min-height: var(--tap); display: inline-flex; align-items: center; }
+  .back, .m-crew summary, .tools summary { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+  .panel, .m-list { overscroll-behavior: contain; }
+}
+@media (max-width: 359px) { .m-dots { display: none; } }
+</style>
+</head>
+<body>
+<a class="skip" href="#chat">Langsung ke Chat</a>
+<div class="app">
+
+  <nav class="rail" aria-label="Navigasi utama">
+    <a class="new" href="/baru?folder=clients/toconnect" aria-label="Run baru" title="Run baru">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M10 4v12M4 10h12"/></svg>
+    </a>
+    <a href="/" aria-current="page" aria-label="Proyek, 1 butuh kamu" title="Proyek">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round" aria-hidden="true"><path d="M3 6.5a1.5 1.5 0 0 1 1.5-1.5h3.2l1.6 2h6.2A1.5 1.5 0 0 1 17 8.5v6a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 3 14.5z"/></svg>
+      <span class="badge" aria-hidden="true">1</span>
+    </a>
+    <a href="/riwayat" aria-label="Riwayat" title="Riwayat">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><circle cx="10" cy="10" r="7"/><path d="M10 6v4l2.5 2"/></svg>
+    </a>
+    <a href="/kesehatan" aria-label="Kesehatan kit" title="Kesehatan kit">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 15h14M5 15V9M10 15V5M15 15v-4"/></svg>
+    </a>
+    <a class="end" href="/?pengaturan=1" aria-label="Pengaturan" title="Pengaturan">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><circle cx="10" cy="10" r="2.5"/><path d="M10 2.5v2M10 15.5v2M2.5 10h2M15.5 10h2M4.7 4.7l1.4 1.4M13.9 13.9l1.4 1.4M4.7 15.3l1.4-1.4M13.9 6.1l1.4-1.4"/></svg>
+    </a>
+  </nav>
+
+  <header class="top">
+    <a class="back" href="/" aria-label="Kembali ke Proyek">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.5 4.5L7 10l5.5 5.5"/></svg>
+    </a>
+    <div class="title">
+      <h1>toconnect</h1>
+      <span class="path">clients › toconnect</span>
+      <span class="sample">Data contoh</span>
+    </div>
+    <span class="status"><span class="dot top-dot" aria-hidden="true"></span><span id="run-status">Jalan</span><span class="m-sample"> · Data contoh</span></span>
+    <div class="progress">
+      <ol class="track-mini" aria-label="Milestone UI: 7 selesai, 2 dikerjakan, 15 sisa dari 24 item">
+        <li class="done"></li><li class="done"></li><li class="done"></li><li class="done"></li><li class="done"></li><li class="done"></li><li class="done"></li>
+        <li class="now"></li><li class="now"></li>
+        <li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li>
+      </ol>
+      <span class="progress-text"><b>UI · 7/24 item</b> · batch 2</span>
+    </div>
+    <div class="meta"><span>412,6 rb token</span><span>1 j 48 mnt</span></div>
+    <button class="waiting" type="button" id="jump"><span class="ring" aria-hidden="true"></span>1 menunggu kamu</button>
+    <div class="controls">
+      <button class="btn" type="button" id="pause">Jeda</button>
+      <button class="btn" type="button" id="stop" aria-expanded="false" aria-controls="stop-pop">Stop</button>
+      <div class="pop" id="stop-pop" role="dialog" aria-labelledby="stop-q">
+        <p><b id="stop-q">Hentikan run?</b>Pekerjaan yang belum di-commit tetap di folder.</p>
+        <div class="row">
+          <button class="btn primary" type="button" id="stop-yes">Hentikan</button>
+          <button class="btn" type="button" id="stop-no">Batal</button>
+        </div>
+      </div>
+    </div>
+    <details class="m-crew" id="m-crew">
+      <summary aria-label="Agent: 1 butuh kamu, 2 jalan, 4 selesai, 3 siap" id="m-sum"><b>Agent</b><span id="m-count"><span class="m-ask" id="m-ask">1 butuh kamu</span><span id="m-askgap"> · </span><span id="m-run">2 jalan</span></span>
+        <span class="m-dots" aria-hidden="true"><i class="s-ask" id="m-dot-ui"></i><i></i><i></i><i class="s-done"></i><i class="s-done"></i><i class="s-done"></i><i class="s-done"></i><i class="s-ready"></i><i class="s-ready"></i><i class="s-ready"></i></span>
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4l4 4-4 4"/></svg>
+      </summary>
+      <ul class="m-list">
+        <li class="ask" id="m-ui"><span class="dot s-ask" aria-hidden="true"></span><span class="name"><span>ui-designer</span><span class="st">Butuh kamu</span></span><span class="item">Pertanyaan menunggu di Chat</span></li>
+        <li class="run"><span class="dot" aria-hidden="true"></span><span class="name"><span>fe</span><span class="st">Jalan · putaran 3</span></span><span class="item">Kerangka layar Riwayat</span></li>
+        <li class="run"><span class="dot" aria-hidden="true"></span><span class="name"><span>be</span><span class="st">Jalan · putaran 2</span></span><span class="item">Paginasi daftar run</span></li>
+        <li><span class="dot s-done" aria-hidden="true"></span><span class="name"><span>Selesai</span><span class="st">4</span></span><span class="item">prd, ux, architect, backlog</span></li>
+        <li><span class="dot s-ready" aria-hidden="true"></span><span class="name"><span>Siap</span><span class="st">3</span></span><span class="item">ui-critic, qa, cyber</span></li>
+      </ul>
+      <p class="m-team">Tim <b>Fullstack</b> · Orkestrator <b>Sonnet</b><br>412,6 rb token · 1 j 48 mnt</p>
+    </details>
+  </header>
+
+  <aside class="agents" aria-labelledby="agents-h">
+    <div class="col-head"><h2 id="agents-h">Agent</h2><span>10 di tim</span></div>
+    <ul class="agent-list">
+      <li><button class="agent ask" type="button" data-agent="ui-designer" aria-pressed="false">
+        <span class="dot s-ask" aria-hidden="true"></span>
+        <span class="name"><span>ui-designer</span><span class="st" data-st>Butuh kamu</span></span>
+        <span class="item" data-item>Pertanyaan menunggu di Chat</span>
+      </button></li>
+      <li><button class="agent run" type="button" data-agent="fe" aria-pressed="false">
+        <span class="dot" aria-hidden="true"></span>
+        <span class="name"><span>fe</span><span class="st">Jalan · putaran 3</span></span>
+        <span class="item">Kerangka layar Riwayat</span>
+      </button></li>
+      <li><button class="agent run" type="button" data-agent="be" aria-pressed="false">
+        <span class="dot" aria-hidden="true"></span>
+        <span class="name"><span>be</span><span class="st">Jalan · putaran 2</span></span>
+        <span class="item">Paginasi daftar run</span>
+      </button></li>
+    </ul>
+    <details class="fold">
+      <summary><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4l4 4-4 4"/></svg><span>4 selesai · 3 siap</span></summary>
+      <ul class="agent-list">
+        <li><button class="agent" type="button" data-agent="prd" aria-pressed="false"><span class="dot s-done" aria-hidden="true"></span><span class="name"><span>prd</span><span class="st">Selesai</span></span></button></li>
+        <li><button class="agent" type="button" data-agent="ux" aria-pressed="false"><span class="dot s-done" aria-hidden="true"></span><span class="name"><span>ux</span><span class="st">Selesai</span></span></button></li>
+        <li><button class="agent" type="button" data-agent="architect" aria-pressed="false"><span class="dot s-done" aria-hidden="true"></span><span class="name"><span>architect</span><span class="st">Selesai</span></span></button></li>
+        <li><button class="agent" type="button" data-agent="backlog" aria-pressed="false"><span class="dot s-done" aria-hidden="true"></span><span class="name"><span>backlog</span><span class="st">Selesai</span></span></button></li>
+        <li><button class="agent" type="button" data-agent="ui-critic" aria-pressed="false"><span class="dot s-ready" aria-hidden="true"></span><span class="name"><span>ui-critic</span><span class="st">Siap</span></span></button></li>
+        <li><button class="agent" type="button" data-agent="qa" aria-pressed="false"><span class="dot s-ready" aria-hidden="true"></span><span class="name"><span>qa</span><span class="st">Siap</span></span></button></li>
+        <li><button class="agent" type="button" data-agent="cyber" aria-pressed="false"><span class="dot s-ready" aria-hidden="true"></span><span class="name"><span>cyber</span><span class="st">Siap</span></span></button></li>
+      </ul>
+    </details>
+    <p class="team-meta">Tim <b>Fullstack</b> · Lanjut backlog<br>Orkestrator <b>Sonnet</b></p>
+  </aside>
+
+  <main class="map" aria-labelledby="map-h">
+    <div class="map-head"><h2 id="map-h">Alur tim</h2><span>Batch 2 · fe dan be jalan bersamaan</span></div>
+    <div class="map-canvas">
+      <svg viewBox="0 0 712 384" role="img" aria-label="Alur tim: prd, ux, architect, backlog selesai; ui-designer butuh kamu; fe dan be jalan bersamaan; ui-critic, qa, cyber siap.">
+        <!-- Ruas yang sudah dilewati -->
+        <path class="trk done" d="M64 60 H616 A32 32 0 0 1 648 92 V136 A32 32 0 0 1 616 168 H56 A32 32 0 0 0 24 200 V240 A32 32 0 0 0 56 272 H140"/>
+        <!-- Ruas jalan (dua rel paralel) -->
+        <path class="trk live" d="M140 272 C168 272 168 244 196 244 H248"/>
+        <path class="trk live" d="M140 272 C168 272 168 300 196 300 H248"/>
+        <!-- Ruas belum dilewati -->
+        <path class="trk todo" d="M256 244 H316 C344 244 344 272 372 272 M256 300 H316 C344 300 344 272 372 272 H640"/>
+
+        <circle class="train" cx="196" cy="244" r="3"/>
+        <circle class="train b" cx="196" cy="300" r="3"/>
+
+        <!-- Stasiun selesai -->
+        <g><circle class="stn-done" cx="64" cy="60" r="8"/><path class="chk" d="M60.5 60.2l2.4 2.4 4.6-4.8"/>
+          <text class="lbl" x="64" y="92">prd</text><text class="sub" x="64" y="108">Selesai</text></g>
+        <g><circle class="stn-done" cx="192" cy="60" r="8"/><path class="chk" d="M188.5 60.2l2.4 2.4 4.6-4.8"/>
+          <text class="lbl" x="192" y="92">ux</text><text class="sub" x="192" y="108">Selesai</text></g>
+        <g><circle class="stn-done" cx="320" cy="60" r="8"/><path class="chk" d="M316.5 60.2l2.4 2.4 4.6-4.8"/>
+          <text class="lbl" x="320" y="92">architect</text><text class="sub" x="320" y="108">Selesai</text></g>
+        <g><circle class="stn-done" cx="448" cy="60" r="8"/><path class="chk" d="M444.5 60.2l2.4 2.4 4.6-4.8"/>
+          <text class="lbl" x="448" y="92">backlog</text><text class="sub" x="448" y="108">Selesai</text></g>
+
+        <!-- Butuh kamu -->
+        <g id="stn-ui"><circle class="stn-ask" cx="96" cy="272" r="8"/><text class="q" x="96" y="276">?</text>
+          <text class="lbl" x="96" y="304">ui-designer</text><text class="sub ask" x="96" y="320" id="stn-ui-st">Butuh kamu</text></g>
+
+        <!-- Jalan: nama, status + putaran, satu baris langkah alat (mono) -->
+        <g><circle class="stn-run" cx="256" cy="244" r="8"/>
+          <text class="lbl" x="256" y="194">fe</text><text class="sub run" x="256" y="210">Jalan<tspan dx="2">·</tspan><tspan dx="6">putaran 3</tspan></text>
+          <text class="tool" x="256" y="226" translate="no">Write RiwayatList.tsx</text></g>
+        <g><circle class="stn-run" cx="256" cy="300" r="8"/>
+          <text class="lbl" x="256" y="332">be</text><text class="sub run" x="256" y="348">Jalan<tspan dx="2">·</tspan><tspan dx="6">putaran 2</tspan></text>
+          <text class="tool" x="256" y="364" translate="no">Bash npm test -- runs</text></g>
+
+        <!-- Siap -->
+        <g><circle class="stn-ready" cx="416" cy="272" r="8"/>
+          <text class="lbl" x="416" y="304">ui-critic</text><text class="sub" x="416" y="320">Siap</text></g>
+        <g><circle class="stn-ready" cx="528" cy="272" r="8"/>
+          <text class="lbl" x="528" y="304">qa</text><text class="sub" x="528" y="320">Siap</text></g>
+        <g><circle class="stn-ready" cx="640" cy="272" r="8"/>
+          <text class="lbl" x="640" y="304">cyber</text><text class="sub" x="640" y="320">Siap</text></g>
+      </svg>
+    </div>
+    <p class="caption">Data contoh untuk keadaan berat, bukan run asli.</p>
+  </main>
+
+  <section class="side" aria-label="Chat dan detail agent">
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" id="tab-chat" aria-selected="true" aria-controls="panel-chat" type="button">Chat <span class="ring tab-badge" aria-hidden="true"></span></button>
+      <button class="tab" role="tab" id="tab-detail" aria-selected="false" aria-controls="panel-detail" type="button" tabindex="-1">Detail</button>
+    </div>
+
+    <div class="panel" id="panel-chat" role="tabpanel" aria-labelledby="tab-chat">
+      <h2 class="vh">Chat</h2>
+      <div class="chat" id="chat" role="log" aria-live="polite" tabindex="-1">
+        <div class="msg-me">Lanjut backlog</div>
+        <div class="sys"><i aria-hidden="true"></i>Batch 2 dimulai · fe dan be</div>
+        <details class="tools">
+          <summary><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4l4 4-4 4"/></svg>2 langkah · Write, Bash</summary>
+          <ul>
+            <li><b>fe</b><code translate="no">Write web/src/riwayat/RiwayatList.tsx</code></li>
+            <li><b>be</b><code translate="no">Bash npm test -- runs</code></li>
+          </ul>
+        </details>
+        <div class="msg-agent">
+          <div class="from"><b>orkestrator</b> · 10.42</div>
+          <p>fe mengerjakan kerangka layar Riwayat dan be mengerjakan paginasi daftar run. ui-designer butuh keputusanmu soal kartu bukti.</p>
+        </div>
+        <div class="card" id="ask-card">
+          <p class="k"><span class="ring" aria-hidden="true"></span>Pertanyaan · dari ui-designer</p>
+          <h3 id="ask-q">Kartu bukti yang tidak punya gambar: tampilkan apa?</h3>
+          <div class="opts" role="group" aria-labelledby="ask-q">
+            <button class="opt" type="button">Ringkasan teks</button>
+            <button class="opt" type="button">Ikon jenis berkas</button>
+            <button class="opt" type="button">Keduanya</button>
+          </div>
+          <p class="hint">Pilih satu untuk langsung mengirim jawaban.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel detail" id="panel-detail" role="tabpanel" aria-labelledby="tab-detail" hidden>
+      <h3 id="d-name">Pilih agent</h3>
+      <p class="lead" id="d-lead">Klik agent di kolom kiri untuk melihat tugas dan modelnya.</p>
+      <dl id="d-list"></dl>
+    </div>
+
+    <div class="compose">
+      <p class="note">Pesan masuk setelah langkah yang sedang jalan selesai.</p>
+      <div class="box empty">
+        <label class="vh" for="msg">Pesan ke orkestrator</label>
+        <textarea id="msg" name="pesan" rows="2" autocomplete="off" placeholder="Tulis ke orkestrator…"></textarea>
+        <button class="btn primary" type="button" id="send">Kirim pesan</button>
+      </div>
+    </div>
+    <div class="stopped-note">
+      <p>Run dihentikan. Mulai run baru untuk lanjut.</p>
+      <a class="btn primary as-link" href="/baru?folder=clients/toconnect">Run baru</a>
+    </div>
+  </section>
+</div>
+
+<script>
+(() => {
+  // Titik tengah Overpass menempel ke kata sesudahnya: ganti dengan bulatan kecil berjarak sama
+  const w = document.createTreeWalker(document.querySelector('.app'), NodeFilter.SHOW_TEXT, { acceptNode: (n) => n.nodeValue.includes(' · ') && !n.parentElement.closest('svg') ? 1 : 2 });
+  const ns = []; while (w.nextNode()) ns.push(w.currentNode);
+  ns.forEach((n) => { const f = document.createElement('span'); n.nodeValue.split(' · ').forEach((t, i) => { if (i) { const sp = document.createElement('span'); sp.className = 'sep'; sp.setAttribute('aria-hidden', 'true'); f.append(' ', sp, ' '); } f.append(t); }); n.replaceWith(f); });
+
+  const $ = (s) => document.querySelector(s);
+  const body = document.body;
+  let runTxt = '2 jalan';
+
+  // Data contoh per agent (dari docs/mockups/data-mockup.md)
+  const agents = {
+    'ui-designer': ['Butuh kamu', 'opus', 'Pertanyaan soal kartu bukti, diteruskan orkestrator'],
+    'fe': ['Jalan · putaran 3', 'sonnet', 'Kerangka layar Riwayat'],
+    'be': ['Jalan · putaran 2', 'sonnet', 'Paginasi daftar run'],
+    'prd': ['Selesai', 'opus'], 'ux': ['Selesai', 'opus'], 'architect': ['Selesai', 'opus'], 'backlog': ['Selesai', 'sonnet'],
+    'ui-critic': ['Siap', 'opus'], 'qa': ['Siap', 'sonnet'], 'cyber': ['Siap', 'sonnet']
+  };
+
+  // Tab Chat / Detail
+  const tabs = [$('#tab-chat'), $('#tab-detail')];
+  function showTab(i) {
+    tabs.forEach((t, j) => {
+      t.setAttribute('aria-selected', String(i === j));
+      t.tabIndex = i === j ? 0 : -1;
+      document.getElementById(t.getAttribute('aria-controls')).hidden = i !== j;
+    });
+  }
+  tabs.forEach((t, i) => {
+    t.addEventListener('click', () => showTab(i));
+    t.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { const n = 1 - i; showTab(n); tabs[n].focus(); }
+    });
+  });
+
+  // Klik agent -> Detail agent
+  document.querySelectorAll('.agent').forEach((b) => b.addEventListener('click', () => {
+    document.querySelectorAll('.agent').forEach((x) => x.setAttribute('aria-pressed', 'false'));
+    b.setAttribute('aria-pressed', 'true');
+    const id = b.dataset.agent, a = agents[id];
+    $('#d-name').textContent = id;
+    $('#d-lead').textContent = a[2] ? a[2] : (a[0] === 'Siap' ? 'Belum jalan di run ini.' : 'Selesai di milestone ini.');
+    $('#d-list').innerHTML = '<dt>Status</dt><dd>' + a[0] + '</dd><dt>Model terdeklarasi</dt><dd>' + a[1] + '</dd>';
+    showTab(1);
+  }));
+
+  // Jawab pertanyaan: kartu menciut jadi satu baris
+  document.querySelectorAll('.opt').forEach((o) => o.addEventListener('click', () => {
+    const line = document.createElement('p');
+    line.className = 'answered';
+    line.innerHTML = 'Kartu bukti yang tidak punya gambar: tampilkan apa? → <b>' + o.textContent + '</b> · kamu, 10.43';
+    $('#ask-card').replaceWith(line);
+    body.classList.add('answered');
+    const row = document.querySelector('[data-agent="ui-designer"]');
+    row.classList.remove('ask'); row.classList.add('run');
+    row.querySelector('.dot').className = 'dot';
+    row.querySelector('[data-st]').textContent = 'Jalan';
+    row.querySelector('[data-item]').textContent = 'Melanjutkan dengan jawabanmu';
+    agents['ui-designer'][0] = 'Jalan';
+    $('#stn-ui circle').setAttribute('class', 'stn-run');
+    $('#stn-ui .q').remove();
+    const st = $('#stn-ui-st'); st.textContent = 'Jalan'; st.setAttribute('class', 'sub run');
+    $('[aria-label^="Proyek"]').setAttribute('aria-label', 'Proyek');
+    // HP: baris Agent ikut berubah
+    $('#m-ask').remove(); $('#m-askgap').remove();
+    $('#m-run').textContent = runTxt = '3 jalan';
+    $('#m-dot-ui').removeAttribute('class');
+    $('#m-sum').setAttribute('aria-label', 'Agent: 3 jalan, 4 selesai, 3 siap');
+    const mu = $('#m-ui'); mu.className = 'run';
+    mu.querySelector('.dot').className = 'dot';
+    mu.querySelector('.st').textContent = 'Jalan';
+    mu.querySelector('.item').textContent = 'Melanjutkan dengan jawabanmu';
+    $('#msg').focus();
+  }));
+
+  // HP: Chat dibuka di pesan terbaru supaya kartu menunggu langsung terlihat
+  if (matchMedia('(max-width: 899px)').matches) { const p = $('#panel-chat'); p.scrollTop = p.scrollHeight; }
+
+  // Penanda menunggu -> kartu
+  $('#jump').addEventListener('click', () => {
+    showTab(0);
+    const c = $('#ask-card');
+    if (c) { c.scrollIntoView({ block: 'center' }); c.querySelector('.opt').focus(); }
+  });
+
+  // Jeda / Lanjut
+  $('#pause').addEventListener('click', (e) => {
+    const p = body.classList.toggle('paused');
+    e.currentTarget.textContent = p ? 'Lanjut' : 'Jeda';
+    $('#m-run').textContent = p ? 'dijeda' : runTxt;
+    $('#m-sum').setAttribute('aria-label', 'Agent: ' + $('#m-count').textContent.replace(/\s+/g, ' ').replace(' kamu ', ' kamu, '));
+    $('#run-status').textContent = p ? 'Dijeda' : 'Jalan';
+  });
+
+  // Stop dengan konfirmasi kecil
+  const pop = $('#stop-pop'), stop = $('#stop');
+  const closePop = () => { pop.classList.remove('open'); stop.setAttribute('aria-expanded', 'false'); };
+  stop.addEventListener('click', () => {
+    const o = pop.classList.toggle('open');
+    stop.setAttribute('aria-expanded', String(o));
+    if (o) $('#stop-no').focus();
+  });
+  $('#stop-no').addEventListener('click', () => { closePop(); stop.focus(); });
+  pop.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closePop(); stop.focus(); } });
+  $('#stop-yes').addEventListener('click', () => {
+    closePop();
+    body.classList.remove('paused'); body.classList.add('stopped');
+    $('#run-status').textContent = 'Dihentikan';
+    $('#m-run').textContent = 'run dihentikan';
+    $('#m-sum').setAttribute('aria-label', 'Agent: run dihentikan');
+    const s = document.createElement('div');
+    s.className = 'sys'; s.innerHTML = '<i aria-hidden="true"></i>Dihentikan oleh pemilik.';
+    $('#chat').append(s);
+  });
+
+  // Kirim pesan (Enter kirim, Shift+Enter baris baru)
+  const send = () => {
+    const t = $('#msg'), v = t.value.trim();
+    if (!v) return;
+    const m = document.createElement('div');
+    m.className = 'msg-me'; m.textContent = v;
+    $('#chat').append(m); t.value = '';
+    syncBox();
+    m.scrollIntoView({ block: 'end' });
+  };
+  const syncBox = () => $('.box').classList.toggle('empty', !$('#msg').value.trim());
+  $('#msg').addEventListener('input', syncBox);
+  $('#send').addEventListener('click', send);
+  $('#msg').addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); send(); } });
+})();
+</script>
+</body>
+</html>

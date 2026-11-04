@@ -1,0 +1,529 @@
+<!doctype html>
+<html lang="id" style="color-scheme: light dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>toconnect · Crew Control</title>
+<!-- Mockup arah C "Daftar yang bicara", Layar proyek, desktop.
+     Keadaan lewat hash: #berat (bawaan, data contoh), #a pertanyaan, #b izin, #c dijeda, #d dihentikan (run asli 07_Sandbox). -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:wght@400&family=Atkinson+Hyperlegible+Next:wght@400;700&display=swap">
+<link rel="stylesheet" href="tokens.css">
+<style>
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  font-family: var(--font-sans); font-size: var(--fs-14); line-height: var(--lh-body);
+  color: var(--text); background: var(--bg);
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+:focus-visible { outline: var(--focus-w) solid var(--focus); outline-offset: var(--focus-w); }
+code, .mono { font-family: var(--font-mono); font-size: var(--fs-13); }
+.skip { position: fixed; left: var(--sp-8); top: var(--sp-8); z-index: 9; padding: var(--sp-8) var(--sp-12); background: var(--surface); color: var(--text); box-shadow: var(--shadow-pop); border-radius: var(--radius-s); transform: translateY(-200%); }
+.skip:focus { transform: none; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Kerangka: rel | agent | grafik | Chat */
+.app {
+  display: grid; height: 100vh; min-height: 640px;
+  grid-template-columns: var(--rail-w) var(--col-agent) minmax(0, 1fr) var(--col-chat);
+  grid-template-rows: var(--topbar-h) minmax(0, 1fr);
+}
+
+/* Rel navigasi */
+.rail {
+  grid-row: 1 / 3; background: var(--sunk);
+  display: flex; flex-direction: column; align-items: center; gap: var(--sp-8);
+  padding: var(--sp-8) 0;
+}
+.rail a {
+  position: relative; display: grid; place-items: center;
+  width: var(--rail-btn); height: var(--rail-btn); border-radius: var(--radius-s);
+  color: var(--text-2); text-decoration: none;
+  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.rail a:hover { background: var(--bg); color: var(--text); }
+.rail a[aria-current="page"] { background: var(--bg); color: var(--text); }
+.rail a.new { background: var(--ink); color: var(--on-ink); margin-bottom: var(--sp-8); }
+.rail a.new:hover { background: var(--ink); color: var(--on-ink); opacity: .86; }
+.rail .push { margin-top: auto; }
+.rail svg { width: 20px; height: 20px; }
+.rail .badge {
+  position: absolute; top: calc(var(--sp-4) * -1); right: calc(var(--sp-4) * -1);
+  min-width: 16px; height: 16px; padding: 0 var(--sp-4); border-radius: var(--radius-m);
+  background: var(--ask); color: var(--on-ink); font-size: var(--fs-12); font-weight: var(--fw-bold);
+  line-height: 16px; text-align: center;
+}
+
+/* Bar atas */
+.top {
+  grid-column: 2 / 5; display: flex; align-items: center; gap: var(--sp-24);
+  padding: 0 var(--sp-16) 0 var(--sp-24); border-bottom: var(--line-w) solid var(--line);
+  white-space: nowrap; min-width: 0;
+}
+.top h1 { margin: 0; font-size: var(--fs-18); font-weight: var(--fw-bold); line-height: var(--lh-title); }
+.top .where { display: flex; align-items: baseline; gap: var(--sp-8); min-width: 0; }
+.top .path, .top .tag { font-size: var(--fs-13); color: var(--text-3); }
+.facts { display: flex; align-items: center; gap: var(--sp-24); margin: 0 0 0 auto; padding: 0; list-style: none; color: var(--text-2); }
+.facts li { display: flex; align-items: center; gap: var(--sp-8); }
+.facts .strong { color: var(--text); font-weight: var(--fw-bold); }
+.facts .ask { color: var(--ask); font-weight: var(--fw-bold); }
+.bar { width: var(--progress-w); height: var(--progress-h); background: var(--line); }
+.bar span { display: block; height: 100%; background: var(--ink); }
+.ctl { display: flex; gap: var(--sp-8); position: relative; }
+.btn {
+  height: var(--ctl-h); padding: 0 var(--sp-12); border-radius: var(--radius-s);
+  border: var(--line-w) solid var(--edge); background: var(--surface); color: var(--text);
+  font-weight: var(--fw-bold); font-size: var(--fs-13);
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+.btn:hover { background: var(--sunk); }
+.btn.solid { background: var(--ink); color: var(--on-ink); border-color: var(--ink); }
+.btn.solid:hover { opacity: .86; }
+.pop {
+  position: absolute; top: calc(100% + var(--sp-8)); right: 0; z-index: 5; width: 280px;
+  background: var(--surface); border-radius: var(--radius-m); box-shadow: var(--shadow-pop);
+  padding: var(--sp-16); white-space: normal;
+}
+.pop p { margin: 0 0 var(--sp-12); }
+.pop strong { display: block; margin-bottom: var(--sp-4); }
+.pop .row { display: flex; gap: var(--sp-8); }
+
+/* Status mark (titik 8) */
+.mk { width: var(--dot); height: var(--dot); clip-path: circle(50%); flex: none; display: inline-block; }
+.mk.run { background: var(--ink); }
+.mk.ask { background: var(--ask); }
+.mk.idle, .mk.paused { border: var(--line-w) solid var(--edge); }
+.mk.stopped { background: var(--edge); clip-path: none; }
+.mk.done, .mk.bad { width: 12px; height: 12px; clip-path: none; display: inline-grid; place-items: center; color: var(--text-3); }
+.mk.done svg, .mk.bad svg { width: 12px; height: 12px; }
+.mk.bad { color: var(--bad); }
+
+/* Kolom agent */
+.agents { overflow: auto; padding: var(--sp-16) var(--sp-16) var(--sp-24) var(--sp-24); }
+.agents h2 { margin: 0; font-size: var(--fs-14); font-weight: var(--fw-bold); }
+.agents .sum { margin: 0 0 var(--sp-16); font-size: var(--fs-13); color: var(--text-2); }
+.agents .sum b { color: var(--ask); }
+.group { list-style: none; margin: 0 0 var(--sp-16); padding: 0; }
+.agent {
+  width: 100%; display: grid; grid-template-columns: 12px minmax(0,1fr) auto; column-gap: var(--sp-8);
+  align-items: center; text-align: left; min-height: var(--row-idle);
+  padding: 0 var(--sp-8); margin-left: calc(var(--sp-8) * -1); border-radius: var(--radius-s);
+  color: var(--text-3); transition: background-color var(--dur-fast) var(--ease-out);
+}
+.agent:hover { background: var(--sunk); }
+.agent[aria-pressed="true"] .nm { text-decoration: underline; text-decoration-thickness: var(--select-w); text-underline-offset: var(--sp-4); }
+.agent .mk { justify-self: center; }
+.agent .nm { font-size: var(--fs-14); }
+.agent .st { font-size: var(--fs-12); }
+.agent .sub { grid-column: 2 / 4; font-size: var(--fs-13); color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.agent.live { min-height: var(--row-active); padding-top: var(--sp-8); padding-bottom: var(--sp-8); color: var(--text); }
+.agent.live .nm { font-weight: var(--fw-bold); }
+.agent.is-ask .st { color: var(--ask); font-weight: var(--fw-bold); }
+
+/* Grafik */
+.graph { position: relative; overflow: auto; padding: var(--sp-16) var(--sp-24); }
+.graph h2 { margin: 0; font-size: var(--fs-14); font-weight: var(--fw-bold); }
+.graph .gsum { margin: 0; font-size: var(--fs-13); color: var(--text-2); }
+.stage { position: relative; margin: var(--sp-32) auto 0; width: 640px; }
+.stage svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.edge { fill: none; stroke: var(--edge); stroke-width: var(--edge-w); }
+.edge.on { stroke: var(--ink); stroke-width: var(--edge-active-w); stroke-dasharray: 6 6; animation: flow var(--dur-flow) linear infinite; }
+@keyframes flow { to { stroke-dashoffset: -12; } }
+.node {
+  position: absolute; transform: translateX(-50%);
+  display: grid; grid-template-columns: 12px auto; column-gap: var(--sp-8); align-items: center;
+  padding: var(--sp-4) var(--sp-8); border-radius: var(--radius-s); text-align: left;
+  color: var(--text-3); white-space: nowrap;
+}
+.node .nm { font-size: var(--fs-14); }
+.node .st { grid-column: 2; font-size: var(--fs-12); }
+.node:hover .nm, .node[aria-pressed="true"] .nm { text-decoration: underline; text-decoration-thickness: var(--select-w); text-underline-offset: var(--sp-4); }
+.node.is-run { background: var(--ink); color: var(--on-ink); }
+.node.is-run .mk { background: var(--on-ink); }
+.node.is-run .nm { font-weight: var(--fw-bold); }
+.node.is-ask { color: var(--text); }
+.node.is-ask .nm { font-weight: var(--fw-bold); }
+.node.is-ask .st { color: var(--ask); font-weight: var(--fw-bold); }
+
+/* Chat */
+.side { display: flex; flex-direction: column; min-height: 0; background: var(--surface); border-left: var(--line-w) solid var(--line); }
+.tabs { display: flex; gap: var(--sp-24); padding: 0 var(--sp-16); flex: none; }
+.tab {
+  position: relative; height: var(--topbar-h); font-weight: var(--fw-bold); color: var(--text-3);
+  display: flex; align-items: center; gap: var(--sp-8);
+}
+.tab[aria-selected="true"] { color: var(--text); box-shadow: inset 0 calc(var(--select-w) * -1) 0 var(--ink); }
+.tab .mk { display: none; }
+.tab.has-ask .mk { display: inline-block; }
+.panel { flex: 1; min-height: 0; overflow: auto; padding: var(--sp-16) var(--sp-16) var(--sp-24); }
+.panel[hidden] { display: none; }
+.thread { display: flex; flex-direction: column; gap: var(--sp-24); font-size: var(--fs-16); line-height: var(--lh-chat); }
+.msg p { margin: 0; }
+.msg .who { font-size: var(--fs-12); color: var(--text-2); font-weight: var(--fw-bold); margin-bottom: var(--sp-4); }
+.msg .who span { font-weight: var(--fw-regular); color: var(--text-3); }
+.msg.me { align-self: flex-end; max-width: 85%; background: var(--sunk); border-radius: var(--radius-m); padding: var(--sp-8) var(--sp-12); }
+.msg.me .who { text-align: right; }
+.msg code { background: var(--sunk); padding: 0 var(--sp-4); border-radius: var(--radius-s); }
+.msg ol { margin: var(--sp-4) 0 0; padding-left: var(--sp-24); }
+.sys { align-self: center; font-size: var(--fs-13); color: var(--text-3); text-align: center; }
+.done-line { font-size: var(--fs-13); color: var(--text-3); display: flex; gap: var(--sp-8); align-items: baseline; }
+.done-line .mk { transform: translateY(2px); }
+.tools { font-size: var(--fs-13); color: var(--text-2); }
+.tools summary { min-height: var(--ctl-h); cursor: pointer; list-style: none; display: inline-flex; gap: var(--sp-8); align-items: center; }
+.tools summary::-webkit-details-marker { display: none; }
+.tools summary svg { width: 12px; height: 12px; transition: transform var(--dur-fast) var(--ease-out); }
+.tools[open] summary svg { transform: rotate(90deg); }
+.tools ul { list-style: none; margin: var(--sp-8) 0 0; padding: var(--sp-8) var(--sp-12); background: var(--sunk); border-radius: var(--radius-s); }
+.tools li { display: grid; grid-template-columns: 88px minmax(0,1fr); gap: var(--sp-8); padding: var(--sp-4) 0; }
+.tools li span:last-child { overflow-wrap: anywhere; }
+
+.card { background: var(--ask-soft); border-radius: var(--radius-m); padding: var(--sp-16); }
+.card .meta { display: flex; gap: var(--sp-8); align-items: center; font-size: var(--fs-12); color: var(--text-2); }
+.card h3 { text-wrap: balance; margin: var(--sp-8) 0 var(--sp-12); font-size: var(--fs-16); font-weight: var(--fw-bold); line-height: var(--lh-title); }
+.opts { display: grid; gap: var(--sp-8); }
+.opt {
+  display: block; width: 100%; text-align: left; padding: var(--sp-8) var(--sp-12);
+  background: var(--surface); border: var(--line-w) solid var(--edge); border-radius: var(--radius-s);
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+.opt:hover { background: var(--sunk); }
+.opt b { display: block; font-size: var(--fs-14); }
+.opt span { display: block; font-size: var(--fs-13); color: var(--text-2); line-height: var(--lh-body); }
+.card .target { margin: 0 0 var(--sp-8); padding: var(--sp-8) var(--sp-12); background: var(--surface); border-radius: var(--radius-s); overflow-wrap: anywhere; }
+.card .why { margin: 0 0 var(--sp-12); font-size: var(--fs-14); color: var(--text-2); }
+.card .acts { display: flex; gap: var(--sp-8); align-items: center; }
+.linkbtn { font-size: var(--fs-13); font-weight: var(--fw-bold); text-decoration: underline; text-underline-offset: var(--sp-4); padding: 0 var(--sp-4); height: var(--ctl-h); }
+
+.compose { flex: none; padding: var(--sp-8) var(--sp-16) var(--sp-16); }
+.compose .hint { margin: 0 0 var(--sp-8); font-size: var(--fs-12); color: var(--text-3); }
+.box { border: var(--line-w) solid var(--edge); border-radius: var(--radius-m); background: var(--surface); padding: var(--sp-8) var(--sp-8) var(--sp-8) var(--sp-12); display: flex; gap: var(--sp-8); align-items: flex-end; }
+.box:focus-within { outline: var(--focus-w) solid var(--focus); outline-offset: 1px; }
+.box textarea { flex: 1; border: 0; resize: none; background: none; color: var(--text); font: inherit; font-size: var(--fs-16); line-height: var(--lh-chat); min-height: 48px; padding: var(--sp-4) 0; }
+.box textarea:focus { outline: none; }
+.box textarea::placeholder { color: var(--text-3); }
+.ended { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-12); padding: var(--sp-12) 0 0; font-size: var(--fs-14); color: var(--text-2); }
+
+.detail h3 { margin: 0 0 var(--sp-4); font-size: var(--fs-18); line-height: var(--lh-title); }
+.detail dl { display: grid; grid-template-columns: 120px 1fr; gap: var(--sp-8) var(--sp-12); margin: var(--sp-16) 0; }
+.detail dt { color: var(--text-3); }
+.detail dd { margin: 0; }
+.detail .note { font-size: var(--fs-13); color: var(--text-3); }
+
+@media (prefers-reduced-motion: reduce) {
+  .edge.on { animation: none; }
+  * { transition: none !important; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#pChat">Langsung ke Chat</a>
+<div class="app">
+  <nav class="rail" aria-label="Navigasi utama">
+    <a class="new" href="#baru" title="Run baru" aria-label="Run baru"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M10 4v12M4 10h12"/></svg></a>
+    <a href="#proyek" aria-current="page" title="Proyek" aria-label="Proyek, 1 butuh kamu"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M3 5.5h5l1.5 2H17v8H3z"/></svg><span class="badge" id="railBadge">1</span></a>
+    <a href="#riwayat" title="Riwayat" aria-label="Riwayat"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="10" cy="10" r="6.5"/><path d="M10 6.5V10l2.5 1.5"/></svg></a>
+    <a href="#kesehatan" title="Kesehatan kit" aria-label="Kesehatan kit"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11h3l2-5 3 9 2-4h4"/></svg></a>
+    <a class="push" href="#pengaturan" title="Pengaturan" aria-label="Pengaturan"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4 6h12M4 14h12"/><circle cx="8" cy="6" r="1.8" fill="var(--sunk)"/><circle cx="12.5" cy="14" r="1.8" fill="var(--sunk)"/></svg></a>
+  </nav>
+
+  <header class="top" id="top"></header>
+
+  <section class="agents" aria-labelledby="agH" id="agents"></section>
+
+  <section class="graph" aria-labelledby="grH" id="graph"></section>
+
+  <aside class="side" aria-label="Chat dan detail agent">
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" id="tChat" aria-selected="true" aria-controls="pChat">Chat <span class="mk ask" aria-hidden="true"></span><span class="sr" id="tChatSr"></span></button>
+      <button class="tab" role="tab" id="tDetail" aria-selected="false" aria-controls="pDetail" tabindex="-1">Detail agent</button>
+    </div>
+    <div class="panel" role="tabpanel" tabindex="-1" id="pChat" aria-labelledby="tChat"><div class="thread" id="thread"></div></div>
+    <div class="panel detail" role="tabpanel" id="pDetail" aria-labelledby="tDetail" hidden></div>
+    <div class="compose" id="compose"></div>
+  </aside>
+</div>
+
+<script>
+const ICON = {
+  done: '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.2l2.3 2.3 4.7-5"/></svg>',
+  bad: '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 3l6 6M9 3l-6 6"/></svg>',
+  chev: '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg>'
+};
+const WORD = { run: 'Jalan', ask: 'Butuh kamu', idle: 'Siap', done: 'Selesai', bad: 'Gagal', paused: 'Dijeda', stopped: 'Dihentikan' };
+const ORDER = { ask: 0, bad: 1, run: 2 };
+const TEAM = ['prd','ux','architect','backlog','ui-designer','fe','be','ui-critic','qa','cyber'];
+const MODEL = { prd:'opus', ux:'opus', architect:'opus', backlog:'sonnet', 'ui-designer':'opus', fe:'sonnet', be:'sonnet', 'ui-critic':'opus', qa:'sonnet', cyber:'sonnet', orkestrator:'haiku' };
+
+/* Posisi node (pusat x, atas y) di panggung 640 px */
+const POS = {
+  prd:[64,0], ux:[224,0], architect:[384,0], backlog:[560,0],
+  'ui-designer':[240,200], fe:[400,200], be:[560,200],
+  'ui-critic':[240,400], qa:[400,400], cyber:[560,400]
+};
+const EDGES = [['prd','ux','h'],['ux','architect','h'],['architect','backlog','h'],
+  ['backlog','ui-designer','v'],['backlog','fe','v'],['backlog','be','v'],
+  ['ui-designer','ui-critic','v'],['fe','ui-critic','v'],['be','ui-critic','v'],
+  ['ui-critic','qa','h'],['qa','cyber','h']];
+
+const SANDBOX_PROMPT = 'Ini tes Crew Control. Buat folder crew-tes dan kerja di dalamnya saja. Sebelum mulai, tanya saya dulu pakai pilihan ganda: warna apa untuk file warna.txt (Merah, Biru, Hijau). Setelah saya jawab, tulis warna itu ke crew-tes/warna.txt. Lalu coba tulis file ke ../../luar-tes.txt.';
+const ASK_WARNA = { t:'ask', who:'orkestrator', time:'14.37', q:'Warna apa untuk file warna.txt?',
+  options:[['Merah','Tulis “Merah” ke crew-tes/warna.txt'],['Biru','Tulis “Biru” ke crew-tes/warna.txt'],['Hijau','Tulis “Hijau” ke crew-tes/warna.txt']] };
+const ANS_WARNA = { t:'done', text:'Warna apa untuk file warna.txt? → Biru · kamu, 14.37' };
+const TOOLS_1 = { t:'tools', items:[['orkestrator','Bash','mkdir -p crew-tes && ls -ld crew-tes'],['orkestrator','Write','D:\\01_Workspace\\07_Sandbox\\crew-tes\\warna.txt']] };
+const ANS_IZIN = { t:'done', text:'Izin Write D:\\luar-tes.txt · Ditolak: Jangan tulis di luar folder proyek. Selesai saja.' };
+const MSG_1 = { t:'agent', time:'14.37', text:'Folder `crew-tes` sudah dibuat dan `crew-tes/warna.txt` berisi `Biru`. Penulisan ke `../../luar-tes.txt` ditolak dengan pesan “Jangan tulis di luar folder proyek. Selesai saja.” Saya tidak mencoba jalan lain, dan tidak ada file yang ditulis di luar `crew-tes`.' };
+const ME_2 = { t:'me', time:'14.38', text:'Di crew-tes: tulis a.txt, lalu jalankan ping -n 20 127.0.0.1, lalu tulis b.txt, lalu c.txt. Satu per satu.' };
+const TOOLS_2 = { t:'tools', items:[['orkestrator','Write','a.txt'],['orkestrator','Bash','ping -n 20 127.0.0.1']] };
+
+function sandbox(ork, extra) {
+  return Object.assign({
+    project:'07_Sandbox', path:'01_Workspace › 07_Sandbox', tag:'tim Fullstack · Haiku',
+    progress:null, batch:null, token:'< 1,2 rb token',
+    agents:[{ id:'orkestrator', ...ork }].concat(TEAM.map(id => ({ id, st:'idle' }))),
+    withOrk:true
+  }, extra);
+}
+
+const STATES = {
+  berat: {
+    project:'toconnect', path:'clients › toconnect', tag:'Data contoh',
+    status:'run', progress:{ text:'UI · 7/24 item', v:7/24 }, batch:'batch 2', token:'412,6 rb token', dur:'1 j 48 mnt',
+    controls:'run',
+    agents:[
+      { id:'ui-designer', st:'ask', sub:'Bertanya lewat orkestrator · 2 mnt', item:'Kartu bukti Review' },
+      { id:'fe', st:'run', round:3, sub:'Kerangka layar Riwayat · 6 mnt', item:'Kerangka layar Riwayat' },
+      { id:'be', st:'run', round:2, sub:'Paginasi daftar run · 4 mnt', item:'Paginasi daftar run' },
+      { id:'prd', st:'done' }, { id:'ux', st:'done' }, { id:'architect', st:'done' }, { id:'backlog', st:'done' },
+      { id:'ui-critic', st:'idle' }, { id:'qa', st:'idle' }, { id:'cyber', st:'idle' }
+    ],
+    chat:[
+      { t:'me', time:'13.04', text:'Lanjut backlog' },
+      { t:'sys', text:'Batch 1 selesai · 14.21' },
+      { t:'agent', time:'14.22', text:'Batch 2 mulai. fe mengerjakan Kerangka layar Riwayat, be mengerjakan Paginasi daftar run, ui-designer menyiapkan kartu bukti Review.' },
+      { t:'tools', items:[['fe','Write','web/src/riwayat/RiwayatList.tsx'],['be','Bash','npm test -- runs']] },
+      { t:'ask', who:'orkestrator', from:'dari ui-designer', agent:'ui-designer', time:'14.50', q:'Kartu bukti yang tidak punya gambar: tampilkan apa?',
+        options:[['Ringkasan teks','Dua baris pertama dari catatan bukti'],['Ikon jenis berkas','Mis. ikon log atau JSON, tanpa teks'],['Keduanya','Ikon di kiri, ringkasan di kanan']] }
+    ],
+    compose:'run'
+  },
+  a: sandbox({ st:'ask', sub:'Bertanya warna untuk warna.txt · 7 dtk' }, {
+    status:'run', steps:'1 langkah', dur:'7 dtk', controls:'run',
+    chat:[{ t:'me', time:'14.37', text:SANDBOX_PROMPT }, ASK_WARNA], compose:'run'
+  }),
+  b: sandbox({ st:'ask', sub:'Minta izin Write · 3 dtk' }, {
+    status:'run', steps:'3 langkah', dur:'24 dtk', controls:'run',
+    chat:[{ t:'me', time:'14.37', text:SANDBOX_PROMPT }, ANS_WARNA, TOOLS_1,
+      { t:'perm', who:'orkestrator', time:'14.37', tool:'Write', target:'D:\\luar-tes.txt', why:'Path di luar folder proyek: D:\\luar-tes.txt' }],
+    compose:'run'
+  }),
+  c: sandbox({ st:'paused', sub:'Bash ping -n 20 127.0.0.1' }, {
+    status:'paused', steps:'6 langkah', dur:'1 mnt 10 dtk', controls:'paused',
+    chat:[{ t:'me', time:'14.37', text:SANDBOX_PROMPT }, ANS_WARNA, TOOLS_1, ANS_IZIN, MSG_1, { t:'sys', text:'Run selesai · 14.38' }, ME_2, TOOLS_2, { t:'sys', text:'Run dijeda · 14.38' }],
+    compose:'paused'
+  }),
+  d: sandbox({ st:'stopped' }, {
+    status:'stopped', steps:'9 langkah', token:'1,2 rb token', dur:'2 mnt 9 dtk', controls:'stopped',
+    chat:[{ t:'me', time:'14.37', text:SANDBOX_PROMPT }, ANS_WARNA, TOOLS_1, ANS_IZIN, MSG_1, { t:'sys', text:'Run selesai · 14.38' }, ME_2, TOOLS_2,
+      { t:'sys', text:'Run dijeda · 14.38 · dilanjutkan 14.38' },
+      { t:'tools', items:[['orkestrator','Write','b.txt'],['orkestrator','Write','c.txt']] },
+      { t:'agent', time:'14.39', text:'Selesai, berurutan, semua di `crew-tes`:', list:['`a.txt` dibuat.','`ping -n 20 127.0.0.1` jalan: 20 dari 20 paket diterima, 0% loss.','`b.txt` dibuat.','`c.txt` dibuat.'] },
+      { t:'sys', text:'Run selesai · 14.39' },
+      { t:'me', time:'14.39', text:'Jalankan ping -n 60 127.0.0.1 lalu tulis d.txt di crew-tes.' },
+      { t:'tools', items:[['orkestrator','Bash','ping -n 60 127.0.0.1']] },
+      { t:'sys', text:'Run dihentikan. Dihentikan oleh pemilik. · 14.39' }],
+    compose:'stopped'
+  })
+};
+
+let S, selected = null, stopOpen = false;
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
+const md = s => esc(s).replace(/`([^`]+)`/g, '<code>$1</code>');
+const mark = st => `<span class="mk ${st}" aria-hidden="true">${st === 'done' ? ICON.done : st === 'bad' ? ICON.bad : ''}</span>`;
+const word = a => WORD[a.st] + (a.round > 1 ? ' · x' + a.round : '');
+const waiting = () => S.chat.filter(m => m.t === 'ask' || m.t === 'perm').length;
+
+function renderTop() {
+  const w = waiting();
+  const st = S.status === 'run' ? 'Jalan' : S.status === 'paused' ? 'Dijeda' : 'Dihentikan';
+  const prog = S.progress
+    ? `<li><span class="strong">${S.progress.text}</span><span class="bar" role="progressbar" aria-label="Progres milestone" aria-valuenow="7" aria-valuemin="0" aria-valuemax="24"><span style="width:${(S.progress.v*100).toFixed(1)}%"></span></span></li>`
+    : `<li><span class="strong">Prompt bebas</span> ${S.steps}</li>`;
+  let ctl = '';
+  if (S.controls === 'run') ctl = `<button class="btn" data-act="pause">Jeda</button><button class="btn" data-act="stop" aria-expanded="${stopOpen}">Stop</button>`;
+  if (S.controls === 'paused') ctl = `<button class="btn" data-act="resume">Lanjut</button><button class="btn" data-act="stop" aria-expanded="${stopOpen}">Stop</button>`;
+  if (stopOpen) ctl += `<div class="pop" role="dialog" aria-label="Hentikan run"><p><strong>Hentikan run?</strong>Pekerjaan yang belum di-commit tetap di folder.</p><div class="row"><button class="btn solid" data-act="stop-yes">Hentikan</button><button class="btn" data-act="stop-no">Batal</button></div></div>`;
+  $('top').innerHTML = `
+    <div class="where"><h1>${S.project}</h1><span class="path">${S.path}</span><span class="tag">· ${S.tag}</span></div>
+    <ul class="facts">
+      <li>${mark(S.status)}<span class="strong">${st}</span></li>
+      ${prog}
+      ${S.batch ? `<li>${S.batch}</li>` : ''}
+      <li>${S.token}</li>
+      <li>${S.dur}</li>
+      ${w ? `<li class="ask">${mark('ask')}${w} menunggu kamu</li>` : ''}
+    </ul>
+    ${ctl ? `<div class="ctl">${ctl}</div>` : ''}`;
+  $('railBadge').hidden = !w;
+}
+
+function sorted() {
+  const team = S.agents.map((a, i) => ({ ...a, i }));
+  return team.sort((x, y) => (ORDER[x.st] ?? 9) - (ORDER[y.st] ?? 9) || x.i - y.i);
+}
+
+function renderAgents() {
+  const list = sorted();
+  const count = st => list.filter(a => a.st === st).length;
+  const parts = [['run','jalan'],['ask','butuh kamu'],['paused','dijeda'],['stopped','dihentikan'],['done','selesai'],['idle','siap']]
+    .filter(([s]) => count(s)).map(([s, w]) => s === 'ask' ? `<b>${count(s)} ${w}</b>` : `${count(s)} ${w}`);
+  const live = a => a.sub && ['ask','run','paused'].includes(a.st);
+  const groups = [];
+  list.forEach(a => {
+    const g = live(a) ? 'live' : a.st;
+    if (!groups.length || groups[groups.length - 1].g !== g) groups.push({ g, items: [] });
+    groups[groups.length - 1].items.push(a);
+  });
+  const title = S.withOrk ? 'orkestrator + 10 agent' : `${list.length} agent`;
+  $('agents').innerHTML = `<h2 id="agH">${title}</h2><p class="sum">${parts.join(' · ')}</p>` +
+    groups.map(g => `<ul class="group">${g.items.map(a => `
+      <li><button class="agent ${live(a) ? 'live' : ''} is-${a.st}" data-agent="${a.id}" aria-pressed="${selected === a.id}">
+        ${mark(a.st)}<span class="nm">${a.id}</span><span class="st">${word(a)}</span>
+        ${live(a) ? `<span class="sub">${esc(a.sub)}</span>` : ''}
+      </button></li>`).join('')}</ul>`).join('');
+}
+
+function renderGraph() {
+  const byId = Object.fromEntries(S.agents.map(a => [a.id, a]));
+  const off = S.withOrk ? 120 : 0;
+  const pos = Object.assign({}, ...Object.entries(POS).map(([k, [x, y]]) => ({ [k]: [x, y + off] })));
+  const edges = EDGES.slice();
+  if (S.withOrk) { pos.orkestrator = [320, 0]; edges.unshift(['orkestrator','prd','v']); }
+  const running = S.agents.filter(a => a.st === 'run').length;
+  const gsum = S.withOrk ? 'Prompt bebas: orkestrator bekerja sendiri, agent tim tidak dipanggil.' : `Batch 2 · ${running} jalan bersamaan`;
+  const nodes = Object.entries(pos).map(([id, [x, y]]) => {
+    const a = byId[id];
+    return `<button class="node is-${a.st}" data-agent="${id}" aria-pressed="${selected === id}" style="left:${x}px;top:${y}px">${mark(a.st)}<span class="nm">${id}</span><span class="st">${word(a)}</span></button>`;
+  }).join('');
+  $('graph').innerHTML = `<h2 id="grH">Alur tim</h2><p class="gsum">${gsum}</p>
+    <div class="stage" id="stage" style="height:${460 + off}px"><svg id="edges" aria-hidden="true"></svg>${nodes}</div>`;
+  const stage = $('stage'), sb = stage.getBoundingClientRect();
+  const box = id => stage.querySelector(`[data-agent="${id}"]`).getBoundingClientRect();
+  $('edges').innerHTML = edges.map(([f, t, k]) => {
+    const A = box(f), B = box(t);
+    const on = byId[t].st === 'run' && S.status === 'run';
+    let d;
+    if (k === 'h') {
+      const y1 = A.top - sb.top + 13, x1 = A.right - sb.left + 8, x2 = B.left - sb.left - 8;
+      d = `M${x1} ${y1}H${x2}`;
+    } else {
+      const x1 = A.left + A.width / 2 - sb.left, y1 = A.bottom - sb.top + 8;
+      const x2 = B.left + B.width / 2 - sb.left, y2 = B.top - sb.top - 8, m = (y1 + y2) / 2;
+      d = `M${x1} ${y1}C${x1} ${m} ${x2} ${m} ${x2} ${y2}`;
+    }
+    return `<path class="edge${on ? ' on' : ''}" d="${d}"/>`;
+  }).join('');
+}
+
+function renderChat() {
+  $('thread').innerHTML = S.chat.map((m, i) => {
+    if (m.t === 'me') return `<div class="msg me"><div class="who">kamu <span>${m.time}</span></div><p>${md(m.text)}</p></div>`;
+    if (m.t === 'agent') return `<div class="msg"><div class="who">orkestrator <span>${m.time}</span></div><p>${md(m.text)}</p>${m.list ? `<ol>${m.list.map(x => `<li>${md(x)}</li>`).join('')}</ol>` : ''}</div>`;
+    if (m.t === 'sys') return `<p class="sys">${esc(m.text)}</p>`;
+    if (m.t === 'done') return `<p class="done-line">${mark('done')}<span>${esc(m.text)}</span></p>`;
+    if (m.t === 'tools') {
+      const kinds = [...new Set(m.items.map(x => x[1]))].join(', ');
+      return `<details class="tools"><summary>${ICON.chev}${m.items.length} langkah · ${kinds}</summary><ul>${m.items.map(([who, tool, arg]) =>
+        `<li><span>${who}</span><span><b>${tool}</b> <code>${esc(arg)}</code></span></li>`).join('')}</ul></details>`;
+    }
+    if (m.t === 'ask') return `<section class="card" aria-labelledby="q${i}">
+      <div class="meta">${mark('ask')}<span>${m.who}${m.from ? ' · ' + m.from : ''} · ${m.time}</span></div>
+      <h3 id="q${i}">${esc(m.q)}</h3>
+      <div class="opts">${m.options.map(([o, d]) => `<button class="opt" data-answer="${i}" data-val="${esc(o)}"><b>${esc(o)}</b><span>${esc(d)}</span></button>`).join('')}</div>
+    </section>`;
+    if (m.t === 'perm') return `<section class="card" aria-labelledby="q${i}">
+      <div class="meta">${mark('ask')}<span>${m.who} · ${m.time}</span></div>
+      <h3 id="q${i}">Izin untuk ${m.tool}</h3>
+      <p class="target mono">${esc(m.target)}</p>
+      <p class="why">${esc(m.why)}</p>
+      <div class="acts"><button class="btn solid" data-perm="${i}" data-val="Disetujui">Setujui</button><button class="btn" data-perm="${i}" data-val="Ditolak">Tolak</button><button class="linkbtn" data-perm="${i}" data-val="Selalu disetujui">Selalu setujui</button></div>
+    </section>`;
+    return '';
+  }).join('');
+  const p = $('pChat'); p.scrollTop = p.scrollHeight;
+
+  const c = $('compose');
+  if (S.compose === 'stopped') {
+    c.innerHTML = `<div class="ended"><span>Run dihentikan. Mulai run baru untuk lanjut.</span><a class="btn solid" href="#baru" style="display:inline-flex;align-items:center;text-decoration:none">Run baru</a></div>`;
+  } else {
+    const hint = S.compose === 'paused' ? 'Run dijeda. Pesan dikirim saat kamu menekan Lanjut.' : 'Pesan masuk setelah langkah yang sedang jalan selesai.';
+    c.innerHTML = `<p class="hint" id="hint">${hint}</p>
+      <form class="box" onsubmit="return false"><label class="sr" for="msg">Pesan untuk orkestrator</label>
+      <textarea id="msg" name="pesan" autocomplete="off" rows="2" placeholder="Tulis pesan…" aria-describedby="hint"></textarea>
+      <button class="btn solid" type="submit">Kirim pesan</button></form>`;
+  }
+  const w = waiting(), detailOpen = $('tDetail').getAttribute('aria-selected') === 'true';
+  $('tChat').classList.toggle('has-ask', !!w && detailOpen);
+  $('tChatSr').textContent = w && detailOpen ? `, ${w} menunggu kamu` : '';
+}
+
+function renderDetail() {
+  const a = S.agents.find(x => x.id === selected);
+  $('pDetail').innerHTML = a ? `<h3>${a.id}</h3><p class="detail-st">${mark(a.st)} ${word(a)}</p>
+    <dl><dt>Model terdeklarasi</dt><dd>${MODEL[a.id]}</dd><dt>Item</dt><dd>${a.item || '-'}</dd></dl>
+    <p class="note">Skill, langkah kerja, file berubah, dan token tampil di sini; belum diisi di mockup arah ini.</p>`
+    : `<p class="note">Pilih agent di kolom kiri atau di grafik untuk melihat detailnya.</p>`;
+}
+
+function setTab(detail) {
+  $('tChat').setAttribute('aria-selected', !detail); $('tDetail').setAttribute('aria-selected', detail);
+  $('tChat').tabIndex = detail ? -1 : 0; $('tDetail').tabIndex = detail ? 0 : -1;
+  $('pChat').hidden = detail; $('pDetail').hidden = !detail;
+  renderDetail(); renderChat();
+}
+
+function render() { renderTop(); renderAgents(); renderGraph(); renderChat(); renderDetail(); }
+
+function load() {
+  const key = location.hash.slice(1);
+  S = structuredClone(STATES[key] || STATES.berat);
+  selected = null; stopOpen = false; setTab(false); render();
+}
+
+document.addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const act = b.dataset.act;
+  if (act === 'pause') { S.status = 'paused'; S.controls = 'paused'; S.compose = 'paused'; S.agents.forEach(a => { if (a.st === 'run') a.st = 'paused'; }); render(); }
+  if (act === 'resume') { S.status = 'run'; S.controls = 'run'; S.compose = 'run'; S.agents.forEach(a => { if (a.st === 'paused') a.st = 'run'; }); render(); }
+  if (act === 'stop') { stopOpen = !stopOpen; renderTop(); if (stopOpen) document.querySelector('[data-act="stop-yes"]').focus(); }
+  if (act === 'stop-no') { stopOpen = false; renderTop(); }
+  if (act === 'stop-yes') {
+    stopOpen = false; S.status = 'stopped'; S.controls = 'stopped'; S.compose = 'stopped';
+    S.agents.forEach(a => { if (['run','ask','paused'].includes(a.st)) { a.st = 'stopped'; delete a.sub; } });
+    S.chat = S.chat.map(m => (m.t === 'ask' || m.t === 'perm') ? { t:'done', text:(m.q || 'Izin ' + m.tool) + ' · Dibatalkan: run berakhir' } : m);
+    S.chat.push({ t:'sys', text:'Run dihentikan. Dihentikan oleh pemilik.' }); render();
+  }
+  if (b.dataset.agent) { selected = b.dataset.agent; setTab(true); renderAgents(); renderGraph(); }
+  if (b === $('tChat')) setTab(false);
+  if (b === $('tDetail')) setTab(true);
+  if (b.dataset.answer || b.dataset.perm) {
+    const i = +(b.dataset.answer || b.dataset.perm), m = S.chat[i];
+    S.chat[i] = { t:'done', text: m.t === 'ask' ? `${m.q} → ${b.dataset.val} · kamu, ${m.time}` : `Izin ${m.tool} ${m.target} · ${b.dataset.val}` };
+    S.agents.forEach(a => { if (a.st === 'ask') { a.st = 'run'; a.sub = m.t === 'ask' && a.item ? a.item + ' · 2 mnt' : 'Melanjutkan'; } });
+    render();
+  }
+});
+$('tChat').parentElement.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { const d = $('tChat').getAttribute('aria-selected') === 'true'; setTab(d); (d ? $('tDetail') : $('tChat')).focus(); }
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && stopOpen) { stopOpen = false; renderTop(); } });
+window.addEventListener('hashchange', () => { if (STATES[location.hash.slice(1)]) load(); });
+document.fonts.ready.then(() => renderGraph());
+load();
+</script>
+</body>
+</html>

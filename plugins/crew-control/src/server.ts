@@ -1,0 +1,168 @@
+// Server HTTP: validasi di batas (zod dari contract.ts), format galat seragam, SSE, hook claude.
+import fs from 'node:fs';
+import path from 'node:path';
+import Fastify, { type FastifyInstance, type FastifyReply } from 'fastify';
+import { z, type ZodType } from 'zod';
+import {
+  AnswerRequest, ApiError, Config, EmptyBody, FolderListing, Message, MODELS, OwnerMessageRequest, Run, RunDetail, RunList,
+  StartRunRequest, TERMINAL_STATUSES, type ModelId,
+} from './contract.js';
+import { HarnessError, type Harness } from './harness.js';
+import { browseFolder, listProjects, PathError, resolveProject } from './projects.js';
+import { isAllowedHost, isAllowedOrigin, isAllowedPeer, isLoopback } from './security.js';
+import type { Store } from './store.js';
+
+export interface AppOptions {
+  store: Store;
+  harness: Harness;
+  workRoot: string;
+  maxRuns: number;
+  defaultModel?: ModelId; // default 'sonnet'
+  allowedHosts?: string[];
+  allowedOrigins?: string[];
+  /** Folder berkas tampilan (index.html, app.js, lib.js). Tanpa ini, hanya API yang dilayani. */
+  webDir?: string;
+}
+
+const err = (reply: FastifyReply, status: number, code: string, message: string, details?: Record<string, unknown>) =>
+  reply.code(status).send({ error: { code, message, ...(details ? { details } : {}) } } satisfies ApiError);
+
+/** Respons divalidasi terhadap kontrak sebelum keluar. */
+const ok = <T>(reply: FastifyReply, schema: ZodType<T>, data: unknown, status = 200) => reply.code(status).send(schema.parse(data));
+
+function parse<T>(schema: ZodType<T>, data: unknown): T {
+  const r = schema.safeParse(data ?? {});
+  if (!r.success) {
+    throw new HarnessError('invalid_request', 'Permintaan tidak valid.', 400, {
+      issues: r.error.issues.map((i) => ({ path: i.path.join('.'), message: i.message })),
+    });
+  }
+  return r.data;
+}
+
+export function createApp(o: AppOptions): FastifyInstance {
+  const app = Fastify({ bodyLimit: 64 * 1024, logger: false });
+  const { store, harness } = o;
+
+  // ---- Lapisan keamanan (semua rute) ----
+  app.addHook('onRequest', async (req, reply) => {
+    reply.header('x-content-type-options', 'nosniff').header('cache-control', 'no-store');
+    if (!isAllowedPeer(req.socket.remoteAddress)) return err(reply, 403, 'forbidden_peer', 'Hanya localhost atau Tailscale.');
+    if (!isAllowedHost(req.headers.host, o.allowedHosts)) return err(reply, 403, 'forbidden_host', 'Host tidak diizinkan.');
+    if (req.headers['sec-fetch-site'] === 'cross-site') return err(reply, 403, 'forbidden_origin', 'Permintaan lintas situs ditolak.');
+    if (req.method !== 'GET' && req.method !== 'HEAD') {
+      const origin = req.headers.origin;
+      if (origin && !isAllowedOrigin(origin, req.headers.host, o.allowedOrigins)) return err(reply, 403, 'forbidden_origin', 'Origin tidak diizinkan.');
+      if (!String(req.headers['content-type'] ?? '').toLowerCase().startsWith('application/json')) {
+        return err(reply, 415, 'unsupported_media_type', 'Content-Type harus application/json (kirim {} bila tanpa isi).');
+      }
+    }
+  });
+
+  app.setErrorHandler((e: any, _req, reply) => {
+    if (e instanceof HarnessError) return err(reply, e.status, e.code, e.message, e.details);
+    if (e instanceof PathError) return err(reply, 400, e.code, e.message);
+    if (e instanceof z.ZodError) return err(reply, 500, 'internal_error', 'Galat internal.'); // respons gagal kontrak: bug server
+    if (e.statusCode && e.statusCode < 500) return err(reply, e.statusCode, 'invalid_request', 'Permintaan tidak valid.');
+    console.error(e); // detail hanya di log server, tidak ke klien
+    return err(reply, 500, 'internal_error', 'Galat internal.');
+  });
+  app.setNotFoundHandler((_req, reply) => err(reply, 404, 'not_found', 'Rute tidak ditemukan.'));
+
+  // ---- Berkas tampilan: hanya nama berkas di webDir (satu tingkat), tanpa path dari klien ----
+  if (o.webDir) {
+    const types: Record<string, string> = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8' };
+    const serve = (name: string, reply: FastifyReply) => {
+      const type = types[path.extname(name)];
+      if (!type || name !== path.basename(name) || !fs.existsSync(path.join(o.webDir!, name))) return err(reply, 404, 'not_found', 'Rute tidak ditemukan.');
+      return reply.type(type).send(fs.readFileSync(path.join(o.webDir!, name)));
+    };
+    app.get('/', async (_req, reply) => serve('index.html', reply));
+    app.get('/:file', async (req, reply) => serve((req.params as { file: string }).file, reply));
+  }
+
+  // ---- API ----
+  app.get('/api/health', async () => ({ ok: true }));
+
+  const defaultModel = o.defaultModel ?? 'sonnet';
+  app.get('/api/config', async (_req, reply) =>
+    ok(reply, Config, {
+      workRoot: o.workRoot, projects: listProjects(o.workRoot), models: MODELS, defaultModel, maxRuns: o.maxRuns, permissionMode: 'A3',
+    }));
+
+  // Jelajah bertahap: tanpa ?path = folder kerja. Path divalidasi seperti proyek (di dalam folder kerja, symlink diselesaikan).
+  app.get('/api/folders', async (req, reply) => {
+    const { path: p } = parse(z.object({ path: z.string().min(1).max(500).optional() }), req.query);
+    return ok(reply, FolderListing, browseFolder(o.workRoot, p));
+  });
+
+  app.post('/api/runs', async (req, reply) => {
+    const body = parse(StartRunRequest, req.body);
+    const projectDir = resolveProject(o.workRoot, body.project);
+    return ok(reply, Run, harness.startRun({ projectDir, prompt: body.prompt, model: body.model ?? defaultModel }), 201);
+  });
+
+  app.get('/api/runs', async (req, reply) => {
+    const { project } = parse(z.object({ project: z.string().max(500).optional() }), req.query);
+    return ok(reply, RunList, { runs: store.listRuns(project ? resolveProject(o.workRoot, project) : undefined) });
+  });
+
+  const runOr404 = (id: string) => {
+    const run = store.getRun(id);
+    if (!run) throw new HarnessError('not_found', 'Run tidak ditemukan.', 404);
+    return run;
+  };
+
+  app.get('/api/runs/:id', async (req, reply) => {
+    const run = runOr404((req.params as { id: string }).id);
+    return ok(reply, RunDetail, { run, messages: store.listMessages(run.id) });
+  });
+
+  app.post('/api/runs/:id/messages', async (req, reply) => {
+    const { text } = parse(OwnerMessageRequest, req.body);
+    const id = (req.params as { id: string }).id;
+    const run = store.getRun(id);
+    if (run && TERMINAL_STATUSES.includes(run.status)) resolveProject(o.workRoot, run.project); // folder harus masih sah sebelum sesi dilanjutkan
+    return ok(reply, Message, harness.sendMessage(id, text), 201);
+  });
+
+  app.post('/api/runs/:id/messages/:mid/answer', async (req, reply) => {
+    const p = req.params as { id: string; mid: string };
+    return ok(reply, Message, harness.answer(p.id, p.mid, parse(AnswerRequest, req.body)));
+  });
+
+  for (const action of ['pause', 'resume', 'stop'] as const) {
+    app.post(`/api/runs/:id/${action}`, async (req, reply) => {
+      parse(EmptyBody, req.body);
+      return ok(reply, Run, harness[action]((req.params as { id: string }).id));
+    });
+  }
+
+  // SSE: event berurutan (id = seq). Tanpa ?after memutar ulang dari awal; EventSource mengirim Last-Event-ID saat menyambung ulang.
+  app.get('/api/runs/:id/events', (req, reply) => {
+    const run = runOr404((req.params as { id: string }).id);
+    const q = parse(z.object({ after: z.coerce.number().int().min(0).optional() }), req.query);
+    const last = Number(req.headers['last-event-id']);
+    const after = q.after ?? (Number.isInteger(last) && last > 0 ? last : 0);
+    reply.hijack();
+    const res = reply.raw;
+    res.writeHead(200, {
+      'content-type': 'text/event-stream; charset=utf-8', 'cache-control': 'no-store', connection: 'keep-alive',
+      'x-content-type-options': 'nosniff', 'x-accel-buffering': 'no',
+    });
+    res.write(': terhubung\n\n');
+    const off = store.replayAndSubscribe(run.id, after, (e) => {
+      res.write(`id: ${e.seq}\nevent: ${e.type}\ndata: ${JSON.stringify(e.data)}\n\n`);
+    });
+    const beat = setInterval(() => res.write(': ping\n\n'), 15000);
+    req.raw.on('close', () => { clearInterval(beat); off(); });
+  });
+
+  // Hook claude (PreToolUse untuk Jeda). Hanya dari mesin ini; token acak per run ada di path.
+  app.post('/hook/:token', async (req, reply) => {
+    if (!isLoopback(req.socket.remoteAddress)) return err(reply, 403, 'forbidden_peer', 'Hook hanya dari localhost.');
+    return reply.send(await harness.hook((req.params as { token: string }).token, req.body));
+  });
+
+  return app;
+}

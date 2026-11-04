@@ -1,0 +1,62 @@
+/* Crew Control · Arah B "Peta jalur" · token (draft konsep-3) */
+:root {
+  /* Huruf */
+  --font-sans: "Overpass", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "Overpass Mono", "Cascadia Mono", Consolas, monospace;
+  --fs-12: 12px; --fs-13: 13px; --fs-14: 14px; --fs-16: 16px; --fs-18: 18px; --fs-28: 28px;
+  --fw-regular: 400; --fw-semibold: 600; --fw-bold: 700;
+  --lh-body: 1.45; --lh-chat: 1.55; --lh-title: 1.2;
+
+  /* Spasi */
+  --sp-4: 4px; --sp-8: 8px; --sp-12: 12px; --sp-16: 16px; --sp-24: 24px; --sp-32: 32px; --sp-48: 48px;
+  --row-agent: 36px; --topbar-h: 56px; --rail-w: 56px; --col-agent: 248px; --col-agent-narrow: 64px; --col-chat: 376px;
+  --map-station-gap: 96px; --map-track-gap: 56px;
+
+  /* Bentuk */
+  --radius-s: 4px; --radius-m: 8px; --radius-round: 999px;
+  --line-w: 1px; --track-w: 3px; --track-live: 4px; --ring-w: 3px; --station: 16px; --dot: 12px; --train: 6px; --focus-w: 2px;
+  --shadow-pop: 0 10px 28px rgb(20 26 33 / .14), 0 1px 2px rgb(20 26 33 / .08);
+
+  /* Gerak */
+  --dur-fast: 120ms; --dur-base: 200ms; --dur-layout: 300ms; --ease-out: cubic-bezier(.2,.8,.2,1);
+  --dur-train: 1600ms;
+
+  /* Warna, terang */
+  --bg: #F1F3F5; --surface: #FFFFFF; --sunk: #E6EAEE; --line: #D6DCE2; --edge: #7D8894;
+  --text: #141A21; --text-2: #46515D; --text-3: #5A6571;
+  --ink: #141A21; --on-ink: #FFFFFF;
+  --run: #1F5BD1; --run-soft: #E2EAFB;
+  --ask: #AD3A0A; --ask-soft: #FDE7DB;
+  --bad: #A3122A; --bad-soft: #FBE3E7;
+  --focus: var(--ink);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #171B21; --surface: #1E232A; --sunk: #13171C; --line: #2E353E; --edge: #6F7A86;
+    --text: #EEF1F4; --text-2: #B9C1CA; --text-3: #98A2AD;
+    --ink: #EEF1F4; --on-ink: #171B21;
+    --run: #7AA7FF; --run-soft: #1B2A45;
+    --ask: #FF9A62; --ask-soft: #3D2216;
+    --bad: #FF8A9A; --bad-soft: #3D1A22;
+    --shadow-pop: 0 10px 28px rgb(0 0 0 / .45), 0 1px 2px rgb(0 0 0 / .3);
+  }
+}
+/* Tambahan HP (layar proyek 375) */
+:root { --tap: 44px; --seg-thin: 2px; --measure-chat: 680px; }
+
+:root[data-theme="dark"] {
+  --bg: #171B21; --surface: #1E232A; --sunk: #13171C; --line: #2E353E; --edge: #6F7A86;
+  --text: #EEF1F4; --text-2: #B9C1CA; --text-3: #98A2AD;
+  --ink: #EEF1F4; --on-ink: #171B21;
+  --run: #7AA7FF; --run-soft: #1B2A45;
+  --ask: #FF9A62; --ask-soft: #3D2216;
+  --bad: #FF8A9A; --bad-soft: #3D1A22;
+  --shadow-pop: 0 10px 28px rgb(0 0 0 / .45), 0 1px 2px rgb(0 0 0 / .3);
+}
+
+/* Daftar proyek (c): tambahan 2026-11-04 */
+:root {
+  --row-proj: 72px; --row-proj-quiet: 44px; --pip: 6px; --tabbar-h: 56px; /* --tap memakai blok HP di atas */
+  --col-proj-state: 216px; --col-proj-track: 236px; --col-proj-run: 168px; --col-proj-time: 88px; --col-proj-act: 132px;
+}

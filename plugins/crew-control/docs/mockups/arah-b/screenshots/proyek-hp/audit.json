@@ -1,0 +1,178 @@
+[
+  {
+    "viewport": {
+      "w": 375,
+      "h": 812
+    },
+    "counts": {
+      "high": 0,
+      "medium": 0,
+      "low": 2
+    },
+    "stats": {
+      "ukuranHuruf": [
+        12,
+        13,
+        14,
+        16,
+        18
+      ],
+      "keluargaHuruf": [
+        "Overpass",
+        "Overpass Mono"
+      ],
+      "nilaiSpasi": 6,
+      "spasiDiLuarSkalaPersen": 0,
+      "radius": [
+        4,
+        8
+      ],
+      "bayangan": 0,
+      "warnaTeks": 6,
+      "tombolSolidDiLayarPertama": 2,
+      "elemenTerkuat": [
+        "h3#ask-q \"Kartu bukti yang tidak punya\"",
+        "h1 \"toconnect\"",
+        "h2.vh \"Chat\""
+      ],
+      "tepiKiriTerbanyak": [
+        "40px(14)",
+        "16px(6)",
+        "34px(5)",
+        "0px(2)",
+        "62px(2)",
+        "256px(2)"
+      ],
+      "jumlahGambar": 0,
+      "kataJudulTerpanjang": 8,
+      "jumlahSvg": 10,
+      "warnaAksen": 2,
+      "grupKartuSeragam": 3,
+      "jumlahKartuSeragam": 37,
+      "kandidatFokus": [
+        "h3#ask-q \"Kartu bukti yang tidak punya\"",
+        "h1 \"toconnect\""
+      ],
+      "blokWarnaJenuhLayarPertamaPersen": 0,
+      "token": {
+        "aktif": true,
+        "warnaDiLuar": 0,
+        "radiusDiLuar": 0,
+        "hurufDiLuar": 0,
+        "fontDiLuar": 0
+      }
+    },
+    "issues": [
+      {
+        "sev": "low",
+        "rule": "kartu-seragam",
+        "detail": "3 grup kartu identik (37 kartu); pastikan ada hierarki, bukan template (antislop-ui: Copy-Paste Feature Cards)"
+      },
+      {
+        "sev": "low",
+        "rule": "titik-fokus",
+        "detail": "dua kandidat fokus hampir sama kuat di layar pertama: h3#ask-q \"Kartu bukti yang tidak punya\" vs h1 \"toconnect\""
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    },
+    "counts": {
+      "high": 0,
+      "medium": 0,
+      "low": 6
+    },
+    "stats": {
+      "ukuranHuruf": [
+        12,
+        13,
+        14,
+        16,
+        18
+      ],
+      "keluargaHuruf": [
+        "Overpass",
+        "Overpass Mono"
+      ],
+      "nilaiSpasi": 6,
+      "spasiDiLuarSkalaPersen": 0,
+      "radius": [
+        4,
+        8
+      ],
+      "bayangan": 0,
+      "warnaTeks": 6,
+      "tombolSolidDiLayarPertama": 3,
+      "elemenTerkuat": [
+        "h3#ask-q \"Kartu bukti yang tidak punya\"",
+        "h1 \"toconnect\"",
+        "h2.vh \"Chat\""
+      ],
+      "tepiKiriTerbanyak": [
+        "96px(15)",
+        "1100px(5)",
+        "246px(4)",
+        "1082px(4)",
+        "262px(3)",
+        "576px(3)"
+      ],
+      "jumlahGambar": 0,
+      "kataJudulTerpanjang": 8,
+      "jumlahSvg": 10,
+      "warnaAksen": 2,
+      "grupKartuSeragam": 2,
+      "jumlahKartuSeragam": 27,
+      "kandidatFokus": [
+        "h3#ask-q \"Kartu bukti yang tidak punya\"",
+        "h1 \"toconnect\""
+      ],
+      "blokWarnaJenuhLayarPertamaPersen": 0,
+      "token": {
+        "aktif": true,
+        "warnaDiLuar": 0,
+        "radiusDiLuar": 0,
+        "hurufDiLuar": 0,
+        "fontDiLuar": 0
+      }
+    },
+    "issues": [
+      {
+        "sev": "low",
+        "rule": "copy-ulang",
+        "detail": "kalimat yang sama muncul dua kali: \"Bash npm test -- runs\"",
+        "at": "code \"Bash npm test -- runs\""
+      },
+      {
+        "sev": "low",
+        "rule": "copy-tombol",
+        "detail": "tombol 6 kata (ideal 1-3): \"ui-designerButuh kamu Pertanyaan menunggu di Chat\"",
+        "at": "button.agent \"ui-designerButuh kamu Pertan\""
+      },
+      {
+        "sev": "low",
+        "rule": "copy-tombol",
+        "detail": "tombol 6 kata (ideal 1-3): \"feJalan putaran 3 Kerangka layar Riwayat\"",
+        "at": "button.agent \"feJalan putaran 3 Kerangka l\""
+      },
+      {
+        "sev": "low",
+        "rule": "copy-tombol",
+        "detail": "tombol 6 kata (ideal 1-3): \"beJalan putaran 2 Paginasi daftar run\"",
+        "at": "button.agent \"beJalan putaran 2 Paginasi d\""
+      },
+      {
+        "sev": "low",
+        "rule": "kartu-seragam",
+        "detail": "2 grup kartu identik (27 kartu); pastikan ada hierarki, bukan template (antislop-ui: Copy-Paste Feature Cards)"
+      },
+      {
+        "sev": "low",
+        "rule": "titik-fokus",
+        "detail": "dua kandidat fokus hampir sama kuat di layar pertama: h3#ask-q \"Kartu bukti yang tidak punya\" vs h1 \"toconnect\""
+      }
+    ]
+  }
+]

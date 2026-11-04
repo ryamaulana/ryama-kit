@@ -1,0 +1,56 @@
+/* Crew Control · Arah A "Meja percakapan" · token (draft konsep-3) */
+:root {
+  /* Huruf */
+  --font-sans: "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "Commit Mono", "Cascadia Mono", Consolas, monospace;
+  --fs-12: 12px; --fs-13: 13px; --fs-14: 14px; --fs-16: 16px; --fs-20: 20px; --fs-24: 24px;
+  --fw-regular: 400; --fw-semibold: 600; --fw-bold: 700;
+  --lh-body: 1.5; --lh-chat: 1.6; --lh-title: 1.25;
+
+  /* Spasi */
+  --sp-4: 4px; --sp-8: 8px; --sp-12: 12px; --sp-16: 16px; --sp-24: 24px; --sp-32: 32px; --sp-48: 48px;
+  --row-agent: 40px; --topbar-h: 48px; --rail-w: 56px; --col-agent: 208px; --col-chat: 440px;
+  --ctl-h: 32px; --ctl-h-l: 40px; --node-h: 32px; --icon: 20px; --icon-s: 16px; --seg-h: 4px;
+
+  /* Bentuk */
+  --radius-s: 8px; --radius-m: 14px; --radius-l: 20px;
+  --line-w: 1px; --edge-w: 1.5px; --edge-active-w: 2px; --lamp: 8px; --focus-w: 2px;
+  --shadow-pop: 0 8px 24px rgb(36 33 28 / .12), 0 1px 2px rgb(36 33 28 / .08);
+  --shadow-lift: 0 -4px 16px rgb(36 33 28 / .08);
+
+  /* Gerak */
+  --dur-fast: 120ms; --dur-base: 200ms; --dur-layout: 300ms; --ease-out: cubic-bezier(.2,.8,.2,1);
+  --dur-flow: 1200ms;
+
+  /* Warna, terang */
+  --bg: #F5F2EC; --surface: #FFFDF9; --sunk: #ECE7DE; --line: #E0D9CD; --edge: #8F8778;
+  --text: #24211C; --text-2: #57514A; --text-3: #6A6358;
+  --ink: #24211C; --on-ink: #FFFDF9;
+  --run: #2D7549; --run-soft: #E1EEE3;
+  --ask: #9A4D06; --ask-mark: #C46A0A; --ask-soft: #FBEAD3;
+  --bad: #B0281F; --bad-soft: #F8E0DC;
+  --focus: var(--ink);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1C1A17; --surface: #24211D; --sunk: #161412; --line: #37332D; --edge: #7C7568;
+    --text: #F2EDE4; --text-2: #C9C1B4; --text-3: #A9A193;
+    --ink: #F2EDE4; --on-ink: #1C1A17;
+    --run: #7CC696; --run-soft: #1E3325;
+    --ask: #F2AA55; --ask-mark: #F2AA55; --ask-soft: #3B2B15;
+    --bad: #F2918A; --bad-soft: #3E1F1C;
+    --shadow-pop: 0 8px 24px rgb(0 0 0 / .4), 0 1px 2px rgb(0 0 0 / .3);
+    --shadow-lift: 0 -4px 16px rgb(0 0 0 / .35);
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #1C1A17; --surface: #24211D; --sunk: #161412; --line: #37332D; --edge: #7C7568;
+  --text: #F2EDE4; --text-2: #C9C1B4; --text-3: #A9A193;
+  --ink: #F2EDE4; --on-ink: #1C1A17;
+  --run: #7CC696; --run-soft: #1E3325;
+  --ask: #F2AA55; --ask-mark: #F2AA55; --ask-soft: #3B2B15;
+  --bad: #F2918A; --bad-soft: #3E1F1C;
+  --shadow-pop: 0 8px 24px rgb(0 0 0 / .4), 0 1px 2px rgb(0 0 0 / .3);
+  --shadow-lift: 0 -4px 16px rgb(0 0 0 / .35);
+}

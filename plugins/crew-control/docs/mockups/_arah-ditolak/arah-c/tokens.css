@@ -1,0 +1,50 @@
+/* Crew Control · Arah C "Daftar yang bicara" · token (draft konsep-3) */
+:root {
+  /* Huruf */
+  --font-sans: "Atkinson Hyperlegible Next", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "Atkinson Hyperlegible Mono", "Cascadia Mono", Consolas, monospace;
+  --fs-12: 12px; --fs-13: 13px; --fs-14: 14px; --fs-16: 16px; --fs-18: 18px; --fs-22: 22px;
+  --fw-regular: 400; --fw-bold: 700;
+  --lh-body: 1.45; --lh-chat: 1.55; --lh-title: 1.2;
+
+  /* Spasi */
+  --sp-4: 4px; --sp-8: 8px; --sp-12: 12px; --sp-16: 16px; --sp-24: 24px; --sp-32: 32px;
+  --row-idle: 32px; --row-active: 52px; --topbar-h: 44px; --rail-w: 48px; --col-agent: 288px; --col-chat: 400px;
+  --progress-w: 96px; --progress-h: 2px; --ctl-h: 28px; --rail-btn: 32px;
+
+  /* Bentuk */
+  --radius-s: 2px; --radius-m: 6px;
+  --line-w: 1px; --edge-w: 1px; --edge-active-w: 2px; --dot: 8px; --select-w: 2px; --focus-w: 2px;
+  --shadow-pop: 0 8px 24px rgb(17 17 16 / .12), 0 1px 2px rgb(17 17 16 / .08);
+
+  /* Gerak */
+  --dur-fast: 120ms; --dur-base: 200ms; --dur-reorder: 250ms; --ease-out: cubic-bezier(.2,.8,.2,1);
+  --dur-flow: 1200ms;
+
+  /* Warna, terang */
+  --bg: #FAFAF8; --surface: #FFFFFF; --sunk: #F1F1EE; --line: #E6E6E2; --edge: #8A8A85;
+  --text: #111110; --text-2: #4F4F4B; --text-3: #6A6A65;
+  --ink: #111110; --on-ink: #FFFFFF;
+  --ask: #1F4FD1; --ask-soft: #E6EDFC;
+  --bad: #B42318; --bad-soft: #FBE4E1;
+  --focus: var(--ink);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #19191A; --surface: #202022; --sunk: #141415; --line: #333336; --edge: #77777C;
+    --text: #F3F3F1; --text-2: #BDBDB8; --text-3: #9C9C97;
+    --ink: #F3F3F1; --on-ink: #19191A;
+    --ask: #8FB0FF; --ask-soft: #1C2745;
+    --bad: #FF8F85; --bad-soft: #3A1C1A;
+    --shadow-pop: 0 8px 24px rgb(0 0 0 / .45), 0 1px 2px rgb(0 0 0 / .3);
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #19191A; --surface: #202022; --sunk: #141415; --line: #333336; --edge: #77777C;
+  --text: #F3F3F1; --text-2: #BDBDB8; --text-3: #9C9C97;
+  --ink: #F3F3F1; --on-ink: #19191A;
+  --ask: #8FB0FF; --ask-soft: #1C2745;
+  --bad: #FF8F85; --bad-soft: #3A1C1A;
+  --shadow-pop: 0 8px 24px rgb(0 0 0 / .45), 0 1px 2px rgb(0 0 0 / .3);
+}
