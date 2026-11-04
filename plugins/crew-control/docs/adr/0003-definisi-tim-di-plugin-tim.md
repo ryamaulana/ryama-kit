@@ -1,0 +1,3 @@
+# Definisi tim dibaca dari `crew/team.json` di plugin tim
+
+Agar tim lain cukup menambah definisi tanpa mengubah dashboard (F1), tiap plugin tim menyediakan `crew/team.json` (alur, perintah dengan template, lokasi backlog dan skripnya, jenis milestone, kontrak bukti), sedangkan daftar agent tetap dibaca dari frontmatter `agents/*.md` yang sudah ada. Alternatif yang ditolak: menyimpulkan alur dari isi agent dan perintah (rapuh, tidak bisa divalidasi) atau menaruh definisi tim di dashboard (melanggar F1). Format ini menjadi kontrak antar-plugin berversi (`schema`), jadi perubahan berikutnya harus tetap membaca versi lama.

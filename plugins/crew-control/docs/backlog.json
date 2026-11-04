@@ -1,0 +1,2805 @@
+{
+  "version": 1,
+  "project": "Crew Control",
+  "items": [
+    {
+      "status": "todo",
+      "needs": [],
+      "criteria": [],
+      "context": [
+        "docs/ARCHITECTURE.md#11. Kontrak bersama",
+        "docs/ARCHITECTURE.md#3. Struktur folder",
+        "docs/ARCHITECTURE.md#2. Modul dan seam"
+      ],
+      "id": "f01-contract-pindah",
+      "title": "Kontrak data dan Harness/Store dipindah ke folder modul tanpa mengubah perilaku (mekanis)",
+      "type": "be",
+      "agent": "be",
+      "slice": "fondasi",
+      "value": "high",
+      "size": "m",
+      "done": "src/contract.ts menjadi src/contract/ (index.ts + common, runs, messages, errors) dengan impor lama tetap jalan; npm test: 50 tes lulus; npm run typecheck bersih. | src/harness/ (index, session, stream, limits) dan src/store/ (index, migrations, queries) menggantikan harness.ts dan store.ts; 50 tes lulus tanpa diubah selain path impor; typecheck bersih.",
+      "notes": "Digabung dari: f02-harness-store-pecah."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "f01-contract-pindah"
+      ],
+      "criteria": [
+        "F1",
+        "F8"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#4.1 Definisi tim",
+        "docs/ARCHITECTURE.md#4.3 Kontrak bukti",
+        "docs/ARCHITECTURE.md#6.1 Aturan umum",
+        "docs/ARCHITECTURE.md#6.3 Event SSE per run",
+        "docs/ARCHITECTURE.md#11. Kontrak bersama"
+      ],
+      "id": "f03a-skema-kontrak-inti",
+      "title": "Skema kontrak: umum, galat, tim, bukti, run, pesan",
+      "type": "be",
+      "agent": "be",
+      "slice": "fondasi",
+      "value": "high",
+      "size": "m",
+      "done": "src/contract/ memuat zod untuk common (MODELS, STATUS_LABEL, countTokens = input+output+cache tulis), errors (semua kode bagian 6.1), teams (TeamManifest, TeamSummary, Team), evidence (EvidenceManifest), runs, messages; tes node:test mem-parse contoh JSON ARCHITECTURE 4.1 dan 4.3 dan menolak field ekstra; typecheck bersih."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "f03a-skema-kontrak-inti"
+      ],
+      "criteria": [],
+      "context": [
+        "docs/ARCHITECTURE.md#6.2 Endpoint",
+        "docs/ARCHITECTURE.md#6.3 Event SSE per run",
+        "docs/ARCHITECTURE.md#11. Kontrak bersama"
+      ],
+      "id": "f03b-skema-kontrak-sisanya",
+      "title": "Skema kontrak: proyek, review, kesehatan kit, push, hook",
+      "type": "be",
+      "agent": "be",
+      "slice": "fondasi",
+      "value": "high",
+      "size": "m",
+      "done": "src/contract/ memuat projects, review, kit-health, push, hooks sesuai kolom Request/Response bagian 6.2; tes parse contoh valid dan tolak field ekstra; typecheck bersih."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "f01-contract-pindah"
+      ],
+      "criteria": [],
+      "context": [
+        "docs/ARCHITECTURE.md#1. Stack",
+        "docs/ARCHITECTURE.md#3. Struktur folder",
+        "docs/ARCHITECTURE.md#12. Menjalankan lokal"
+      ],
+      "id": "f04-vite-boilerplate",
+      "title": "Kerangka aplikasi tampilan: Vite, React, alias kontrak, server melayani hasil build",
+      "type": "fe",
+      "agent": "fe",
+      "slice": "fondasi",
+      "value": "high",
+      "size": "m",
+      "notes": "Boilerplate (Run locally, ARCHITECTURE 12). Web lama (web/index.html, app.js, lib.js) tetap dilayani sampai item hapus-web-lama.",
+      "done": "package.json memuat dependensi bagian 1 (dipin) dan skrip dev, build, start, typecheck, test; web/vite.config.ts dengan alias @contract dan proxy /api /hook ke 4780; web/src/main.tsx menampilkan halaman React kosong; @fastify/static melayani web/dist (tanpa daftar isi folder dan dotfile) di samping web lama; .env.example tanpa rahasia; npm run build sukses dan npm start melayani http://127.0.0.1:4780; npm audit dicatat; 50 tes lulus."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "f01-contract-pindah",
+        "f03a-skema-kontrak-inti"
+      ],
+      "criteria": [
+        "F2",
+        "F3"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#5. Data model",
+        "docs/ARCHITECTURE.md#2. Modul dan seam"
+      ],
+      "id": "f05-store-v2-inti",
+      "title": "Penyimpanan v2 (1/2): proyek, run, sesi, milestone, batch, item",
+      "type": "be",
+      "agent": "be",
+      "slice": "fondasi",
+      "value": "high",
+      "size": "m",
+      "done": "Migrasi user_version 2 menambah tabel projects, sessions, milestones, batches, items dan kolom baru runs; basis data v1 (2 run uji) tetap terbaca dengan nilai bawaan (tes memakai berkas v1); batasan unik dan indeks sesuai bagian 5; npm test hijau. Tanpa pemangkasan: tidak ada kode DELETE/prune/batas jumlah pada runs, sessions, messages, events (listRuns hanya membatasi bacaan, bukan simpanan); kolom json menyimpan objek penuh; tes: 300 run tetap tersimpan semua."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "f05-store-v2-inti"
+      ],
+      "criteria": [],
+      "context": [
+        "docs/ARCHITECTURE.md#5. Data model",
+        "docs/ARCHITECTURE.md#2. Modul dan seam"
+      ],
+      "id": "f06-store-v2-sisanya",
+      "title": "Penyimpanan v2 (2/2): bukti, pesan, aktivitas agent, aturan izin, push, notifikasi, pengaturan",
+      "type": "be",
+      "agent": "be",
+      "slice": "fondasi",
+      "value": "high",
+      "size": "m",
+      "done": "Tabel evidence, agent_activity, permission_rules, push_subscriptions, notifications, settings dan kolom messages baru; Store.subscribeAll(fn) memancarkan semua event run; tes simpan/baca tiap entitas dan subscribeAll; npm test hijau. Event menyimpan payload penuh tanpa dipangkas (langkah alat dengan masukan/hasil, status, izin); tabel metrik kesehatan kit tidak perlu, dihitung dari data ini."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "f03a-skema-kontrak-inti",
+        "f08-kit-backlog-milestone"
+      ],
+      "criteria": [
+        "F1",
+        "F3"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#4.1 Definisi tim",
+        "docs/ARCHITECTURE.md#4.2 Perubahan kit tim Fullstack",
+        "docs/PRD.md#F3. Batch dan milestone otomatis"
+      ],
+      "id": "f07-kit-team-json",
+      "title": "Kit Fullstack: crew/team.json dan agent backlog mengusulkan milestone",
+      "type": "be",
+      "agent": "be",
+      "slice": "fondasi",
+      "value": "high",
+      "size": "m",
+      "notes": "Berkas: plugins/fullstack-dev/crew/team.json (di luar folder crew-control). Digabung dari: f09-kit-agent-backlog-milestone.",
+      "done": "plugins/fullstack-dev/crew/team.json valid menurut TeamManifest (tes memuat dan mem-parse berkas itu); semua id flow ada di agents/*.md kit; tiga perintah (ide, backlog, bebas), milestoneKinds, rujukan kontrak bukti. | plugins/fullstack-dev/agents/backlog.md memuat aturan: usulkan milestones per scope (jenis dari milestoneKinds), isi milestone tiap item, tandai item tambahan di tengah milestone dengan origin ditambah; diff terhadap versi lama ditampilkan."
+    },
+    {
+      "status": "todo",
+      "needs": [],
+      "criteria": [
+        "F3"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#4.2 Perubahan kit tim Fullstack",
+        "C:/Users/ryama/.claude/skills/backlog/SKILL.md"
+      ],
+      "id": "f08-kit-backlog-milestone",
+      "title": "Skrip backlog: milestone, asal item, perbaikan",
+      "type": "be",
+      "agent": "be",
+      "slice": "fondasi",
+      "value": "high",
+      "size": "m",
+      "notes": "Skrip: ~/.claude/skills/backlog/backlog.js (sinkronkan salinan di kit bila ada). Harus kompatibel dengan backlog lama.",
+      "done": "backlog.js mendukung field item milestone, origin (asli|perbaikan|ditambah), fixOf; larik milestones [{id,name,kind}] di akar; next/ready --milestone <id>; add --milestone --origin --fix-of; validate memeriksa milestone ada; backlog lama tanpa field baru tetap valid (tes dengan backlog lama dan baru; keluaran perintah ditampilkan)."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "f08-kit-backlog-milestone"
+      ],
+      "criteria": [
+        "F3"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#4.2 Perubahan kit tim Fullstack",
+        "docs/ARCHITECTURE.md#14. Asumsi teknis (T4)",
+        "docs/ARCHITECTURE.md#7. Alur kunci"
+      ],
+      "id": "f10-kit-run-crew",
+      "title": "Kit Fullstack: /fullstack-dev:run mode --crew",
+      "type": "be",
+      "agent": "be",
+      "slice": "fondasi",
+      "value": "high",
+      "size": "m",
+      "notes": "Berkas: plugins/fullstack-dev/commands/run.md.",
+      "done": "run.md menerima --crew dan --milestone <id>: melewati item checkpoint, tanpa pertanyaan commit, tanpa saran /clear, laporan akhir tetap; tanpa flag perilaku lama tidak berubah; ringkasan diff run.md ditampilkan."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "f03a-skema-kontrak-inti"
+      ],
+      "criteria": [
+        "F8"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#4.3 Kontrak bukti",
+        "docs/PRD.md#F8. Kontrak bukti untuk tim"
+      ],
+      "id": "f11-kit-kontrak-bukti",
+      "title": "Kit Fullstack: skill kontrak-bukti untuk semua agent",
+      "type": "be",
+      "agent": "be",
+      "slice": "fondasi",
+      "value": "high",
+      "size": "m",
+      "done": "plugins/fullstack-dev/skills/kontrak-bukti/SKILL.md berisi format bukti.json, lokasi docs/bukti/<item>/, jenis per pekerjaan (UI, backend: diagram DB atau alur + tes, stress: grafik, keamanan: ringkasan, tanpa visual: sebelum/sesudah + tes); agent fe, be, ui-designer, qa, cyber dan team.json merujuknya; keluaran grep rujukan ditampilkan."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "f01-contract-pindah"
+      ],
+      "criteria": [],
+      "context": [
+        "docs/ARCHITECTURE.md#14. Asumsi teknis",
+        "docs/ARCHITECTURE.md#7. Alur kunci",
+        "docs/SPIKE.md"
+      ],
+      "id": "f12-spike-asumsi",
+      "title": "Cek asumsi T1 dan T2 dengan claude asli",
+      "type": "be",
+      "agent": "be",
+      "slice": "fondasi",
+      "value": "high",
+      "size": "m",
+      "model": "opus",
+      "notes": "Spike berisiko: sedikit kuota; pakai model haiku dan prompt pendek.",
+      "done": "Tertulis di docs/SPIKE.md (bagian \"Cek T1/T2\"): (T1) apakah stream-json memuat langkah subagent dengan parent_tool_use_id, potongan keluaran nyata disimpan di test/fixtures/stream/; bila tidak, aturan turunan dari tool_use Task; (T2) apakah claude --session-id <uuid> diterima dan id muncul di event init; keputusan cadangan bila gagal."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "f05-store-v2-inti"
+      ],
+      "criteria": [
+        "F5",
+        "F2"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#5. Data model",
+        "docs/PRD.md#F5. Chat: pertanyaan",
+        "izin",
+        "dan pesan ke orkestrator"
+      ],
+      "id": "f14-ketat-resume",
+      "title": "Pengetatan: ketik-lanjut hanya untuk run terakhir Selesai; restart tidak mengubah run tanpa sesi",
+      "type": "be",
+      "agent": "be",
+      "slice": "fondasi",
+      "value": "high",
+      "size": "m",
+      "done": "POST pesan ke run yang bukan run terakhir proyek atau berstatus failed/stopped/disconnected ditolak run_read_only (details.latestRunId); hanya run terakhir berstatus done yang dilanjutkan; tes batas tiap status; npm test hijau. | markDisconnected hanya mengubah run yang punya proses; limit_paused, ready_review, needs_owner tanpa sesi tetap utuh setelah restart (tes: simpan, buat Store baru, cek status); npm test hijau.",
+      "notes": "Digabung dari: f15-ketat-disconnected."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "f04-vite-boilerplate"
+      ],
+      "criteria": [
+        "F13"
+      ],
+      "context": [
+        "docs/UX.md#3. Penggolongan layar",
+        "docs/DESIGN.md#Dial per jenis area",
+        "docs/UX.md#4. Peta layar dan navigasi",
+        "docs/DESIGN.md#Warna (peran",
+        "terang / gelap)",
+        "docs/DESIGN.md#Tipografi",
+        "docs/DESIGN.md#Komponen inti",
+        "docs/design-tokens.css",
+        "docs/mockups/arah-b/layar-proyek.html",
+        "docs/ARCHITECTURE.md#3. Struktur folder (Penempatan komponen)"
+      ],
+      "id": "f16-ui-kerangka",
+      "title": "Kerangka halaman: rel navigasi, token desain, gaya dasar, tema terang/gelap",
+      "type": "ui",
+      "agent": "ui-designer",
+      "slice": "fondasi",
+      "value": "high",
+      "size": "m",
+      "screen": "Kerangka (NavRail)",
+      "notes": "Data contoh, bukan API. Komponen ke web/src/ui/, satu baris di docs/KOMPONEN.md.",
+      "done": "web/src/ui/styles (tokens.css impor docs/design-tokens.css, base.css), font Overpass lokal, NavRail (Run baru, Proyek + lencana, Riwayat, Kesehatan kit, Pengaturan), kerangka halaman; terang dan gelap; screenshot 1440 dan 900 di docs/bukti/f16-ui-kerangka/ dengan bukti.json; audit ui-craft --lang id lulus. Riwayat dan Kesehatan kit tetap tampil di rel navigasi dengan tanda \"segera\" (tidak disembunyikan, tidak bisa dibuka); catat di docs/KOMPONEN.md."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "f04-vite-boilerplate",
+        "f16-ui-kerangka",
+        "f03a-skema-kontrak-inti"
+      ],
+      "criteria": [
+        "F13"
+      ],
+      "context": [
+        "docs/UX.md#4. Peta layar dan navigasi",
+        "docs/ARCHITECTURE.md#3. Struktur folder",
+        "docs/ARCHITECTURE.md#6.1 Aturan umum"
+      ],
+      "id": "f17-fe-kerangka",
+      "title": "Kerangka aplikasi: rute, klien API, tema",
+      "type": "fe",
+      "agent": "fe",
+      "slice": "fondasi",
+      "value": "high",
+      "size": "m",
+      "done": "web/src/app/routes.tsx memuat semua rute UX bagian 4 (halaman kosong bertanda), api.ts (fetch + ApiError dari kontrak), QueryClient, useSettings dengan tema (ikut sistem pada kunjungan pertama, pilihan diingat di localStorage); NavRail tersambung; tes lib murni; typecheck dan npm run build bersih. Rute /riwayat dan /kesehatan-kit memuat halaman \"Segera hadir (fase 2)\"; tanda \"segera\" di rel tersambung; tes lib untuk penandanya."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "f16-ui-kerangka"
+      ],
+      "criteria": [],
+      "context": [
+        "docs/UX.md#3. Penggolongan layar",
+        "docs/DESIGN.md#Dial per jenis area",
+        "docs/bukti/f16-ui-kerangka/bukti.json",
+        "docs/DESIGN.md#Larangan khusus"
+      ],
+      "id": "f18-critic-kerangka",
+      "title": "Kritik kerangka halaman dan rel navigasi",
+      "type": "review",
+      "agent": "ui-critic",
+      "size": "s",
+      "done": "Laporan kritik terstruktur dengan nilai; temuan blocker ditutup lewat jalur cepat atau dicatat sebagai item.",
+      "slice": "fondasi",
+      "value": "high",
+      "screen": "Kerangka (NavRail)"
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "f04-vite-boilerplate",
+        "f03b-skema-kontrak-sisanya"
+      ],
+      "criteria": [
+        "F11"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#6.1 Aturan umum",
+        "docs/ARCHITECTURE.md#10. Threat model",
+        "docs/ARCHITECTURE.md#9. Permukaan keamanan [SEC]"
+      ],
+      "id": "sc01-jaringan",
+      "title": "Keamanan jaringan: pengguna Tailscale, CSP, batas laju",
+      "type": "be",
+      "agent": "be",
+      "slice": "fondasi",
+      "value": "high",
+      "size": "s",
+      "done": "src/security.ts: CREW_TAILSCALE_USERS memaksa header Tailscale-User-Login untuk Host *.ts.net (403 forbidden_user); CSP bagian 10 pada respons berkas tampilan; batas 60 permintaan pengubah per menit per alamat (429 rate_limited); SSE replay maks 5000 event; tes tiap aturan; npm test hijau."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "f03a-skema-kontrak-inti",
+        "f01-contract-pindah",
+        "f07-kit-team-json"
+      ],
+      "criteria": [
+        "F1"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#4.1 Definisi tim",
+        "docs/ARCHITECTURE.md#2. Modul dan seam",
+        "docs/ARCHITECTURE.md#6.2 Endpoint"
+      ],
+      "id": "rb01-katalog-tim",
+      "title": "Server membaca definisi tim dan menawarkan perintahnya",
+      "type": "be",
+      "agent": "be",
+      "slice": "run-baru",
+      "value": "high",
+      "size": "m",
+      "done": "src/teams/ (catalog, agent-md), GET /api/config (teams, perintah, model, defaultBatchSize) dan GET /api/teams/:id; tim fixture test/fixtures/teams dengan satu agent tiruan muncul tanpa mengubah kode (AC F1 kedua); agent baru di folder tim muncul tanpa ubah kode; definisi rusak tampil valid:false + file dan bagian, tim lain tak terpengaruh; template hanya placeholder dikenal; tes semuanya."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "f05-store-v2-inti",
+        "f03b-skema-kontrak-sisanya"
+      ],
+      "criteria": [
+        "F2"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#6.2 Endpoint",
+        "docs/ARCHITECTURE.md#2. Modul dan seam",
+        "docs/PRD.md#F2. Run dijalankan dashboard (harness)"
+      ],
+      "id": "rb02-folder-proyek",
+      "title": "Jelajah dan buat folder proyek di bawah folder kerja",
+      "type": "be",
+      "agent": "be",
+      "slice": "run-baru",
+      "value": "high",
+      "size": "m",
+      "done": "projects.ts: createFolder (validasi nama bagian 6.2, git init) dan projectId (12 hex sha1 projectKey); GET /api/folders memuat activeRunId dan project {id,lastCommandId,hasOpenBacklog,activeRunId}; POST /api/folders; tes: 3 tingkat dapat dibuka, .. dan symlink keluar ditolak, batas 500, folder_exists, nama terlarang Windows; npm test hijau."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "f01-contract-pindah",
+        "f05-store-v2-inti",
+        "f14-ketat-resume",
+        "f12-spike-asumsi",
+        "rb01-katalog-tim"
+      ],
+      "criteria": [
+        "F2"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#2. Modul dan seam",
+        "docs/ARCHITECTURE.md#5. Data model",
+        "docs/ARCHITECTURE.md#7. Alur kunci"
+      ],
+      "id": "rb03a-conductor-inti",
+      "title": "Pengatur run: mesin status, satu run aktif per proyek, kapasitas",
+      "type": "be",
+      "agent": "be",
+      "slice": "run-baru",
+      "value": "high",
+      "size": "m",
+      "model": "opus",
+      "done": "src/conductor/ (index, status): mesin status run dengan prioritas tampilan paused > needs_owner > running; maks satu run aktif per proyek dan CREW_MAX_RUNS (bawaan 1, rentang 1..3; keputusan pemilik 2026-11-04) dengan project_busy/capacity; origin=desktop tidak dihitung kapasitas; Harness memberi --session-id sendiri (isOwnSession) sesuai hasil T2; tes memakai fake-claude; npm test hijau. Setiap perubahan status run dicatat sebagai event bertipe status (dari, ke, alasan, waktu) agar riwayat dan pemberitahuan fase 2 bisa disusun ulang."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "rb03a-conductor-inti"
+      ],
+      "criteria": [
+        "F2"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#7. Alur kunci",
+        "docs/ARCHITECTURE.md#2. Modul dan seam"
+      ],
+      "id": "rb03b-free-flow",
+      "title": "Run prompt bebas dan perintah sesi (FreeFlow)",
+      "type": "be",
+      "agent": "be",
+      "slice": "run-baru",
+      "value": "high",
+      "size": "m",
+      "done": "FreeFlow.start merender template perintah tim dan meluncurkan sesi; giliran selesai dan tidak ada pesan baru 2 dtk -> sesi ditutup dan run done; logika \"giliran selesai = run selesai\" keluar dari Harness; tes dengan fake-claude; npm test hijau."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "rb03b-free-flow",
+        "rb02-folder-proyek"
+      ],
+      "criteria": [
+        "F2"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#6.2 Endpoint",
+        "docs/ARCHITECTURE.md#6.1 Aturan umum",
+        "docs/PRD.md#F2. Run dijalankan dashboard (harness)"
+      ],
+      "id": "rb04-api-mulai-run",
+      "title": "Mulai run lewat API dengan model dan perintah dari tim",
+      "type": "be",
+      "agent": "be",
+      "slice": "run-baru",
+      "value": "high",
+      "size": "m",
+      "done": "POST /api/runs (StartRunRequest) mengembalikan 201 Run < 1 dtk; model di luar daftar ditolak; folder di luar folder kerja/../symlink ditolak tanpa sesi; project_busy menyertakan activeRunId; no_backlog untuk perintah backlog tanpa docs/backlog.json; command_needs_text; model tersimpan di run (bawaan bila kosong); tes semua galat; npm test hijau."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "f16-ui-kerangka"
+      ],
+      "criteria": [
+        "F2",
+        "F1"
+      ],
+      "context": [
+        "docs/UX.md#3. Penggolongan layar",
+        "docs/DESIGN.md#Dial per jenis area",
+        "docs/UX.md#5a. Run baru secara rinci (permintaan pemilik)",
+        "docs/UX.md#5. Pola per tugas",
+        "docs/UX.md#9. State per layar",
+        "docs/DESIGN.md#Wujud arah per jenis layar",
+        "docs/DESIGN.md#Komponen inti",
+        "docs/design-tokens.css",
+        "docs/ARCHITECTURE.md#3. Struktur folder (Penempatan komponen)"
+      ],
+      "id": "rb05-ui-run-baru",
+      "title": "Layar Run baru: kotak ketik, chip perintah, pilih model dan folder",
+      "type": "ui",
+      "agent": "ui-designer",
+      "slice": "run-baru",
+      "value": "high",
+      "size": "l",
+      "screen": "Run baru",
+      "notes": "Bagian: bangun. Layar baru, belum ada mockup; ikuti DESIGN arah B (Approved).",
+      "done": "NewRunView dan FolderPopover (tiap baris punya Pilih, Terakhir dipakai, jejak dari folder kerja tanpa jalan naik, buat folder baru), menu model (nama + keterangan), chip perintah, peringatan folder kerja; semua state UX bagian 9; data contoh; screenshot terang/gelap 1440 dan 900; tabel Kontrak komponen di laporan dan docs/KOMPONEN.md."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "rb05-ui-run-baru"
+      ],
+      "criteria": [],
+      "context": [
+        "docs/UX.md#3. Penggolongan layar",
+        "docs/DESIGN.md#Dial per jenis area",
+        "docs/UX.md#5a. Run baru secara rinci (permintaan pemilik)",
+        "docs/bukti/rb05-ui-run-baru/bukti.json"
+      ],
+      "id": "rb05-ui-run-baru-audit",
+      "title": "Layar Run baru: audit dan perbaikan",
+      "type": "ui",
+      "agent": "ui-designer",
+      "size": "m",
+      "model": "opus",
+      "notes": "Bagian: audit",
+      "done": "Audit ui-craft --lang id (dan teks ux-writing-id) tanpa temuan blocker/major; bukti.json diperbarui dengan screenshot sesudah perbaikan.",
+      "slice": "run-baru",
+      "value": "high",
+      "screen": "Run baru"
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "rb05-ui-run-baru-audit",
+        "rb04-api-mulai-run",
+        "rb02-folder-proyek",
+        "f17-fe-kerangka"
+      ],
+      "criteria": [
+        "F2",
+        "F1"
+      ],
+      "context": [
+        "docs/UX.md#5a. Run baru secara rinci (permintaan pemilik)",
+        "docs/UX.md#2. Tugas dan langkah (layar tugas)",
+        "docs/ARCHITECTURE.md#7. Alur kunci",
+        "docs/KOMPONEN.md"
+      ],
+      "id": "rb06-fe-run-baru",
+      "title": "Menyambung Run baru: ingat folder dan model, Enter untuk mulai",
+      "type": "fe",
+      "agent": "fe",
+      "slice": "run-baru",
+      "value": "high",
+      "size": "m",
+      "done": "NewRunContainer: folder, model, tim, perintah terakhir dari localStorage (kembali ke bawaan + pesan satu baris bila tidak sah); Enter memulai; pindah ke /proyek/<id>; galat project_busy dengan tautan; teks tidak hilang saat ditolak; draf; lib murni dites; T1 = 3 langkah; typecheck dan build bersih."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "rb05-ui-run-baru-audit",
+        "pb02-ui-daftar"
+      ],
+      "criteria": [],
+      "context": [
+        "docs/UX.md#3. Penggolongan layar",
+        "docs/DESIGN.md#Dial per jenis area",
+        "docs/UX.md#5a. Run baru secara rinci (permintaan pemilik)",
+        "docs/bukti/rb05-ui-run-baru/bukti.json",
+        "docs/UX.md#6.1 Daftar proyek (`/`)",
+        "docs/DESIGN.md#Larangan khusus"
+      ],
+      "id": "rb07-critic-run-baru",
+      "title": "Kritik layar Run baru dan Daftar proyek",
+      "type": "review",
+      "agent": "ui-critic",
+      "size": "s",
+      "done": "Laporan kritik terstruktur dengan nilai; temuan blocker ditutup lewat jalur cepat atau dicatat sebagai item. | Laporan kritik terstruktur dengan nilai; temuan blocker ditutup lewat jalur cepat atau dicatat sebagai item.",
+      "slice": "run-baru",
+      "value": "high",
+      "screen": "Run baru",
+      "notes": "Digabung dari: pb04-critic-daftar."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "rb06-fe-run-baru",
+        "rb04-api-mulai-run",
+        "rb01-katalog-tim"
+      ],
+      "criteria": [
+        "F1",
+        "F2"
+      ],
+      "context": [
+        "docs/PRD.md#F1. Tim sebagai data",
+        "docs/PRD.md#F2. Run dijalankan dashboard (harness)"
+      ],
+      "id": "rb08-qa-run-baru",
+      "title": "Uji Run baru dan mulai run (F1, F2)",
+      "type": "qa",
+      "agent": "qa",
+      "slice": "run-baru",
+      "value": "high",
+      "size": "m",
+      "done": "Playwright e2e dengan claude tiruan: Mulai < 5 dtk menampilkan Jalan; model dari daftar saja dan Haiku tersimpan; folder 3 tingkat; peringatan folder kerja muncul/tidak; folder luar ditolak; run kedua di proyek sama ditolak; tim fixture bisa dipilih; hasil lulus/gagal dan screenshot di docs/bukti/rb08-qa-run-baru/."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "rb01-katalog-tim",
+        "rb04-api-mulai-run",
+        "lp12a-fe-proyek-data",
+        "lp12b-fe-peta",
+        "lp12c-fe-detail-agent",
+        "ch02-izin-aturan",
+        "ch03-kirim-lanjutkan"
+      ],
+      "criteria": [],
+      "context": [
+        "docs/ARCHITECTURE.md#9. Permukaan keamanan [SEC]",
+        "docs/ARCHITECTURE.md#10. Threat model",
+        "skill:security-checklists",
+        "skill:ponytail-review"
+      ],
+      "id": "sc02-mulai-run",
+      "title": "Tinjauan keamanan dan kode: mulai run, Harness, izin, layar proyek",
+      "type": "sec",
+      "agent": "cyber",
+      "slice": "run-baru",
+      "value": "high",
+      "size": "m",
+      "notes": "Cakupan [SEC]: kendali jarak jauh, path dan folder, pemanggilan proses, definisi tim. Digabung dari: rk-proyek-fe, sc03-izin-harness.",
+      "done": "Ringkasan temuan (summary di docs/bukti/sc02-mulai-run/) per kontrol bagian 10: traversal, symlink, argv shell:false, validasi nama folder, template tim, cli[0]=node; temuan medium+ jadi item urgent; tes bukti dijalankan. | Temuan ponytail-review atas web/src/app (proyek) tercatat; yang perlu diperbaiki jadi item. | Ringkasan temuan per kontrol: A3, penghindaran lewat path/../drive lain, kategori berisiko, token hook 128 bit, hook hanya loopback; tes serangan dijalankan; temuan medium+ jadi item urgent."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "f06-store-v2-sisanya"
+      ],
+      "criteria": [
+        "F4",
+        "F9"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#2. Modul dan seam",
+        "docs/ARCHITECTURE.md#5. Data model",
+        "plugins/flow-viewer/server/tokens.js"
+      ],
+      "id": "lp01-transkrip",
+      "title": "Token dan model per pemanggilan agent dari transkrip",
+      "type": "be",
+      "agent": "be",
+      "slice": "layar-proyek",
+      "value": "high",
+      "size": "m",
+      "done": "src/transcripts.ts: usage(sessionId, transcriptPath?) membaca JSONL ~/.claude/projects inkremental, dedupe per id pesan, token 4 jenis dan model terpakai, atribusi ITEM <id>; path divalidasi di dalam ~/.claude/projects; fixture test/fixtures/transcripts; npm test hijau. Hasil token per sesi dan per pemanggilan agent (4 jenis, model terpakai, atribusi item) DISIMPAN ke Store saat sesi berakhir, bukan hanya dihitung dari transkrip, agar tetap ada bila berkas transkrip hilang."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "f12-spike-asumsi",
+        "f06-store-v2-sisanya",
+        "rb03b-free-flow"
+      ],
+      "criteria": [
+        "F4"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#14. Asumsi teknis",
+        "docs/ARCHITECTURE.md#7. Alur kunci",
+        "docs/ARCHITECTURE.md#6.3 Event SSE per run",
+        "docs/SPIKE.md#Cek T1/T2"
+      ],
+      "id": "lp02-aktivitas-agent",
+      "title": "Status agent live dari aliran sesi",
+      "type": "be",
+      "agent": "be",
+      "slice": "layar-proyek",
+      "value": "high",
+      "size": "m",
+      "model": "opus",
+      "done": "stream.ts memetakan pesan ke agent_activity (running/done/failed, putaran, jumlah alat, file) memakai hasil T1 (parent_tool_use_id atau turunan tool_use Task); event SSE activity dan tool (+agent, toolUseId); agent di luar tim in_team=false; tes dengan fixture stream. Semua langkah alat (nama, masukan, hasil, waktu) tersimpan penuh sebagai event; batas 200 langkah hanya berlaku saat dibaca API."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "lp01-transkrip",
+        "lp02-aktivitas-agent",
+        "rb01-katalog-tim"
+      ],
+      "criteria": [
+        "F4"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#6.2 Endpoint",
+        "docs/ARCHITECTURE.md#6.3 Event SSE per run"
+      ],
+      "id": "lp03-api-detail-run",
+      "title": "API detail run dan detail agent",
+      "type": "be",
+      "agent": "be",
+      "slice": "layar-proyek",
+      "value": "high",
+      "size": "m",
+      "done": "GET /api/runs/:id (RunDetail dengan isLatest), GET /api/runs/:id/agents/:agent (definisi, model deklarasi vs terpakai, putaran, <=200 langkah, file, token, durasi, bukti), SSE menyertakan activity/batch/milestone; event baru tiba < 1 dtk (tes); agent belum jalan memuat definisinya; npm test hijau."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "lp03-api-detail-run"
+      ],
+      "criteria": [],
+      "context": [
+        "docs/ARCHITECTURE.md#12. Menjalankan lokal",
+        "docs/ARCHITECTURE.md#5. Data model",
+        "docs/mockups/data-mockup.md"
+      ],
+      "id": "lp04-seed-demo",
+      "title": "Data contoh berlabel untuk desain dan uji (npm run seed)",
+      "type": "be",
+      "agent": "be",
+      "slice": "layar-proyek",
+      "value": "high",
+      "size": "m",
+      "done": "npm run seed menulis data/demo.db (berlabel contoh): run dalam tiap status, milestone, batch, pesan, bukti dari docs/mockups/arah-b/bukti-contoh; server berjalan dengan CREW_DB=data/demo.db; data/ di .gitignore; tes memuat demo.db."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "f16-ui-kerangka"
+      ],
+      "criteria": [
+        "F4"
+      ],
+      "context": [
+        "docs/UX.md#3. Penggolongan layar",
+        "docs/DESIGN.md#Dial per jenis area",
+        "docs/UX.md#6.2 Layar proyek (bagian dashboard)",
+        "docs/DESIGN.md#Rancangan layar: Layar proyek (layar kunci)",
+        "docs/DESIGN.md#Komponen inti",
+        "docs/mockups/arah-b/layar-proyek.html",
+        "docs/mockups/arah-b/screenshots",
+        "docs/ARCHITECTURE.md#3. Struktur folder (Penempatan komponen)"
+      ],
+      "id": "lp05-ui-kerangka-proyek",
+      "title": "Layar proyek (1/3): bar atas, kolom agent, rangka tiga kolom",
+      "type": "ui",
+      "agent": "ui-designer",
+      "slice": "layar-proyek",
+      "value": "high",
+      "size": "m",
+      "model": "sonnet",
+      "screen": "Layar proyek",
+      "notes": "Porting mockup Approved docs/mockups/arah-b/layar-proyek.html.",
+      "done": "ProjectView (rangka 3 kolom dengan slot), TopBar, AgentColumn, Station, StatusDot (warna + ikon + teks untuk 6 status), konfirmasi Stop menempel di tombol; data contoh; screenshot 1440 terang/gelap sesuai mockup; kontrak komponen tercatat."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "lp05-ui-kerangka-proyek"
+      ],
+      "criteria": [
+        "F4"
+      ],
+      "context": [
+        "docs/UX.md#3. Penggolongan layar",
+        "docs/DESIGN.md#Dial per jenis area",
+        "docs/UX.md#6.2 Layar proyek (bagian dashboard)",
+        "docs/DESIGN.md#Rancangan layar: Layar proyek (layar kunci)",
+        "docs/mockups/arah-b/layar-proyek.html",
+        "docs/ARCHITECTURE.md#3. Struktur folder (Penempatan komponen)"
+      ],
+      "id": "lp06-ui-peta",
+      "title": "Layar proyek (2/3): peta jalur dan timeline",
+      "type": "ui",
+      "agent": "ui-designer",
+      "slice": "layar-proyek",
+      "value": "high",
+      "size": "l",
+      "model": "sonnet",
+      "screen": "Layar proyek (peta)",
+      "notes": "Bagian: bangun. Porting peta alur mockup; simpul stasiun kustom untuk @xyflow/react.",
+      "done": "RailMap (Rail, TrackSegments, simpul Station, ruas kustom), Timeline dengan batang tumpang tindih, state kosong \"Mulai run\"; data contoh 12 agent; screenshot terang/gelap; kontrak komponen."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "lp06-ui-peta"
+      ],
+      "criteria": [],
+      "context": [
+        "docs/UX.md#3. Penggolongan layar",
+        "docs/DESIGN.md#Dial per jenis area",
+        "docs/bukti/lp06-ui-peta/bukti.json"
+      ],
+      "id": "lp06-ui-peta-audit",
+      "title": "Layar proyek (2/3): audit dan perbaikan peta",
+      "type": "ui",
+      "agent": "ui-designer",
+      "size": "m",
+      "model": "sonnet",
+      "notes": "Bagian: audit",
+      "done": "Audit ui-craft --lang id (dan teks ux-writing-id) tanpa temuan blocker/major; bukti.json diperbarui dengan screenshot sesudah perbaikan.",
+      "slice": "layar-proyek",
+      "value": "high",
+      "screen": "Layar proyek (peta)"
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "lp05-ui-kerangka-proyek"
+      ],
+      "criteria": [
+        "F5",
+        "F3"
+      ],
+      "context": [
+        "docs/UX.md#3. Penggolongan layar",
+        "docs/DESIGN.md#Dial per jenis area",
+        "docs/UX.md#5b. Chat secara rinci (perilaku ala aplikasi Claude)",
+        "docs/UX.md#5. Pola per tugas",
+        "docs/DESIGN.md#Komponen inti",
+        "docs/mockups/arah-b/layar-proyek.html",
+        "docs/ARCHITECTURE.md#3. Struktur folder (Penempatan komponen)"
+      ],
+      "id": "lp07-ui-chat",
+      "title": "Layar proyek (3/3): panel Chat dan kartu",
+      "type": "ui",
+      "agent": "ui-designer",
+      "slice": "layar-proyek",
+      "value": "high",
+      "size": "m",
+      "model": "sonnet",
+      "screen": "Layar proyek (Chat)",
+      "notes": "Porting dari mockup Approved; kartu baru (keputusan, baca saja) mengikuti pola kartu yang ada.",
+      "done": "ChatPanel, ChatCard (agent), QuestionCard (tunggal, multi, Lainnya), PermissionCard (Setujui, Tolak dengan kotak alasan, Selalu setujui), MilestoneCard, DecisionCard, SystemLine (batch, limit, gagal, aturan + Batalkan), Composer, banner Baca saja; data contoh; screenshot; kontrak komponen."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "lp05-ui-kerangka-proyek"
+      ],
+      "criteria": [
+        "F4"
+      ],
+      "context": [
+        "docs/UX.md#3. Penggolongan layar",
+        "docs/DESIGN.md#Dial per jenis area",
+        "docs/UX.md#6.2 Layar proyek (bagian dashboard)",
+        "docs/mockups/arah-b/layar-proyek.html",
+        "docs/ARCHITECTURE.md#3. Struktur folder (Penempatan komponen)"
+      ],
+      "id": "lp08-ui-detail-agent",
+      "title": "Panel Detail agent",
+      "type": "ui",
+      "agent": "ui-designer",
+      "slice": "layar-proyek",
+      "value": "high",
+      "size": "s",
+      "model": "sonnet",
+      "screen": "Layar proyek (Detail agent)",
+      "done": "AgentDetail dengan tab Chat/Detail dan lencana, isi: tugas, model deklarasi vs terpakai, skill, alat/MCP, langkah, file, token, durasi, bukti; state agent belum jalan (definisi saja); screenshot; kontrak komponen."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "f04-vite-boilerplate",
+        "f03a-skema-kontrak-inti"
+      ],
+      "criteria": [
+        "F4",
+        "F5"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#2. Modul dan seam",
+        "docs/ARCHITECTURE.md#5. Data model",
+        "web/lib.js"
+      ],
+      "id": "lp10-fe-lib-run",
+      "title": "Logika tampilan murni: status run, format, susunan Chat",
+      "type": "fe",
+      "agent": "fe",
+      "slice": "layar-proyek",
+      "value": "high",
+      "size": "m",
+      "done": "web/src/app/lib/: runState (port applyEvent dari web/lib.js beserta tesnya), format (Intl id-ID, \"78,4 rb\"), countTokens dari kontrak, chatItems (gabung langkah alat, kartu terjawab); tes node:test test/web-*.test.ts lulus."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "f04-vite-boilerplate",
+        "f03a-skema-kontrak-inti"
+      ],
+      "criteria": [
+        "F4",
+        "F1"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#2. Modul dan seam",
+        "docs/PRD.md#F4. Layar proyek tiga kolom"
+      ],
+      "id": "lp11-fe-lib-peta",
+      "title": "Logika tampilan murni: status agent dan tata letak peta",
+      "type": "fe",
+      "agent": "fe",
+      "slice": "layar-proyek",
+      "value": "high",
+      "size": "m",
+      "done": "agentStates(team, activities, messages, run) memberi 6 status dan urutan kolom kiri (Butuh kamu, Gagal, Jalan, lainnya menurut alur); railLayout(flow, width) tanpa simpul saling menimpa untuk 12 agent dan alur tim fixture (tes bounding box); agent di luar tim dan jumlah putaran; tes lulus."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "lp05-ui-kerangka-proyek",
+        "lp10-fe-lib-run",
+        "lp11-fe-lib-peta",
+        "lp03-api-detail-run",
+        "f17-fe-kerangka"
+      ],
+      "criteria": [
+        "F4",
+        "F2"
+      ],
+      "context": [
+        "docs/UX.md#6.2 Layar proyek (bagian dashboard)",
+        "docs/ARCHITECTURE.md#6.3 Event SSE per run",
+        "docs/KOMPONEN.md"
+      ],
+      "id": "lp12a-fe-proyek-data",
+      "title": "Layar proyek: data live, bar atas, kolom agent, Jeda/Lanjut/Stop",
+      "type": "fe",
+      "agent": "fe",
+      "slice": "layar-proyek",
+      "value": "high",
+      "size": "m",
+      "done": "ProjectContainer di /proyek/:id (run aktif atau terakhir), useRunStream (SSE, sambung ulang, Last-Event-ID), bar atas dari data, kolom agent, Jeda/Lanjut tanpa konfirmasi dan Stop dengan konfirmasi (T8 = 2 langkah); memuat/galat/kosong; typecheck dan build bersih; tes lib."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "lp06-ui-peta-audit",
+        "lp12a-fe-proyek-data"
+      ],
+      "criteria": [
+        "F4"
+      ],
+      "context": [
+        "docs/UX.md#6.2 Layar proyek (bagian dashboard)",
+        "docs/ARCHITECTURE.md#1. Stack",
+        "docs/KOMPONEN.md"
+      ],
+      "id": "lp12b-fe-peta",
+      "title": "Layar proyek: peta jalur dengan zoom/geser/pas layar dan timeline",
+      "type": "fe",
+      "agent": "fe",
+      "slice": "layar-proyek",
+      "value": "high",
+      "size": "m",
+      "done": "@xyflow/react memakai simpul/ruas dari ui/ dan railLayout; zoom, geser, pas layar; toggle grafik/timeline diingat per perangkat; peta tidak bergeser saat tab Detail dan pertanyaan masuk; klik simpul membuka Detail; screenshot 12 agent."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "lp08-ui-detail-agent",
+        "lp12a-fe-proyek-data"
+      ],
+      "criteria": [
+        "F4"
+      ],
+      "context": [
+        "docs/UX.md#6.2 Layar proyek (bagian dashboard)",
+        "docs/ARCHITECTURE.md#6.2 Endpoint",
+        "docs/KOMPONEN.md"
+      ],
+      "id": "lp12c-fe-detail-agent",
+      "title": "Layar proyek: tab Detail agent dan lencana Chat",
+      "type": "fe",
+      "agent": "fe",
+      "slice": "layar-proyek",
+      "value": "high",
+      "size": "s",
+      "done": "Klik agent (kolom kiri atau peta) membuka Detail dari /api/runs/:id/agents/:agent; lencana jumlah pada tab Chat bila pertanyaan baru masuk saat Detail terbuka; posisi zoom tetap; agent belum jalan menampilkan definisi."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "lp06-ui-peta-audit",
+        "lp07-ui-chat",
+        "lp08-ui-detail-agent"
+      ],
+      "criteria": [],
+      "context": [
+        "docs/UX.md#3. Penggolongan layar",
+        "docs/DESIGN.md#Dial per jenis area",
+        "docs/UX.md#6.2 Layar proyek (bagian dashboard)",
+        "docs/bukti/lp06-ui-peta/bukti.json",
+        "docs/DESIGN.md#Larangan khusus"
+      ],
+      "id": "lp13-critic-proyek",
+      "title": "Kritik layar proyek (peta, Chat, Detail)",
+      "type": "review",
+      "agent": "ui-critic",
+      "size": "m",
+      "done": "Laporan kritik terstruktur dengan nilai; temuan blocker ditutup lewat jalur cepat atau dicatat sebagai item.",
+      "slice": "layar-proyek",
+      "value": "high",
+      "screen": "Layar proyek"
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "lp12a-fe-proyek-data",
+        "lp12b-fe-peta",
+        "lp12c-fe-detail-agent",
+        "lp04-seed-demo"
+      ],
+      "criteria": [
+        "F4",
+        "F1"
+      ],
+      "context": [
+        "docs/PRD.md#F4. Layar proyek tiga kolom"
+      ],
+      "id": "lp14-qa-proyek",
+      "title": "Uji layar proyek tiga kolom (F4)",
+      "type": "qa",
+      "agent": "qa",
+      "slice": "layar-proyek",
+      "value": "high",
+      "size": "m",
+      "done": "Playwright: 6 status dibedakan warna dan ikon/teks; event baru memperbarui kolom, peta, Chat < 1 dtk; 12 agent tanpa tumpang tindih + zoom/geser/pas layar; klik agent membuka Detail; lencana Chat; timeline paralel; keadaan belum ada run; hasil dan screenshot di docs/bukti/lp14-qa-proyek/."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "f06-store-v2-sisanya",
+        "rb03b-free-flow"
+      ],
+      "criteria": [
+        "F5"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#7. Alur kunci",
+        "docs/ARCHITECTURE.md#6.2 Endpoint",
+        "docs/ARCHITECTURE.md#5. Data model"
+      ],
+      "id": "ch01-pesan-jawab",
+      "title": "Pesan Chat dan jawaban: pertanyaan dan izin, jawaban pertama menang",
+      "type": "be",
+      "agent": "be",
+      "slice": "chat",
+      "value": "high",
+      "size": "m",
+      "done": "Pesan question/permission tersimpan dari can_use_tool dan AskUserQuestion; POST .../answer (question, permission allow|deny+alasan) memakai transaksi: jawaban pertama menang, kedua 409 already_answered (details.state); terjawab tampil < 2 dtk lewat SSE; pertanyaan > 4 pilihan dan multi-pilih diterima; tes dua jawaban bersamaan; npm test hijau. Pertanyaan, pilihan, izin, jawaban, siapa/dari mana menjawab (dashboard/desktop), alasan penolakan, dan waktu dibuat/dijawab tersimpan permanen."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "ch01-pesan-jawab"
+      ],
+      "criteria": [
+        "F5"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#2. Modul dan seam",
+        "docs/ARCHITECTURE.md#7. Alur kunci",
+        "docs/ARCHITECTURE.md#10. Threat model",
+        "docs/ARCHITECTURE.md#6.1 Aturan umum"
+      ],
+      "id": "ch02-izin-aturan",
+      "title": "Izin otomatis A3 dan aturan \"Selalu setujui\" per proyek",
+      "type": "be",
+      "agent": "be",
+      "slice": "chat",
+      "value": "high",
+      "size": "m",
+      "model": "opus",
+      "notes": "Menyentuh [SEC]; model opus.",
+      "done": "Policy.decide(tool, input, project, rules); always disimpan di permission_rules hanya untuk kategori tidak berisiko, kategori berisiko (hapus massal, push, reset, instal global, unduh-jalankan, perintah sistem) ditolak rule_not_allowed; pesan sistem \"Aturan disimpan\" dan DELETE /api/projects/:id/rules/:ruleId; tes tiap kategori dan pola path/awalan perintah; tes policy lama tetap lulus."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "ch01-pesan-jawab",
+        "f14-ketat-resume"
+      ],
+      "criteria": [
+        "F5",
+        "F2"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#6.2 Endpoint",
+        "docs/ARCHITECTURE.md#7. Alur kunci",
+        "docs/PRD.md#F5. Chat: pertanyaan",
+        "izin",
+        "dan pesan ke orkestrator"
+      ],
+      "id": "ch03-kirim-lanjutkan",
+      "title": "Kirim pesan, lanjutkan run Selesai, tombol Lanjutkan",
+      "type": "be",
+      "agent": "be",
+      "slice": "chat",
+      "value": "high",
+      "size": "m",
+      "done": "POST /api/runs/:id/messages: ke sesi aktif; queued saat Jeda (\"terkirim saat lanjut\"); run terakhir done dilanjutkan di sesi yang sama dengan model yang sama tanpa run baru; folder hilang/di luar folder kerja ditolak dan run tetap done; project_busy dan capacity; POST /api/runs/:id/continue untuk failed/disconnected; tes tiap galat; npm test hijau."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "lp07-ui-chat",
+        "ch01-pesan-jawab",
+        "ch03-kirim-lanjutkan",
+        "lp12a-fe-proyek-data"
+      ],
+      "criteria": [
+        "F5"
+      ],
+      "context": [
+        "docs/UX.md#5b. Chat secara rinci (perilaku ala aplikasi Claude)",
+        "docs/UX.md#5. Pola per tugas",
+        "docs/ARCHITECTURE.md#6.2 Endpoint",
+        "docs/KOMPONEN.md"
+      ],
+      "id": "ch04-fe-chat",
+      "title": "Chat: jawab pertanyaan, kotak ketik, baca saja",
+      "type": "fe",
+      "agent": "fe",
+      "slice": "chat",
+      "value": "high",
+      "size": "m",
+      "done": "ChatContainer: pertanyaan tunggal ketuk-langsung-kirim (T3 = 2 langkah), multi/Lainnya + Kirim jawaban, Enter kirim dan Shift+Enter baris baru, pesan queued, 409 already_answered tampil \"sudah dijawab\", banner Baca saja dengan tautan ke run terakhir, teks yang ditolak tidak hilang; fokus keyboard; tes lib answers."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "ch04-fe-chat",
+        "ch02-izin-aturan",
+        "lp12a-fe-proyek-data",
+        "ch03-kirim-lanjutkan",
+        "ll03-limit-jadwal"
+      ],
+      "criteria": [
+        "F5",
+        "F2"
+      ],
+      "context": [
+        "docs/UX.md#5. Pola per tugas",
+        "docs/ARCHITECTURE.md#7. Alur kunci",
+        "docs/UX.md#6.2 Layar proyek (bagian dashboard)",
+        "docs/UX.md#9. State per layar"
+      ],
+      "id": "ch05-fe-izin",
+      "title": "Chat: kartu izin, serta tampilan Gagal/Terputus/Jeda limit dengan Lanjutkan",
+      "type": "fe",
+      "agent": "fe",
+      "slice": "chat",
+      "value": "high",
+      "size": "m",
+      "done": "Setujui = 2 langkah (T4), Tolak membuka kotak alasan fokus otomatis dan Enter mengirim (T4b = 4 langkah), Selalu setujui + pesan sistem dengan Batalkan (DELETE aturan), rule_not_allowed tampil sebagai pesan jelas; tes. | Bar atas dan pesan sistem menampilkan alasan + Lanjutkan untuk failed/disconnected, jam reset untuk limit_paused (info, bukan masalah); tes lib dan screenshot.",
+      "notes": "Digabung dari: ll05-fe-lanjutkan."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "ch04-fe-chat",
+        "ch05-fe-izin",
+        "ch03-kirim-lanjutkan"
+      ],
+      "criteria": [
+        "F5"
+      ],
+      "context": [
+        "docs/PRD.md#F5. Chat: pertanyaan",
+        "izin",
+        "dan pesan ke orkestrator"
+      ],
+      "id": "ch06-qa-chat",
+      "title": "Uji Chat (F5)",
+      "type": "qa",
+      "agent": "qa",
+      "slice": "chat",
+      "value": "high",
+      "size": "m",
+      "done": "Playwright dengan claude tiruan untuk tiap kriteria F5: lanjut run Selesai (sesi sama, tanpa run baru), baca saja untuk run bukan terakhir, folder hilang, pertanyaan/izin, Jeda lalu kirim, terjawab < 2 dtk, dua perangkat (kedua melihat sudah dijawab), HTML/markdown berbahaya tampil sebagai teks; bukti di docs/bukti/ch06-qa-chat/."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "f01-contract-pindah"
+      ],
+      "criteria": [
+        "F2"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#7. Alur kunci",
+        "test/fixtures/limits"
+      ],
+      "id": "ll01-parser-limit",
+      "title": "Fixture dan pengenalan batas pemakaian serta jam reset",
+      "type": "be",
+      "agent": "be",
+      "slice": "jeda-limit",
+      "value": "high",
+      "size": "m",
+      "done": "harness/limits.ts mengenali galat limit dari result/pesan sintetis dan mem-parse jam reset (teks zona, epoch) atau null; semua fixture lulus; npm test hijau. | test/fixtures/limits/ memuat contoh pesan batas (teks \"resets 5pm (zona)\", epoch, tanpa jam) beserta hasil yang diharapkan (jam reset ISO atau null), dari pesan nyata bila ada di data/ atau spike, lainnya ditandai sintetis; README satu paragraf.",
+      "model": "opus",
+      "notes": "Digabung dari: f13-fixture-limit."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "rb03b-free-flow",
+        "ch03-kirim-lanjutkan"
+      ],
+      "criteria": [
+        "F2"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#7. Alur kunci",
+        "docs/ARCHITECTURE.md#2. Modul dan seam"
+      ],
+      "id": "ll02-jeda-panjang",
+      "title": "Jeda lebih dari 50 menit dan lanjut dari sesi terlepas",
+      "type": "be",
+      "agent": "be",
+      "slice": "jeda-limit",
+      "value": "high",
+      "size": "m",
+      "model": "opus",
+      "notes": "Konkurensi penahan hook dan penutupan proses.",
+      "done": "Setelah 50 mnt dijeda: interrupt, proses ditutup, sesi detached, run tetap paused; Lanjut memakai --resume dengan pesan antrean atau \"Lanjutkan.\"; Stop 10 dtk (tutup stdin 3 dtk, taskkill 6 dtk) tetap benar dan pekerjaan belum commit tetap; tes dengan fake-claude dan jam tiruan."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "ll01-parser-limit",
+        "rb03b-free-flow"
+      ],
+      "criteria": [
+        "F2"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#7. Alur kunci",
+        "docs/ARCHITECTURE.md#5. Data model"
+      ],
+      "id": "ll03-limit-jadwal",
+      "title": "Jeda limit: lanjut otomatis setelah reset, bertahan saat restart",
+      "type": "be",
+      "agent": "be",
+      "slice": "jeda-limit",
+      "value": "high",
+      "size": "m",
+      "done": "Run limit_paused + limitResetAt; jadwal reset+60 dtk, jam tak terbaca coba tiap 30 mnt; dijadwal ulang saat server mulai; batch yang sama diulang atau --resume di run yang sama; tes jam tiruan; npm test hijau."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "ll03-limit-jadwal",
+        "ch03-kirim-lanjutkan"
+      ],
+      "criteria": [
+        "F2"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#7. Alur kunci",
+        "docs/ARCHITECTURE.md#5. Data model"
+      ],
+      "id": "ll04-pulih-restart",
+      "title": "Pemulihan setelah restart dan Lanjutkan sesi baru",
+      "type": "be",
+      "agent": "be",
+      "slice": "jeda-limit",
+      "value": "high",
+      "size": "s",
+      "done": "main.ts memulihkan: proses hilang -> disconnected, tanpa sesi tetap utuh; Lanjutkan FreeFlow memakai --resume sesi terakhir dengan \"Lanjutkan pekerjaan sebelumnya.\" dan pesan sistem \"Dilanjutkan di sesi baru\"; tes restart."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "ll02-jeda-panjang",
+        "ll04-pulih-restart",
+        "ch05-fe-izin"
+      ],
+      "criteria": [
+        "F2"
+      ],
+      "context": [
+        "docs/PRD.md#F2. Run dijalankan dashboard (harness)"
+      ],
+      "id": "ll06-qa-jeda-limit",
+      "title": "Uji Stop, Jeda, Terputus, dan batas pemakaian",
+      "type": "qa",
+      "agent": "qa",
+      "slice": "jeda-limit",
+      "value": "high",
+      "size": "m",
+      "done": "Playwright dengan claude tiruan: Stop < 10 dtk status Dihentikan dan berkas tetap; Jeda menahan setelah alat selesai dan Lanjut di sesi sama; proses mati -> Gagal dengan alasan + Lanjutkan; restart -> Terputus; limit -> jam reset lalu lanjut; 3 proyek bersamaan tanpa data tercampur; bukti di docs/bukti/ll06-qa-jeda-limit/."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "f08-kit-backlog-milestone",
+        "f05-store-v2-inti",
+        "rb01-katalog-tim"
+      ],
+      "criteria": [
+        "F3"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#2. Modul dan seam",
+        "docs/ARCHITECTURE.md#4.1 Definisi tim",
+        "docs/ARCHITECTURE.md#10. Threat model"
+      ],
+      "id": "bk01-port-backlog",
+      "title": "Server membaca dan mengubah backlog proyek lewat skrip tim",
+      "type": "be",
+      "agent": "be",
+      "slice": "backlog-milestone",
+      "value": "high",
+      "size": "m",
+      "done": "src/backlog/ (port, cli): snapshot, diff, apply(ops) memanggil CLI tim dengan argv shell:false dan cwd proyek; id item divalidasi ^[a-z0-9][a-z0-9-]{0,63}$; antrean tulis saat sesi berjalan; backlog lama tanpa milestone = satu milestone \"Backlog\"; tes dengan backlog dan skrip tiruan; npm test hijau."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "f01-contract-pindah"
+      ],
+      "criteria": [
+        "F3"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#2. Modul dan seam",
+        "docs/ARCHITECTURE.md#10. Threat model"
+      ],
+      "id": "bk02-git-commit",
+      "title": "Commit otomatis per batch dengan penolakan berkas rahasia",
+      "type": "be",
+      "agent": "be",
+      "slice": "backlog-milestone",
+      "value": "high",
+      "size": "m",
+      "done": "src/git.ts: commitBatch(dir, pesan) dan init; menolak bila ada .env* (kecuali .env.example), *.pem, *.key, id_rsa*, *.pfx, berkas > 50 MB dengan daftar berkas; hormati .gitignore; repo bukan git/konflik menjadi GitError; argv saja; tes repo sementara; npm test hijau."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "bk01-port-backlog",
+        "rb03a-conductor-inti",
+        "ch01-pesan-jawab"
+      ],
+      "criteria": [
+        "F3"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#7. Alur kunci",
+        "docs/ARCHITECTURE.md#5. Data model",
+        "docs/PRD.md#F3. Batch dan milestone otomatis"
+      ],
+      "id": "bk03-flow-usulan",
+      "title": "Lanjut backlog (1/3): usulan milestone dan persetujuan",
+      "type": "be",
+      "agent": "be",
+      "slice": "backlog-milestone",
+      "value": "high",
+      "size": "m",
+      "model": "opus",
+      "done": "BacklogFlow.start: tanpa backlog 409 no_backlog; milestone proposed menjadi pesan milestone di Chat dan run needs_owner tanpa sesi; Setujui -> running; Ubah memanggil sesi singkat agent backlog lalu snapshot dibaca ulang; hanya satu milestone running/ready_review per proyek; tes fake backlog; npm test hijau."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "bk03-flow-usulan",
+        "bk02-git-commit",
+        "f10-kit-run-crew",
+        "ll03-limit-jadwal"
+      ],
+      "criteria": [
+        "F3"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#7. Alur kunci",
+        "docs/ARCHITECTURE.md#5. Data model",
+        "docs/ARCHITECTURE.md#6.3 Event SSE per run"
+      ],
+      "id": "bk04-flow-batch",
+      "title": "Lanjut backlog (2/3): batch, diff, commit, riwayat batch",
+      "type": "be",
+      "agent": "be",
+      "slice": "backlog-milestone",
+      "value": "high",
+      "size": "m",
+      "model": "opus",
+      "done": "Per batch: snapshot, sesi baru dengan template --crew --milestone, snapshot, diff (selesai/gagal/ditambah), commitBatch pesan \"crew: <milestone> batch <n> (<id>)\", simpan Batch dan item mirror (origin), pesan sistem \"Batch n selesai\" tanpa pemberitahuan; 12 item batch 5 = 3 batch + 3 commit; limit mengulang batch yang sama; tes fake-claude + backlog tiruan. Per batch tersimpan: item batch, hasil diff (selesai/gagal/ditambah), hash commit, waktu, sesi; item yang ditambah di tengah milestone tercatat asalnya (bahan metrik F9)."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "bk04-flow-batch"
+      ],
+      "criteria": [
+        "F3"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#7. Alur kunci",
+        "docs/ARCHITECTURE.md#14. Asumsi teknis",
+        "docs/PRD.md#F3. Batch dan milestone otomatis"
+      ],
+      "id": "bk05-flow-henti",
+      "title": "Lanjut backlog (3/3): aturan berhenti, keputusan pemilik, Siap review",
+      "type": "be",
+      "agent": "be",
+      "slice": "backlog-milestone",
+      "value": "high",
+      "size": "m",
+      "model": "opus",
+      "done": "Urutan keputusan bagian 7B langkah 5: commit gagal -> paused + alasan; item gagal 2x -> run failed dengan item/agent/alasan; checkpoint -> pesan decision sementara item lain jalan, jawaban diterapkan (backlog decide) di antara batch; semua item milestone selesai -> ready_review; backlog habis -> done; tes tiap cabang; npm test hijau."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "lp07-ui-chat",
+        "bk03-flow-usulan",
+        "bk05-flow-henti",
+        "ch04-fe-chat"
+      ],
+      "criteria": [
+        "F3"
+      ],
+      "context": [
+        "docs/UX.md#5. Pola per tugas",
+        "docs/UX.md#6.2 Layar proyek (bagian dashboard)",
+        "docs/ARCHITECTURE.md#6.2 Endpoint"
+      ],
+      "id": "bk06-fe-milestone",
+      "title": "Chat: usulan milestone, keputusan, riwayat batch, progres di bar atas",
+      "type": "fe",
+      "agent": "fe",
+      "slice": "backlog-milestone",
+      "value": "high",
+      "size": "m",
+      "done": "Kartu milestone (Setujui, Ubah mengisi \"Ubah milestone: \"), kartu keputusan (answer decision), pesan batch selesai yang bisa dibuka (item, commit, token, durasi), progres \"UI · 7/24 item\" dan batch di bar atas; T2 = 3 langkah + 1 setuju; tes lib dan screenshot."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "bk05-flow-henti",
+        "bk06-fe-milestone",
+        "rb06-fe-run-baru"
+      ],
+      "criteria": [
+        "F3"
+      ],
+      "context": [
+        "docs/PRD.md#F3. Batch dan milestone otomatis"
+      ],
+      "id": "bk07-qa-backlog",
+      "title": "Uji batch dan milestone (F3)",
+      "type": "qa",
+      "agent": "qa",
+      "slice": "backlog-milestone",
+      "value": "high",
+      "size": "m",
+      "done": "Playwright/tes integrasi: milestone 12 item batch 5 = 3 batch, 3 commit, berhenti di Siap review tanpa input di tengah; usulan milestone sebelum batch pertama; item gagal 2x menghentikan dengan item/agent/alasan; keputusan menunggu sementara item lain jalan; commit gagal menjeda; proyek tanpa backlog tanpa batch; riwayat batch terlihat; bukti di docs/bukti/bk07-qa-backlog/."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "bk02-git-commit",
+        "bk05-flow-henti",
+        "ll02-jeda-panjang",
+        "lp02-aktivitas-agent"
+      ],
+      "criteria": [],
+      "context": [
+        "docs/ARCHITECTURE.md#9. Permukaan keamanan [SEC]",
+        "docs/ARCHITECTURE.md#10. Threat model",
+        "skill:security-checklists",
+        "skill:ponytail-review"
+      ],
+      "id": "sc04-commit-backlog",
+      "title": "Tinjauan keamanan dan kode: commit otomatis, CLI backlog, pengatur run",
+      "type": "sec",
+      "agent": "cyber",
+      "slice": "backlog-milestone",
+      "value": "high",
+      "size": "s",
+      "notes": "Cakupan [SEC]: commit otomatis, pemanggilan proses. Digabung dari: rk-conductor.",
+      "done": "Ringkasan temuan: berkas rahasia diblok, injeksi argumen (id item, teks pemilik), path CLI tim; tes dijalankan; medium+ jadi item urgent. | Temuan ponytail-review atas src/conductor, src/harness, src/backlog tercatat; yang perlu diperbaiki jadi item."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "f06-store-v2-sisanya",
+        "f11-kit-kontrak-bukti"
+      ],
+      "criteria": [
+        "F7",
+        "F8"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#4.3 Kontrak bukti",
+        "docs/ARCHITECTURE.md#2. Modul dan seam"
+      ],
+      "id": "rv01-bukti-scan",
+      "title": "Server memindai bukti item dari kontrak bukti",
+      "type": "be",
+      "agent": "be",
+      "slice": "review",
+      "value": "high",
+      "size": "m",
+      "done": "src/evidence/ scan(projectDir, itemIds) membaca bukti.json; deteksi hilang (present=false + path), besar (> 5 MB), item tanpa bukti; jenis dari allowlist; hanya path di dalam proyek; fixture test/fixtures/bukti; npm test hijau."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "rv01-bukti-scan"
+      ],
+      "criteria": [
+        "F7"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#6.2 Endpoint",
+        "docs/ARCHITECTURE.md#6.4 Render aman di tampilan [SEC]",
+        "docs/ARCHITECTURE.md#10. Threat model"
+      ],
+      "id": "rv02-bukti-sajikan",
+      "title": "Menyajikan berkas bukti dan aset mockup dengan aman",
+      "type": "be",
+      "agent": "be",
+      "slice": "review",
+      "value": "high",
+      "size": "m",
+      "done": "GET /api/evidence/:id/file dan /asset?path=: hanya path tercantum di bukti.json, tanda tangan berkas untuk gambar, nosniff, html dengan CSP sandbox allow-scripts, aset hanya di folder mockup itu; not_found membawa path hilang; file_not_allowed 403; tes traversal (.., symlink, absolut); npm test hijau."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "rv01-bukti-scan",
+        "bk05-flow-henti",
+        "bk01-port-backlog"
+      ],
+      "criteria": [
+        "F7"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#7. Alur kunci",
+        "docs/ARCHITECTURE.md#6.2 Endpoint"
+      ],
+      "id": "rv03-api-review",
+      "title": "API Review milestone: lihat, setujui, minta perbaikan",
+      "type": "be",
+      "agent": "be",
+      "slice": "review",
+      "value": "high",
+      "size": "m",
+      "done": "GET /api/milestones/:id (Review: item, isFix, bukti, noEvidence, ringkasan, pembanding milestone accepted sejenis), POST approve (milestone berikutnya mulai otomatis bila run aktif; milestone_not_ready, already_answered), POST fixes (tiap catatan jadi item origin perbaikan via backlog add argv, run lanjut otomatis, review_round+1, kembali ready_review dengan item perbaikan di depan); tes; npm test hijau."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "f16-ui-kerangka"
+      ],
+      "criteria": [
+        "F7"
+      ],
+      "context": [
+        "docs/UX.md#3. Penggolongan layar",
+        "docs/DESIGN.md#Dial per jenis area",
+        "docs/DESIGN.md#Rancangan layar: (b) Review milestone (`review-milestone.html`)",
+        "docs/UX.md#5. Pola per tugas",
+        "docs/mockups/arah-b/review-milestone.html",
+        "docs/mockups/arah-b/bukti-contoh",
+        "docs/ARCHITECTURE.md#4.3 Kontrak bukti",
+        "docs/ARCHITECTURE.md#3. Struktur folder (Penempatan komponen)"
+      ],
+      "id": "rv04-ui-review",
+      "title": "Layar Review milestone dan galeri bukti",
+      "type": "ui",
+      "agent": "ui-designer",
+      "slice": "review",
+      "value": "high",
+      "size": "l",
+      "model": "sonnet",
+      "screen": "Review milestone",
+      "notes": "Bagian: bangun. Porting mockup Approved review-milestone.html; varian kartu bukti per jenis.",
+      "done": "ReviewView, EvidenceCard (image, mockup, mermaid, chart, tests, summary, video; kartu tanpa bukti dan hilang; pratinjau besar), Lightbox (Sebelumnya/Berikutnya, Esc), catatan perbaikan per kartu, tombol Kirim perbaikan (n); data contoh dari bukti-contoh; screenshot terang/gelap 1440 dan 375; kontrak komponen."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "rv04-ui-review"
+      ],
+      "criteria": [],
+      "context": [
+        "docs/UX.md#3. Penggolongan layar",
+        "docs/DESIGN.md#Dial per jenis area",
+        "docs/bukti/rv04-ui-review/bukti.json"
+      ],
+      "id": "rv04-ui-review-audit",
+      "title": "Layar Review: audit dan perbaikan",
+      "type": "ui",
+      "agent": "ui-designer",
+      "size": "m",
+      "model": "sonnet",
+      "notes": "Bagian: audit",
+      "done": "Audit ui-craft --lang id (dan teks ux-writing-id) tanpa temuan blocker/major; bukti.json diperbarui dengan screenshot sesudah perbaikan.",
+      "slice": "review",
+      "value": "high",
+      "screen": "Review milestone"
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "rv04-ui-review-audit",
+        "rv02-bukti-sajikan"
+      ],
+      "criteria": [
+        "F7",
+        "F8"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#6.4 Render aman di tampilan [SEC]",
+        "docs/ARCHITECTURE.md#4.3 Kontrak bukti",
+        "docs/ARCHITECTURE.md#1. Stack"
+      ],
+      "id": "rv05-fe-render-bukti",
+      "title": "Render bukti aman: Mermaid, grafik, markdown, iframe sandbox",
+      "type": "fe",
+      "agent": "fe",
+      "slice": "review",
+      "value": "high",
+      "size": "m",
+      "done": "Mermaid dimuat malas dengan securityLevel strict, grafik SVG berlabel langsung dari chart.json, react-markdown tanpa HTML mentah, tautan sebagai teks + Salin, mockup di iframe sandbox=\"allow-scripts\" tanpa allow-same-origin, gambar lewat <img>; tes: payload XSS di teks/markdown/mermaid/SVG tidak dieksekusi."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "rv04-ui-review-audit",
+        "rv03-api-review",
+        "rv05-fe-render-bukti",
+        "f17-fe-kerangka"
+      ],
+      "criteria": [
+        "F7"
+      ],
+      "context": [
+        "docs/UX.md#5. Pola per tugas",
+        "docs/UX.md#2. Tugas dan langkah (layar tugas)",
+        "docs/ARCHITECTURE.md#7. Alur kunci",
+        "docs/KOMPONEN.md"
+      ],
+      "id": "rv06-fe-review",
+      "title": "Review: Setujui, Minta perbaikan per item, Kirim perbaikan",
+      "type": "fe",
+      "agent": "fe",
+      "slice": "review",
+      "value": "high",
+      "size": "m",
+      "done": "ReviewContainer di /proyek/:id/review: Setujui = 2 langkah (T5), catatan per kartu dan Kirim perbaikan (n) (T5b = 6 langkah), lightbox, item tanpa bukti dihitung di ringkasan, bukti hilang menyebut path, besar tampil pratinjau + Buka berkas asli; memuat/galat/kosong; typecheck dan build bersih."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "rv04-ui-review-audit"
+      ],
+      "criteria": [],
+      "context": [
+        "docs/UX.md#3. Penggolongan layar",
+        "docs/DESIGN.md#Dial per jenis area",
+        "docs/bukti/rv04-ui-review/bukti.json",
+        "docs/DESIGN.md#Larangan khusus"
+      ],
+      "id": "rv07-critic-review",
+      "title": "Kritik layar Review milestone",
+      "type": "review",
+      "agent": "ui-critic",
+      "size": "s",
+      "done": "Laporan kritik terstruktur dengan nilai; temuan blocker ditutup lewat jalur cepat atau dicatat sebagai item.",
+      "slice": "review",
+      "value": "high",
+      "screen": "Review milestone"
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "rv06-fe-review",
+        "rv03-api-review",
+        "rv02-bukti-sajikan"
+      ],
+      "criteria": [
+        "F7",
+        "F8"
+      ],
+      "context": [
+        "docs/PRD.md#F7. Review milestone dengan galeri bukti",
+        "docs/PRD.md#F8. Kontrak bukti untuk tim"
+      ],
+      "id": "rv08-qa-review",
+      "title": "Uji Review dan kontrak bukti (F7, F8)",
+      "type": "qa",
+      "agent": "qa",
+      "slice": "review",
+      "value": "high",
+      "size": "m",
+      "done": "Playwright pada milestone fixture: tiap item minimal satu bukti atau \"tanpa bukti\" dihitung; gambar/mockup penuh; diagram dan grafik dirender; Setujui memulai milestone berikutnya; Minta perbaikan membuat item perbaikan, run lanjut, kembali Siap review dengan penanda; bukti besar dan hilang; 375 px selesai tanpa geser; fixture >= 90% item berbukti; bukti di docs/bukti/rv08-qa-review/."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "rv02-bukti-sajikan",
+        "rv05-fe-render-bukti",
+        "rv03-api-review"
+      ],
+      "criteria": [],
+      "context": [
+        "docs/ARCHITECTURE.md#9. Permukaan keamanan [SEC]",
+        "docs/ARCHITECTURE.md#10. Threat model",
+        "skill:security-checklists",
+        "skill:ponytail-review"
+      ],
+      "id": "sc05-bukti-render",
+      "title": "Tinjauan keamanan dan kode: penyajian bukti, render teks agent, API Review",
+      "type": "sec",
+      "agent": "cyber",
+      "slice": "review",
+      "value": "high",
+      "size": "m",
+      "notes": "Cakupan [SEC]: penyajian berkas bukti, render teks agent (XSS). Digabung dari: rk-review-be.",
+      "done": "Ringkasan temuan: traversal, tipe berkas, CSP aplikasi dan sandbox, XSS markdown/mermaid/SVG/mockup, tautan; tes serangan dijalankan; medium+ jadi item urgent. | Temuan ponytail-review atas src/evidence dan rute review tercatat; perbaikan jadi item."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "f06-store-v2-sisanya",
+        "rb03a-conductor-inti",
+        "rb02-folder-proyek"
+      ],
+      "criteria": [
+        "F11",
+        "F2"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#6.2 Endpoint",
+        "docs/UX.md#6.1 Daftar proyek (`/`)"
+      ],
+      "id": "pb01-api-proyek",
+      "title": "API daftar proyek, detail proyek, pengaturan",
+      "type": "be",
+      "agent": "be",
+      "slice": "daftar-proyek",
+      "value": "high",
+      "size": "m",
+      "done": "GET /api/projects (ProjectBoard: totals dan ProjectSummary lengkap), GET /api/projects/:id, PUT /api/projects/:id/settings, PUT /api/settings (batch 1..20); angka butuh kamu/siap review/jalan/gagal/limit sesuai UX 6.1; tes; npm test hijau."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "f16-ui-kerangka"
+      ],
+      "criteria": [
+        "F11"
+      ],
+      "context": [
+        "docs/UX.md#3. Penggolongan layar",
+        "docs/DESIGN.md#Dial per jenis area",
+        "docs/UX.md#6.1 Daftar proyek (`/`)",
+        "docs/DESIGN.md#Rancangan layar: (c) Daftar proyek `/` (`daftar-proyek.html`)",
+        "docs/mockups/arah-b/daftar-proyek.html",
+        "docs/ARCHITECTURE.md#3. Struktur folder (Penempatan komponen)"
+      ],
+      "id": "pb02-ui-daftar",
+      "title": "Layar Daftar proyek",
+      "type": "ui",
+      "agent": "ui-designer",
+      "slice": "daftar-proyek",
+      "value": "high",
+      "size": "m",
+      "model": "sonnet",
+      "screen": "Daftar proyek",
+      "notes": "Porting mockup Approved daftar-proyek.html.",
+      "done": "ProjectListView (5 angka dengan 0 diciutkan, kelompok Perlu diurus/Jalan/Diam, baris proyek dengan label dari desktop, baris Aktifkan pemberitahuan yang bisa ditutup); data contoh; screenshot terang/gelap 1440 dan 375; kontrak komponen."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "pb02-ui-daftar",
+        "pb01-api-proyek",
+        "ch03-kirim-lanjutkan",
+        "f17-fe-kerangka"
+      ],
+      "criteria": [
+        "F11"
+      ],
+      "context": [
+        "docs/UX.md#6.1 Daftar proyek (`/`)",
+        "docs/KOMPONEN.md"
+      ],
+      "id": "pb03-fe-daftar",
+      "title": "Daftar proyek: polling 3 detik dan aksi satu klik",
+      "type": "fe",
+      "agent": "fe",
+      "slice": "daftar-proyek",
+      "value": "high",
+      "size": "m",
+      "done": "ProjectListContainer di /: polling /api/projects 3 dtk, aksi satu klik (butuh kamu -> Chat tergulir ke kartu tertua, siap review -> Review, gagal -> Lanjutkan + Lihat alasan), lencana NavRail; memuat/galat/kosong; typecheck dan build bersih."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "pb03-fe-daftar",
+        "lp04-seed-demo"
+      ],
+      "criteria": [
+        "F11",
+        "F2"
+      ],
+      "context": [
+        "docs/UX.md#6.1 Daftar proyek (`/`)",
+        "docs/PRD.md#F2. Run dijalankan dashboard (harness)"
+      ],
+      "id": "pb05-qa-daftar",
+      "title": "Uji Daftar proyek",
+      "type": "qa",
+      "agent": "qa",
+      "slice": "daftar-proyek",
+      "value": "high",
+      "size": "s",
+      "done": "Playwright dengan demo.db: angka sesuai data, aturan masalah dan urutan, Lanjutkan satu klik, polling memperbarui tanpa muat ulang; bukti di docs/bukti/pb05-qa-daftar/."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "rb06-fe-run-baru",
+        "pb03-fe-daftar",
+        "lp12a-fe-proyek-data"
+      ],
+      "criteria": [],
+      "context": [
+        "docs/ARCHITECTURE.md#3. Struktur folder"
+      ],
+      "id": "hapus-web-lama",
+      "title": "Hapus tampilan polos lama setelah rute React hidup",
+      "type": "fe",
+      "agent": "fe",
+      "slice": "daftar-proyek",
+      "value": "high",
+      "size": "s",
+      "done": "web/index.html, app.js, lib.js dihapus; server hanya melayani web/dist; tes yang merujuk web lama dipindah; npm test, typecheck, build bersih."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "dd03-izin-desktop",
+        "lp01-transkrip"
+      ],
+      "criteria": [],
+      "context": [
+        "docs/ARCHITECTURE.md#9. Permukaan keamanan [SEC]",
+        "docs/ARCHITECTURE.md#10. Threat model",
+        "skill:security-checklists"
+      ],
+      "id": "sc06-push",
+      "title": "Tinjauan keamanan: hook sesi desktop dan transkrip",
+      "type": "sec",
+      "agent": "cyber",
+      "slice": "sesi-desktop",
+      "value": "mid",
+      "size": "s",
+      "notes": "Cakupan [SEC]: hook, transkrip. Digabung dari: sc07-hook-transkrip. Bagian Web Push dipisah ke sc06-push-fase2 (fase 2).",
+      "done": "Ringkasan temuan: hook hanya loopback + penanda, token sesi, payload palsu/oversize, transcript_path di luar ~/.claude/projects ditolak; tes dijalankan; medium+ jadi item urgent."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "f03b-skema-kontrak-sisanya"
+      ],
+      "criteria": [
+        "F10"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#3. Struktur folder",
+        "docs/ARCHITECTURE.md#7. Alur kunci"
+      ],
+      "id": "dd01-plugin-hook",
+      "title": "Crew Control sebagai plugin dengan hook sesi desktop",
+      "type": "be",
+      "agent": "be",
+      "slice": "sesi-desktop",
+      "value": "mid",
+      "size": "s",
+      "done": ".claude-plugin/plugin.json dan hooks/hooks.json (hook HTTP ke 127.0.0.1:4780/hook/desktop dengan header X-Crew-Hook: 1 untuk SessionStart, UserPromptSubmit, PreToolUse, PostToolUse, PermissionRequest, SubagentStart, SubagentStop, Stop, SessionEnd); berkas valid JSON; server mati tidak memblokir Claude Code (timeout pendek)."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "dd01-plugin-hook",
+        "lp01-transkrip",
+        "rb03a-conductor-inti",
+        "f12-spike-asumsi"
+      ],
+      "criteria": [
+        "F10"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#7. Alur kunci",
+        "docs/ARCHITECTURE.md#14. Asumsi teknis",
+        "docs/ARCHITECTURE.md#2. Modul dan seam"
+      ],
+      "id": "dd02-sesi-desktop",
+      "title": "Sesi desktop tampil sebagai run berlabel dari desktop",
+      "type": "be",
+      "agent": "be",
+      "slice": "sesi-desktop",
+      "value": "mid",
+      "size": "m",
+      "model": "opus",
+      "done": "/hook/desktop (loopback + X-Crew-Hook; forbidden_peer/forbidden_hook): sesi milik Harness dijawab {} tanpa dicatat (tidak dobel, per isOwnSession); selain itu run origin desktop per session_id, judul dari UserPromptSubmit, proyek dari cwd; token dan model dari transkrip tervalidasi; tidak dihitung kapasitas; tes payload per jenis hook."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "dd02-sesi-desktop",
+        "ch01-pesan-jawab"
+      ],
+      "criteria": [
+        "F10",
+        "F5"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#7. Alur kunci",
+        "docs/ARCHITECTURE.md#14. Asumsi teknis"
+      ],
+      "id": "dd03-izin-desktop",
+      "title": "Jawab izin sesi desktop dari dashboard dan Stop",
+      "type": "be",
+      "agent": "be",
+      "slice": "sesi-desktop",
+      "value": "mid",
+      "size": "m",
+      "model": "opus",
+      "notes": "Menahan koneksi hook: konkurensi.",
+      "done": "PermissionRequest (termasuk AskUserQuestion) ditahan sampai dijawab dashboard (allow/deny+pesan atau updatedInput.answers); koneksi ditutup lebih dulu = dijawab di desktop (answeredFrom desktop, terjawab < 2 dtk); Stop menolak permintaan tertahan dan respons berikutnya {continue:false, stopReason}; tes tiap jalur."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "dd03-izin-desktop",
+        "lp12a-fe-proyek-data",
+        "ch04-fe-chat"
+      ],
+      "criteria": [
+        "F10"
+      ],
+      "context": [
+        "docs/UX.md#6.2 Layar proyek (bagian dashboard)",
+        "docs/UX.md#6.1 Daftar proyek (`/`)"
+      ],
+      "id": "dd04-fe-desktop",
+      "title": "Tampilan sesi desktop: label dan hanya Stop",
+      "type": "fe",
+      "agent": "fe",
+      "slice": "sesi-desktop",
+      "value": "mid",
+      "size": "s",
+      "done": "Label \"dari desktop\" di bar atas dan Daftar proyek; hanya tombol Stop (tanpa Jeda dan tanpa kotak ketik, desktop_no_prompt tertangani); izin dan pertanyaan dijawab dari Chat; tes lib."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "dd04-fe-desktop",
+        "dd03-izin-desktop"
+      ],
+      "criteria": [
+        "F10"
+      ],
+      "context": [
+        "docs/PRD.md#F10. Sesi dari aplikasi desktop"
+      ],
+      "id": "dd05-qa-desktop",
+      "title": "Uji sesi desktop dengan simulasi hook (F10)",
+      "type": "qa",
+      "agent": "qa",
+      "slice": "sesi-desktop",
+      "value": "mid",
+      "size": "s",
+      "done": "Tes dengan payload hook tiruan: Setujui di dashboard melepas hook; sesi Harness tidak muncul dua kali; dijawab di desktop lebih dulu -> terjawab di dashboard; Stop; bukti di docs/bukti/dd05-qa-desktop/."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "dd05-qa-desktop",
+        "dd04-fe-desktop"
+      ],
+      "criteria": [
+        "F10"
+      ],
+      "context": [],
+      "id": "dd07-uji-tangan-desktop",
+      "title": "Uji tangan 2 menit sesi desktop, lalu putuskan mematikan Flow Viewer",
+      "type": "keputusan",
+      "slice": "sesi-desktop",
+      "value": "mid",
+      "size": "s",
+      "checkpoint": "Buka satu sesi Claude Code di aplikasi desktop, minta tindakan yang butuh izin, lalu tekan Setujui di dashboard. Apakah sesi desktop melanjutkan tanpa Anda mengklik di desktop? (syarat lulus F10)",
+      "notes": "Keputusan pemilik 2026-11-04: ya, dilakukan setelah fitur dibangun. Digabung dari: dd06-matikan-flow-viewer.",
+      "done": "Pemilik mengonfirmasi lulus atau mencatat kegagalan. | Pemilik mengonfirmasi hook Flow Viewer dinonaktifkan."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "f01-contract-pindah",
+        "f03a-skema-kontrak-inti",
+        "f03b-skema-kontrak-sisanya",
+        "f04-vite-boilerplate",
+        "f05-store-v2-inti",
+        "f06-store-v2-sisanya",
+        "f07-kit-team-json",
+        "f08-kit-backlog-milestone",
+        "f10-kit-run-crew",
+        "f11-kit-kontrak-bukti",
+        "f12-spike-asumsi",
+        "ll01-parser-limit",
+        "f14-ketat-resume",
+        "f16-ui-kerangka",
+        "f17-fe-kerangka",
+        "f18-critic-kerangka",
+        "sc01-jaringan",
+        "rb01-katalog-tim",
+        "rb02-folder-proyek",
+        "rb03a-conductor-inti",
+        "rb03b-free-flow",
+        "rb04-api-mulai-run",
+        "rb05-ui-run-baru",
+        "rb05-ui-run-baru-audit",
+        "rb06-fe-run-baru",
+        "rb07-critic-run-baru",
+        "rb08-qa-run-baru",
+        "sc02-mulai-run",
+        "lp01-transkrip",
+        "lp02-aktivitas-agent",
+        "lp03-api-detail-run",
+        "lp04-seed-demo",
+        "lp05-ui-kerangka-proyek",
+        "lp06-ui-peta",
+        "lp06-ui-peta-audit",
+        "lp07-ui-chat",
+        "lp08-ui-detail-agent",
+        "lp10-fe-lib-run",
+        "lp11-fe-lib-peta",
+        "lp12a-fe-proyek-data",
+        "lp12b-fe-peta",
+        "lp12c-fe-detail-agent",
+        "lp13-critic-proyek",
+        "lp14-qa-proyek",
+        "ch01-pesan-jawab",
+        "ch02-izin-aturan",
+        "ch03-kirim-lanjutkan",
+        "ch04-fe-chat",
+        "ch05-fe-izin",
+        "ch06-qa-chat",
+        "ll02-jeda-panjang",
+        "ll03-limit-jadwal",
+        "ll04-pulih-restart",
+        "ll06-qa-jeda-limit",
+        "bk01-port-backlog",
+        "bk02-git-commit",
+        "bk03-flow-usulan",
+        "bk04-flow-batch",
+        "bk05-flow-henti",
+        "bk06-fe-milestone",
+        "bk07-qa-backlog",
+        "sc04-commit-backlog",
+        "rv01-bukti-scan",
+        "rv02-bukti-sajikan",
+        "rv03-api-review",
+        "rv04-ui-review",
+        "rv04-ui-review-audit",
+        "rv05-fe-render-bukti",
+        "rv06-fe-review",
+        "rv07-critic-review",
+        "rv08-qa-review",
+        "sc05-bukti-render",
+        "pb01-api-proyek",
+        "pb02-ui-daftar",
+        "pb03-fe-daftar",
+        "pb05-qa-daftar",
+        "hapus-web-lama",
+        "sc06-push",
+        "dd01-plugin-hook",
+        "dd02-sesi-desktop",
+        "dd03-izin-desktop",
+        "dd04-fe-desktop",
+        "dd05-qa-desktop",
+        "dd07-uji-tangan-desktop",
+        "dk01-data-lengkap",
+        "dk02-qa-data-lengkap"
+      ],
+      "criteria": [],
+      "context": [
+        "skill:ponytail-audit",
+        "docs/ARCHITECTURE.md#9. Permukaan keamanan [SEC]",
+        "docs/ARCHITECTURE.md#10. Threat model"
+      ],
+      "id": "audit-akhir",
+      "title": "Audit akhir keamanan dan kualitas kode",
+      "type": "audit-akhir",
+      "agent": "cyber",
+      "slice": "akhir",
+      "size": "l",
+      "value": "mid",
+      "model": "opus",
+      "notes": "Skill ponytail-audit; audit menyeluruh tidak bisa dipecah (bukan be/fe/qa). Sertakan komentar shortcut: di kode, npm audit, dan pengecekan ulang semua [SEC]. Tidak menunggu item fase 2 (F6, F11). Tidak menunggu item fase 2 (F6, F11, F9, F12).",
+      "done": "Laporan audit ponytail-audit seluruh repo, npm audit tanpa high/critical, komentar shortcut: ditinjau, temuan medium+ jadi item; ringkasan di docs/bukti/audit-akhir/."
+    },
+    {
+      "id": "nt01-notifier",
+      "title": "Pemicu pemberitahuan dan dedupe",
+      "type": "be",
+      "agent": "be",
+      "status": "parked",
+      "needs": [
+        "f06-store-v2-sisanya",
+        "ch01-pesan-jawab",
+        "bk05-flow-henti"
+      ],
+      "criteria": [
+        "F6"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#7. Alur kunci",
+        "docs/ARCHITECTURE.md#2. Modul dan seam"
+      ],
+      "value": "low",
+      "size": "m",
+      "done": "Notifier berlangganan subscribeAll: pemicu question/permission/milestone/decision pending dan run ready_review/failed/disconnected/limit_paused; dedupe per kunci; resolved_at saat dijawab; batch selesai dan commit bukan pemicu; PushSender tiruan; tes; npm test hijau.",
+      "slice": "fase-2",
+      "notes": "Fase 2: ditunda pemilik 2026-11-05 (F6 Pemberitahuan)."
+    },
+    {
+      "id": "nt02-webpush",
+      "title": "Web Push: kunci VAPID, kirim, berlangganan",
+      "type": "be",
+      "agent": "be",
+      "status": "parked",
+      "needs": [
+        "nt01-notifier",
+        "f03b-skema-kontrak-sisanya"
+      ],
+      "criteria": [
+        "F6"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#1. Stack",
+        "docs/ARCHITECTURE.md#6.2 Endpoint",
+        "docs/ARCHITECTURE.md#10. Threat model"
+      ],
+      "value": "low",
+      "size": "m",
+      "done": "web-push dengan data/vapid.json (gitignored, dibuat otomatis, hanya kunci publik ke klien); POST/DELETE /api/push/subscriptions; endpoint harus https dan host allowlist, timeout 10 dtk, tanpa redirect; 404/410 menghapus langganan; push \"selesaikan\" bertag sama; isi push < 120 karakter; tes SSRF dan kirim tiruan; npm test hijau.",
+      "slice": "fase-2",
+      "notes": "Fase 2: ditunda pemilik 2026-11-05 (F6 Pemberitahuan)."
+    },
+    {
+      "id": "nt03-ui-pengaturan",
+      "title": "Panel Pengaturan dan baris Aktifkan pemberitahuan",
+      "type": "ui",
+      "agent": "ui-designer",
+      "status": "parked",
+      "needs": [
+        "f16-ui-kerangka"
+      ],
+      "criteria": [
+        "F6",
+        "F13"
+      ],
+      "context": [
+        "docs/UX.md#3. Penggolongan layar",
+        "docs/DESIGN.md#Dial per jenis area",
+        "docs/UX.md#4. Peta layar dan navigasi",
+        "docs/DESIGN.md#Komponen inti",
+        "docs/ARCHITECTURE.md#3. Struktur folder (Penempatan komponen)"
+      ],
+      "value": "low",
+      "size": "s",
+      "done": "SettingsPanel samping (tema, bunyi, pemberitahuan Aktifkan + petunjuk bila ditolak/tak didukung, folder kerja hanya dibaca, ukuran batch bawaan); data contoh; screenshot terang/gelap; kontrak komponen.",
+      "screen": "Pengaturan",
+      "slice": "fase-2",
+      "model": "sonnet",
+      "notes": "Fase 2: ditunda pemilik 2026-11-05 (F6 Pemberitahuan)."
+    },
+    {
+      "id": "nt04-fe-pengaturan",
+      "title": "Pengaturan tersambung: tema, bunyi, batch bawaan, judul tab, notifikasi desktop",
+      "type": "fe",
+      "agent": "fe",
+      "status": "parked",
+      "needs": [
+        "nt03-ui-pengaturan",
+        "pb01-api-proyek",
+        "f17-fe-kerangka",
+        "pb03-fe-daftar"
+      ],
+      "criteria": [
+        "F6",
+        "F13"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#5. Data model",
+        "docs/KOMPONEN.md",
+        "docs/ARCHITECTURE.md#7. Alur kunci"
+      ],
+      "value": "low",
+      "size": "m",
+      "done": "Panel tersambung: tema dan bunyi di localStorage, batch bawaan via PUT /api/settings, folder kerja dibaca dari /api/config; kontras WCAG AA diperiksa di terang/gelap; tes. | useTitleBadge \"(N) Butuh kamu · <proyek>\", bunyi singkat yang bisa dimatikan dan diingat, Notification desktop setelah Aktifkan; batch selesai tidak memicu; tes lib.",
+      "slice": "fase-2",
+      "notes": "Digabung dari: nt06-fe-judul-bunyi. Fase 2: ditunda pemilik 2026-11-05 (F6 Pemberitahuan)."
+    },
+    {
+      "id": "nt05-fe-push-pwa",
+      "title": "Push HP dan aplikasi terpasang (service worker, manifest)",
+      "type": "fe",
+      "agent": "fe",
+      "status": "parked",
+      "needs": [
+        "nt02-webpush",
+        "nt04-fe-pengaturan"
+      ],
+      "criteria": [
+        "F6",
+        "F11"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#7. Alur kunci",
+        "docs/ARCHITECTURE.md#3. Struktur folder"
+      ],
+      "value": "low",
+      "size": "m",
+      "done": "sw.js (push, klik membuka url, tutup notifikasi bertag, tanpa cache API), manifest.webmanifest, ikon, offline.html berpesan Tailscale; usePushSubscription meminta izin hanya saat Aktifkan; petunjuk bila ditolak; tes lib dan manifest valid.",
+      "slice": "fase-2",
+      "notes": "Fase 2: ditunda pemilik 2026-11-05 (F6 Pemberitahuan)."
+    },
+    {
+      "id": "nt07-qa-notifikasi",
+      "title": "Uji pemberitahuan (F6)",
+      "type": "qa",
+      "agent": "qa",
+      "status": "parked",
+      "needs": [
+        "nt05-fe-push-pwa",
+        "nt04-fe-pengaturan",
+        "nt01-notifier"
+      ],
+      "criteria": [
+        "F6"
+      ],
+      "context": [
+        "docs/PRD.md#F6. Pemberitahuan"
+      ],
+      "value": "low",
+      "size": "m",
+      "done": "Tes dengan pengirim push tiruan dan Playwright: push berisi proyek + potongan pertanyaan < 10 dtk, tidak diulang, hilang setelah dijawab, batch/commit tidak memicu, bunyi bisa dimatikan, izin hanya diminta saat Aktifkan, izin ditolak tetap judul tab; bukti di docs/bukti/nt07-qa-notifikasi/.",
+      "slice": "fase-2",
+      "notes": "Fase 2: ditunda pemilik 2026-11-05 (F6 Pemberitahuan)."
+    },
+    {
+      "id": "hp01-ui-mobile",
+      "title": "Tampilan HP: bilah tab, Chat ringkas, lembar bawah, status agent singkat",
+      "type": "ui",
+      "agent": "ui-designer",
+      "status": "parked",
+      "needs": [
+        "f16-ui-kerangka",
+        "lp07-ui-chat",
+        "pb02-ui-daftar",
+        "rv04-ui-review-audit"
+      ],
+      "criteria": [
+        "F11"
+      ],
+      "context": [
+        "docs/UX.md#3. Penggolongan layar",
+        "docs/DESIGN.md#Dial per jenis area",
+        "docs/UX.md#4. Peta layar dan navigasi",
+        "docs/DESIGN.md#Rancangan layar: Layar proyek",
+        "HP 375 (`layar-proyek.html`",
+        "< 900 px)",
+        "docs/mockups/arah-b/layar-proyek.html",
+        "docs/ARCHITECTURE.md#3. Struktur folder (Penempatan komponen)"
+      ],
+      "value": "low",
+      "size": "l",
+      "done": "TabBar (Proyek + lencana, Run baru, Riwayat), MobileProjectView (daftar status agent singkat, Chat, tanpa peta dan kolom agent), FolderSheet lembar bawah, Pengaturan dari ikon; 375 px tanpa geser horizontal; data contoh; screenshot terang/gelap; kontrak komponen.",
+      "screen": "HP (< 900 px)",
+      "slice": "fase-2",
+      "notes": "Bagian: bangun. Tata letak sempit; rancangan HP 375 ada di DESIGN. Fase 2: ditunda pemilik 2026-11-05 (F11 HP versi ringkas)."
+    },
+    {
+      "id": "hp01-ui-mobile-audit",
+      "title": "Tampilan HP: audit dan perbaikan",
+      "type": "ui",
+      "agent": "ui-designer",
+      "status": "parked",
+      "needs": [
+        "hp01-ui-mobile"
+      ],
+      "criteria": [
+        "true"
+      ],
+      "context": [
+        "docs/UX.md#3. Penggolongan layar",
+        "docs/DESIGN.md#Dial per jenis area",
+        "docs/bukti/hp01-ui-mobile/bukti.json"
+      ],
+      "value": "low",
+      "size": "m",
+      "done": "Audit ui-craft --lang id (dan teks ux-writing-id) tanpa temuan blocker/major; bukti.json diperbarui dengan screenshot sesudah perbaikan.",
+      "screen": "HP (< 900 px)",
+      "slice": "fase-2",
+      "model": "opus",
+      "notes": "Bagian: audit Fase 2: ditunda pemilik 2026-11-05 (F11 HP versi ringkas)."
+    },
+    {
+      "id": "hp02-fe-mobile",
+      "title": "HP tersambung: ganti tampilan di bawah 900 px, bilah tab, lembar folder",
+      "type": "fe",
+      "agent": "fe",
+      "status": "parked",
+      "needs": [
+        "hp01-ui-mobile-audit",
+        "lp12a-fe-proyek-data",
+        "pb03-fe-daftar",
+        "rv06-fe-review",
+        "rb06-fe-run-baru",
+        "ch04-fe-chat"
+      ],
+      "criteria": [
+        "F11"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#7. Alur kunci",
+        "docs/UX.md#4. Peta layar dan navigasi",
+        "docs/KOMPONEN.md"
+      ],
+      "value": "low",
+      "size": "m",
+      "done": "Satu set rute dan container memilih komponen HP di < 900 px; semua aksi F11 (daftar proyek, Chat, Run baru, Jeda/Stop, Review) bisa dilakukan di 375 px; tes lib breakpoint; screenshot 375.",
+      "slice": "fase-2",
+      "notes": "Fase 2: ditunda pemilik 2026-11-05 (F11 HP versi ringkas)."
+    },
+    {
+      "id": "hp03-critic-hp",
+      "title": "Kritik tampilan HP",
+      "type": "review",
+      "agent": "ui-critic",
+      "status": "parked",
+      "needs": [
+        "hp01-ui-mobile-audit"
+      ],
+      "criteria": [
+        "true"
+      ],
+      "context": [
+        "docs/UX.md#3. Penggolongan layar",
+        "docs/DESIGN.md#Dial per jenis area",
+        "docs/bukti/hp01-ui-mobile/bukti.json",
+        "docs/DESIGN.md#Larangan khusus"
+      ],
+      "value": "low",
+      "size": "s",
+      "done": "Laporan kritik terstruktur dengan nilai; temuan blocker ditutup lewat jalur cepat atau dicatat sebagai item.",
+      "screen": "HP (< 900 px)",
+      "slice": "fase-2",
+      "notes": "Fase 2: ditunda pemilik 2026-11-05 (F11 HP versi ringkas)."
+    },
+    {
+      "id": "hp04-qa-hp",
+      "title": "Uji HP dan pemasangan sebagai aplikasi (F11)",
+      "type": "qa",
+      "agent": "qa",
+      "status": "parked",
+      "needs": [
+        "hp02-fe-mobile",
+        "nt05-fe-push-pwa"
+      ],
+      "criteria": [
+        "F11",
+        "F6"
+      ],
+      "context": [
+        "docs/PRD.md#F11. HP versi ringkas",
+        "docs/ARCHITECTURE.md#13. Deploy"
+      ],
+      "value": "low",
+      "size": "m",
+      "done": "Playwright 375 px: semua aksi F11 tanpa geser horizontal; manifest dan service worker valid (dapat dipasang); halaman offline; bukti di docs/bukti/hp04-qa-hp/. Uji di perangkat nyata lewat Tailscale dicatat sebagai item diparkir bila belum bisa.",
+      "slice": "fase-2",
+      "notes": "Fase 2: ditunda pemilik 2026-11-05 (F11 HP versi ringkas)."
+    },
+    {
+      "id": "hp05-dokumen-jalankan",
+      "title": "Panduan menjalankan dan memasang (laptop, Tailscale, HP)",
+      "type": "be",
+      "agent": "be",
+      "status": "parked",
+      "needs": [
+        "hp04-qa-hp"
+      ],
+      "criteria": [
+        "true"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#12. Menjalankan lokal",
+        "docs/ARCHITECTURE.md#13. Deploy"
+      ],
+      "value": "low",
+      "size": "s",
+      "done": "README crew-control memuat langkah npm ci/build/start, .env, plugin, tailscale serve, CREW_TAILSCALE_USERS, matikan hook Flow Viewer; langkah diverifikasi dengan menjalankannya (keluaran singkat).",
+      "slice": "fase-2",
+      "notes": "Fase 2: ditunda pemilik 2026-11-05 (F11 HP versi ringkas)."
+    },
+    {
+      "id": "sc06-push-fase2",
+      "title": "Tinjauan keamanan: Web Push dan rahasia VAPID",
+      "type": "sec",
+      "agent": "cyber",
+      "status": "parked",
+      "needs": [
+        "nt02-webpush"
+      ],
+      "criteria": [
+        "true"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#9. Permukaan keamanan [SEC]",
+        "docs/ARCHITECTURE.md#10. Threat model",
+        "skill:security-checklists"
+      ],
+      "value": "low",
+      "size": "s",
+      "done": "Ringkasan temuan: allowlist host, redirect, timeout, kunci privat tidak bocor ke klien/log/git; tes dijalankan; medium+ jadi item urgent.",
+      "slice": "fase-2",
+      "notes": "Cakupan [SEC]: panggilan keluar (SSRF), rahasia. Fase 2: ditunda pemilik 2026-11-05 (F6 Pemberitahuan)."
+    },
+    {
+      "id": "rw01-api-riwayat",
+      "title": "API Riwayat: daftar run, banding, hapus",
+      "type": "be",
+      "agent": "be",
+      "status": "parked",
+      "needs": [
+        "lp03-api-detail-run"
+      ],
+      "criteria": [
+        "F12"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#6.2 Endpoint",
+        "docs/ARCHITECTURE.md#7. Alur kunci"
+      ],
+      "value": "low",
+      "size": "m",
+      "done": "GET /api/runs (saring proyek/status/tim/q/origin, kursor, terbaru dulu, model per baris), GET /api/compare (RunStats, comparable + reason bila tim/perintah beda), DELETE /api/runs/:id (run_active ditolak; data dashboard saja); status run selesai tidak pernah running; tes; npm test hijau.",
+      "slice": "fase-2",
+      "notes": "Fase 2: ditunda pemilik 2026-11-05 (F12 Riwayat)."
+    },
+    {
+      "id": "rw02-ui-riwayat",
+      "title": "Layar Riwayat dan Banding dua run",
+      "type": "ui",
+      "agent": "ui-designer",
+      "status": "parked",
+      "needs": [
+        "f16-ui-kerangka"
+      ],
+      "criteria": [
+        "F12"
+      ],
+      "context": [
+        "docs/UX.md#3. Penggolongan layar",
+        "docs/UX.md#5. Pola per tugas",
+        "docs/UX.md#2. Tugas dan langkah (layar tugas)",
+        "docs/DESIGN.md#Wujud arah per jenis layar",
+        "docs/DESIGN.md#Komponen inti",
+        "docs/ARCHITECTURE.md#3. Struktur folder (Penempatan komponen)"
+      ],
+      "value": "low",
+      "size": "l",
+      "done": "HistoryView (tabel dengan model, status, milestone, token, durasi; saringan; centang 2 baris + Banding; menu baris + konfirmasi Hapus), CompareView dengan peringatan \"tidak setara\"; semua state UX 9; data contoh; screenshot terang/gelap 1440 dan 375; kontrak komponen.",
+      "screen": "Riwayat dan Banding",
+      "slice": "fase-2",
+      "notes": "Bagian: bangun. Layar baru, belum ada mockup. Fase 2: ditunda pemilik 2026-11-05 (F12 Riwayat)."
+    },
+    {
+      "id": "rw02-ui-riwayat-audit",
+      "title": "Layar Riwayat: audit dan perbaikan",
+      "type": "ui",
+      "agent": "ui-designer",
+      "status": "parked",
+      "needs": [
+        "rw02-ui-riwayat"
+      ],
+      "criteria": [
+        "true"
+      ],
+      "context": [
+        "docs/UX.md#3. Penggolongan layar",
+        "docs/bukti/rw02-ui-riwayat/bukti.json"
+      ],
+      "value": "low",
+      "size": "m",
+      "done": "Audit ui-craft --lang id (dan teks ux-writing-id) tanpa temuan blocker/major; bukti.json diperbarui dengan screenshot sesudah perbaikan.",
+      "screen": "Riwayat dan Banding",
+      "slice": "fase-2",
+      "model": "opus",
+      "notes": "Bagian: audit Fase 2: ditunda pemilik 2026-11-05 (F12 Riwayat)."
+    },
+    {
+      "id": "rw03-fe-riwayat",
+      "title": "Riwayat tersambung: cari, buka run lama baca saja, banding, hapus",
+      "type": "fe",
+      "agent": "fe",
+      "status": "parked",
+      "needs": [
+        "rw02-ui-riwayat-audit",
+        "rw01-api-riwayat",
+        "ch04-fe-chat",
+        "f17-fe-kerangka"
+      ],
+      "criteria": [
+        "F12"
+      ],
+      "context": [
+        "docs/UX.md#4. Peta layar dan navigasi",
+        "docs/UX.md#2. Tugas dan langkah (layar tugas)",
+        "docs/KOMPONEN.md"
+      ],
+      "value": "low",
+      "size": "m",
+      "done": "/riwayat, /riwayat/:runId (tata letak layar proyek tanpa kendali; run terakhir proyek berstatus Selesai bisa dilanjut), /riwayat/banding?a=&b=; T7 = 4 langkah; saringan di URL; tes lib.",
+      "slice": "fase-2",
+      "notes": "Fase 2: ditunda pemilik 2026-11-05 (F12 Riwayat)."
+    },
+    {
+      "id": "rw05-qa-riwayat",
+      "title": "Uji Riwayat (F12)",
+      "type": "qa",
+      "agent": "qa",
+      "status": "parked",
+      "needs": [
+        "rw03-fe-riwayat",
+        "rw01-api-riwayat"
+      ],
+      "criteria": [
+        "F12"
+      ],
+      "context": [
+        "docs/PRD.md#F12. Riwayat"
+      ],
+      "value": "low",
+      "size": "s",
+      "done": "Playwright: run Selesai tidak berlabel sedang berjalan; run Selesai yang dilanjut berlabel Jalan hanya selama sesi hidup; model tampil per baris; dua run beda tim/perintah dibanding dengan peringatan \"tidak setara\"; hapus tidak menyentuh commit dan bukti; bukti di docs/bukti/rw05-qa-riwayat/.",
+      "slice": "fase-2",
+      "notes": "Fase 2: ditunda pemilik 2026-11-05 (F12 Riwayat)."
+    },
+    {
+      "id": "kh01-metrik",
+      "title": "Kesehatan kit: enam angka dan pembanding periode",
+      "type": "be",
+      "agent": "be",
+      "status": "parked",
+      "needs": [
+        "lp01-transkrip",
+        "lp02-aktivitas-agent",
+        "bk04-flow-batch"
+      ],
+      "criteria": [
+        "F9"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#7. Alur kunci",
+        "docs/UX.md#6.3 Kesehatan kit (`/kesehatan`)",
+        "docs/ARCHITECTURE.md#2. Modul dan seam"
+      ],
+      "value": "low",
+      "size": "m",
+      "done": "src/kit-health.ts metrics(filter): token per item (median), per milestone per jenis, waktu menunggu (total dan median), revisi berulang %, backlog melar %, agent paling boros; pembanding periode sama panjang sebelumnya; basis < 5 tidak ditandai dan tanpa persen; null = \"belum ada data\"; label sebagian; ambang masalah UX 6.3; tes dengan data berhitung tangan; npm test hijau.",
+      "slice": "fase-2",
+      "model": "opus",
+      "notes": "Perhitungan yang menentukan keputusan pemilik; model opus. Fase 2: ditunda pemilik 2026-11-05 (F9 Kesehatan kit)."
+    },
+    {
+      "id": "kh02-api-kesehatan",
+      "title": "API Kesehatan kit: saringan, tabel item, telusur angka",
+      "type": "be",
+      "agent": "be",
+      "status": "parked",
+      "needs": [
+        "kh01-metrik"
+      ],
+      "criteria": [
+        "F9"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#6.2 Endpoint",
+        "docs/UX.md#6.3 Kesehatan kit (`/kesehatan`)"
+      ],
+      "value": "low",
+      "size": "m",
+      "done": "GET /api/kit-health (proyek/tim/rentang, bawaan 30 hari), /items (urut, 50 per halaman), /drill/:metric (baris dengan runId/itemKey/messageId/milestoneId); tes; npm test hijau.",
+      "slice": "fase-2",
+      "notes": "Fase 2: ditunda pemilik 2026-11-05 (F9 Kesehatan kit)."
+    },
+    {
+      "id": "kh03-ui-kesehatan",
+      "title": "Layar Kesehatan kit",
+      "type": "ui",
+      "agent": "ui-designer",
+      "status": "parked",
+      "needs": [
+        "f16-ui-kerangka"
+      ],
+      "criteria": [
+        "F9"
+      ],
+      "context": [
+        "docs/UX.md#3. Penggolongan layar",
+        "docs/DESIGN.md#Dial per jenis area",
+        "docs/UX.md#6.3 Kesehatan kit (`/kesehatan`)",
+        "docs/UX.md#9. State per layar",
+        "docs/DESIGN.md#Wujud arah per jenis layar",
+        "docs/DESIGN.md#Komponen inti",
+        "docs/ARCHITECTURE.md#3. Struktur folder (Penempatan komponen)"
+      ],
+      "value": "low",
+      "size": "l",
+      "done": "KitHealthView: saringan, 6 angka + pembanding, daftar masalah, grafik garis token per milestone (SVG, label langsung), peringkat agent, tabel item 50/halaman; \"belum ada data\" dan \"sebagian\"; data contoh; screenshot terang/gelap 1440; kontrak komponen.",
+      "screen": "Kesehatan kit",
+      "slice": "fase-2",
+      "notes": "Bagian: bangun. Layar dashboard baru, belum ada mockup. Fase 2: ditunda pemilik 2026-11-05 (F9 Kesehatan kit)."
+    },
+    {
+      "id": "kh03-ui-kesehatan-audit",
+      "title": "Layar Kesehatan kit: audit dan perbaikan",
+      "type": "ui",
+      "agent": "ui-designer",
+      "status": "parked",
+      "needs": [
+        "kh03-ui-kesehatan"
+      ],
+      "criteria": [
+        "true"
+      ],
+      "context": [
+        "docs/UX.md#3. Penggolongan layar",
+        "docs/DESIGN.md#Dial per jenis area",
+        "docs/bukti/kh03-ui-kesehatan/bukti.json"
+      ],
+      "value": "low",
+      "size": "m",
+      "done": "Audit ui-craft --lang id (dan teks ux-writing-id) tanpa temuan blocker/major; bukti.json diperbarui dengan screenshot sesudah perbaikan.",
+      "screen": "Kesehatan kit",
+      "slice": "fase-2",
+      "model": "opus",
+      "notes": "Bagian: audit Fase 2: ditunda pemilik 2026-11-05 (F9 Kesehatan kit)."
+    },
+    {
+      "id": "kh04-fe-kesehatan",
+      "title": "Kesehatan kit tersambung: saringan URL dan telusur",
+      "type": "fe",
+      "agent": "fe",
+      "status": "parked",
+      "needs": [
+        "kh03-ui-kesehatan-audit",
+        "kh02-api-kesehatan",
+        "f17-fe-kerangka"
+      ],
+      "criteria": [
+        "F9"
+      ],
+      "context": [
+        "docs/UX.md#6.3 Kesehatan kit (`/kesehatan`)",
+        "docs/KOMPONEN.md"
+      ],
+      "value": "low",
+      "size": "m",
+      "done": "KitHealthContainer di /kesehatan: saringan di URL, setiap angka dan masalah bisa diklik ke item/run/pesan asalnya (T6 = 2 langkah), tabel urut dan paginasi; tes lib.",
+      "slice": "fase-2",
+      "notes": "Fase 2: ditunda pemilik 2026-11-05 (F9 Kesehatan kit)."
+    },
+    {
+      "id": "kh06-qa-kesehatan",
+      "title": "Uji Kesehatan kit (F9)",
+      "type": "qa",
+      "agent": "qa",
+      "status": "parked",
+      "needs": [
+        "kh04-fe-kesehatan",
+        "kh02-api-kesehatan"
+      ],
+      "criteria": [
+        "F9"
+      ],
+      "context": [
+        "docs/PRD.md#F9. Kesehatan kit"
+      ],
+      "value": "low",
+      "size": "s",
+      "done": "Tes: saringan proyek/tim/rentang; tiap angka bisa diklik sampai item atau run asal; angka tanpa data \"belum ada data\" bukan 0; basis < 5 tanpa persen; bukti di docs/bukti/kh06-qa-kesehatan/.",
+      "slice": "fase-2",
+      "notes": "Fase 2: ditunda pemilik 2026-11-05 (F9 Kesehatan kit)."
+    },
+    {
+      "id": "rw04-critic-riwayat",
+      "title": "Kritik layar Riwayat dan Kesehatan kit",
+      "type": "review",
+      "agent": "ui-critic",
+      "status": "parked",
+      "needs": [
+        "rw02-ui-riwayat-audit",
+        "kh03-ui-kesehatan-audit"
+      ],
+      "criteria": [
+        "true"
+      ],
+      "context": [
+        "docs/UX.md#3. Penggolongan layar",
+        "docs/bukti/rw02-ui-riwayat/bukti.json",
+        "docs/DESIGN.md#Larangan khusus",
+        "docs/DESIGN.md#Dial per jenis area",
+        "docs/UX.md#6.3 Kesehatan kit (`/kesehatan`)",
+        "docs/bukti/kh03-ui-kesehatan/bukti.json"
+      ],
+      "value": "low",
+      "size": "s",
+      "done": "Laporan kritik terstruktur dengan nilai; temuan blocker ditutup lewat jalur cepat atau dicatat sebagai item. | Laporan kritik terstruktur dengan nilai; temuan blocker ditutup lewat jalur cepat atau dicatat sebagai item.",
+      "slice": "fase-2",
+      "notes": "Digabung dari: kh05-critic-kesehatan. Fase 2: ditunda pemilik 2026-11-05 (F12 Riwayat). (gabungan kritik Riwayat dan Kesehatan kit)"
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "lp01-transkrip",
+        "lp02-aktivitas-agent",
+        "ch01-pesan-jawab",
+        "ch03-kirim-lanjutkan",
+        "bk05-flow-henti",
+        "rv01-bukti-scan",
+        "ll03-limit-jadwal"
+      ],
+      "criteria": [
+        "F9",
+        "F12"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#5. Data model",
+        "docs/PRD.md#F12. Riwayat",
+        "docs/PRD.md#F9. Kesehatan kit"
+      ],
+      "id": "dk01-data-lengkap",
+      "title": "Data fase 2 tetap lengkap: arsip run, bahan metrik Kesehatan kit, peristiwa pemberitahuan",
+      "type": "be",
+      "agent": "be",
+      "slice": "data-fase2",
+      "value": "high",
+      "size": "m",
+      "notes": "Pemilik 2026-11-05: layar F12/F9/F6/F11 ditunda ke fase 2 tetapi datanya harus tetap lengkap. Tanpa layar baru.",
+      "done": "Store.runArchive(runId) (hanya baca, belum ada rute/layar) mengembalikan satu run lengkap: prompt, tim, model, semua sesi (id, jenis, mulai, selesai, akhir), semua pesan (agent/pertanyaan/izin/jawaban/pemilik/sistem), semua event (alat, status+alasan, aktivitas agent, batch, milestone), token 4 jenis per sesi dan per agent, durasi, status akhir + alasan, bukti dan milestone/item terkait; run desktop dan run Selesai yang dilanjut juga lengkap; fungsi dasar metrik (token per item, waktu menunggu pemilik dari pesan, item ditambah, revisi) dapat dihitung dari data yang tersimpan (tes dengan data berhitung tangan, tanpa layar); tipe event status ada di kontrak; npm test hijau."
+    },
+    {
+      "status": "todo",
+      "needs": [
+        "dk01-data-lengkap",
+        "ll04-pulih-restart",
+        "dd03-izin-desktop"
+      ],
+      "criteria": [
+        "F12"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#5. Data model"
+      ],
+      "id": "dk02-qa-data-lengkap",
+      "title": "Uji arsip: run lama bisa dibuka lengkap kelak dan tidak ada data yang hilang",
+      "type": "qa",
+      "agent": "qa",
+      "slice": "data-fase2",
+      "value": "high",
+      "size": "s",
+      "notes": "Pemilik 2026-11-05: layar F12/F9/F6/F11 ditunda ke fase 2 tetapi datanya harus tetap lengkap.",
+      "done": "Tes memutar run fake-claude penuh (batch, pertanyaan, izin, Stop, restart server, jeda limit) lalu memeriksa runArchive tanpa celah; basis data v1 lama tetap terbaca utuh setelah migrasi; tidak ada jalur kode yang menghapus atau memangkas runs/messages/events (pencarian kode dilampirkan); hasil di docs/bukti/dk02/bukti.json."
+    }
+  ],
+  "updatedAt": "2026-11-04T17:11:21.110Z"
+}
