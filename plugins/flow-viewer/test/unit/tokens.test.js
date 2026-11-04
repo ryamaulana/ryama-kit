@@ -69,3 +69,64 @@ test('laporan agent latar dihitung dari pesan notifikasi, bukan dari tanda mulai
   assert.ok(A.handbacks.max > 5000);
   assert.strictEqual(A.handbacks.top[0].to, 'be be-email');
 });
+
+test('laporan proyek: pemanggilan yang terekam di dua run dihitung sekali (di run pertama)', () => {
+  const inv = { agentId: 'a1', item: 'be-x', model: 'opus-5-5', byModel: { 'opus-5-5': 1000 }, turns: 10, in: 0, out: 0, cr: 1000, cc: 0, raw: 1000, eq: 100, heavy: [] };
+  const st = (t) => ({ startedAt: t, nodes: { be: { count: 1, usage: { in: 0, out: 0, cr: 1000, cc: 0, turns: 10 }, invocations: [inv] } }, main: { usage: null } });
+  const R = report.build([
+    { id: 1, project: 'P', started_at: 1000, updated_at: 2000, state: st(1000), convo: [] },
+    { id: 2, project: 'P', started_at: 3000, updated_at: 4000, state: st(3000), convo: [] },
+  ], 'P');
+  assert.strictEqual(R.agents.be.calls, 1);
+  assert.strictEqual(R.totals.raw, 1000);
+  assert.strictEqual(R.items.length, 1);
+});
+
+// Nilai harapan dihitung tangan dari rumus PRD 4a: in + 1,25 cc + 0,1 cr + 5 out.
+const U = (o) => ({ in: 0, out: 0, cr: 0, cc: 0, turns: 1, ...o });
+const mkRun = (id, nodes, main) => ({ id, project: 'P', started_at: id * 1000, updated_at: id * 1000 + 500, state: { startedAt: id * 1000, nodes, main: { usage: main || null } }, convo: [] });
+const nodeOf = (u) => ({ count: 1, usage: u });
+
+test('laporan: tiga penyumbang setara terbesar, persen dari setara (bukan mentah)', () => {
+  // be 5000, fe 10000, qa 7500, ux 2000, orkestrator 3000 => total 27500
+  const R = report.build([mkRun(1, { be: nodeOf(U({ out: 1000 })), fe: nodeOf(U({ cr: 100000 })), qa: nodeOf(U({ cc: 6000 })), ux: nodeOf(U({ in: 2000 })) }, U({ in: 3000 }))], 'P');
+  assert.strictEqual(R.totals.eq, 27500);
+  assert.deepStrictEqual(R.top.map((t) => [t.name, t.eq, t.pct]), [['fe', 10000, 36], ['qa', 7500, 27], ['be', 5000, 18]]);
+  const md = report.markdown(R);
+  assert.ok(md.indexOf('Penyumbang setara terbesar') < md.indexOf('## Ringkasan'));
+  assert.ok(md.includes('| fe |') && md.includes('36%'));
+  assert.ok(!/\d+%\)/.test(md.split('## Ringkasan')[1].split('\n')[1]), 'persen per model (mentah) tidak boleh ada');
+});
+
+test('laporan: maks 200 run terbaru, catatan batas, dan run belum dianalisis dihitung', () => {
+  const runs = Array.from({ length: 205 }, (_, i) => mkRun(i + 1, { be: nodeOf(U({ out: 10 })) }));
+  const R = report.build(runs, 'P');
+  assert.strictEqual(R.runs.length, 200);
+  assert.strictEqual(R.runs[0].id, 6); // 5 tertua dibuang
+  assert.deepStrictEqual([R.limit.max, R.limit.omitted], [200, 5]);
+  assert.strictEqual(R.missing, 200); // tanpa pemanggilan terurai = belum dianalisis
+  const md = report.markdown(R);
+  assert.ok(md.includes('200 run terbaru') && md.includes('5 run lebih lama tidak ikut'));
+  assert.ok(md.includes('200 run belum dianalisis'));
+  assert.ok(!report.markdown(report.build(runs.slice(0, 3), 'P')).includes('lebih lama tidak ikut'));
+});
+
+test('laporan: isi run tidak menjadi HTML dan keluaran berupa data', () => {
+  const inv = { agentId: 'z', item: '<img src=x onerror=alert(1)>', model: 'm', byModel: {}, turns: 1, in: 1, out: 0, cr: 0, cc: 0, raw: 1, eq: 1, heavy: [] };
+  const R = report.build([mkRun(1, { be: { count: 1, usage: U({ in: 1 }), invocations: [inv] } })], 'P');
+  assert.deepStrictEqual(JSON.parse(JSON.stringify(R)).top[0].name, 'be');
+  assert.ok(!/<[a-z]/i.test(report.markdown(R)));
+});
+
+test('salinan laporan: ditulis di <proyek>/.flow-viewer, dilewati tanpa galat bila folder hilang atau tak bisa ditulis', () => {
+  const fs = require('node:fs'), os = require('node:os'), path = require('node:path');
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), 'fv-rep-'));
+  try {
+    assert.strictEqual(report.writeCopy(path.join(base, 'tidak-ada'), '# x'), false);
+    const file = path.join(base, 'berkas'); fs.writeFileSync(file, 'x'); // "proyek" yang ternyata berkas: mkdir gagal
+    assert.strictEqual(report.writeCopy(file, '# x'), false);
+    assert.strictEqual(report.writeCopy(base, '# isi'), true);
+    assert.strictEqual(fs.readFileSync(path.join(base, '.flow-viewer', 'laporan-token.md'), 'utf8'), '# isi');
+    assert.strictEqual(fs.readFileSync(path.join(base, '.flow-viewer', '.gitignore'), 'utf8'), '*\n');
+  } finally { fs.rmSync(base, { recursive: true, force: true }); }
+});

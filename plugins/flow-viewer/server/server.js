@@ -281,7 +281,7 @@ async function rescanRun(id) {
 }
 
 const parseJ = (x, d) => { if (x && typeof x === 'object') return x; try { return JSON.parse(x); } catch (_) { return d; } };
-function tokenBuild(project, n = 60) {
+function tokenBuild(project, n = tokenReport.MAX_RUNS) {
   flushRun();
   const rows = store ? store.list(project, n) : [];
   const runs = rows.map((r) => { const full = store.get(r.id) || {}; return { ...r, state: parseJ(full.state, {}), convo: parseJ(full.convo, []) }; });
@@ -304,19 +304,9 @@ function knownProject(p) {
 }
 function writeTokenFile(project) {
   try {
-    if (!knownProject(project) || !fs.statSync(project).isDirectory()) return;
+    if (!knownProject(project)) return;
     const { rows, R } = tokenBuild(project);
-    if (!rows) return;
-    // Symlink/junction: .flow-viewer dan file di dalamnya wajib tetap di dalam folder proyek asli.
-    const root = fs.realpathSync(project);
-    const dir = path.join(root, '.flow-viewer');
-    fs.mkdirSync(dir, { recursive: true });
-    if (fs.realpathSync(dir) !== dir) return;
-    for (const [name, text] of [['.gitignore', '*\n'], ['laporan-token.md', tokenReport.markdown(R)]]) {
-      const f = path.join(dir, name);
-      try { if (fs.lstatSync(f).isSymbolicLink()) return; } catch (_) { /* belum ada */ }
-      fs.writeFileSync(f, text);
-    }
+    if (rows) tokenReport.writeCopy(project, tokenReport.markdown(R)); // dilewati tanpa galat bila folder hilang/tak bisa ditulis
   } catch (_) { /* laporan tidak boleh mengganggu viewer */ }
 }
 let tokenFileAt = 0;
@@ -388,7 +378,7 @@ const server = http.createServer((req, res) => {
     const project = q.get('project');
     if (!knownProject(project)) { res.writeHead(400, { 'Content-Type': 'text/plain; charset=utf-8' }); res.end('Proyek tidak dikenal. Pilih proyek dari riwayat run.'); return; }
     try {
-      const { rows, R } = tokenBuild(project, Math.min(200, Number(q.get('n')) || 60));
+      const { rows, R } = tokenBuild(project, Math.min(tokenReport.MAX_RUNS, Number(q.get('n')) || tokenReport.MAX_RUNS));
       if (rows && q.get('write') !== '0') writeTokenFile(project);
       if (url.endsWith('.json')) { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(R)); }
       else { res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' }); res.end(tokenReport.markdown(R)); }

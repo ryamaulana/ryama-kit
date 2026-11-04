@@ -351,7 +351,7 @@
       "finishedAt": "2026-11-04T01:22:09.057Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "t06a-fase-run",
         "t08-store"
@@ -373,7 +373,11 @@
       "slice": "server",
       "value": "high",
       "size": "m",
-      "done": "projects.js: kunci normal, ikatan sesi, cwd di subfolder tetap proyek induk, tanpa cwd -> terbaru, slug + hash bila kembar, resolve termasuk riwayat, aktif 6 jam, eviksi maks 20. Uji unit: dua sesi folder beda bergantian terpisah; cwd docs/mockups tetap proyek induk."
+      "done": "projects.js: kunci normal, ikatan sesi, cwd di subfolder tetap proyek induk, tanpa cwd -> terbaru, slug + hash bila kembar, resolve termasuk riwayat, aktif 6 jam, eviksi maks 20. Uji unit: dua sesi folder beda bergantian terpisah; cwd docs/mockups tetap proyek induk.",
+      "attempts": 1,
+      "startedAt": "2026-11-04T01:31:21.690Z",
+      "evidence": "node --test test/unit/projects.test.js: 13 lulus, 0 gagal; server/projects.js dibuat. Wiring server.js + sweep() berkala belum (item integrasi)",
+      "finishedAt": "2026-11-04T01:34:10.760Z"
     },
     {
       "status": "todo",
@@ -580,7 +584,7 @@
       "done": "Skill ponytail-review atas server/*.js baru (run, projects, attention, store, usage, agents, guard, server): daftar temuan; tidak ada temuan tinggi terbuka. Bukti: ringkasan review."
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "t01-fondasi"
       ],
@@ -602,7 +606,11 @@
       "slice": "kerangka",
       "value": "high",
       "size": "m",
-      "done": "index.html berisi kerangka markup dengan semua id 1.7.1 dan id baru (A§10.2), boot.js, css/fonts.css + fonts/ (dari mockup arah-a), css/tokens.css dan css/app.css kosong, js/* modul kosong. Halaman termuat tanpa error konsol dan tanpa pelanggaran CSP (screenshot + konsol bersih)."
+      "done": "index.html berisi kerangka markup dengan semua id 1.7.1 dan id baru (A§10.2), boot.js, css/fonts.css + fonts/ (dari mockup arah-a), css/tokens.css dan css/app.css kosong, js/* modul kosong. Halaman termuat tanpa error konsol dan tanpa pelanggaran CSP (screenshot + konsol bersih).",
+      "attempts": 1,
+      "startedAt": "2026-11-04T01:31:21.787Z",
+      "evidence": "docs/mockups/t13a/kerangka.png ada; Playwright: 6 request 200, 41 id unik, konsol bersih, 0 pelanggaran CSP; node --test test/unit/*.test.js 109 lulus. Catatan: css/js build lama dikosongkan, test/ui gagal sampai T26",
+      "finishedAt": "2026-11-04T01:36:23.398Z"
     },
     {
       "status": "todo",
@@ -2369,7 +2377,7 @@
       "notes": "Bagian: audit"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "fix-sec-laporan-project",
         "t08-store"
@@ -2392,7 +2400,11 @@
       "slice": "laporan-token",
       "value": "high",
       "size": "m",
-      "done": "token-report: bagian teratas memuat tiga penyumbang setara terbesar (agent atau item) dengan persen; semua persen dari token setara (rumus PRD 4a, sama dengan pita dan Riwayat); maks 200 run terbaru + catatan batas; jumlah run belum dianalisis; salinan <proyek>/.flow-viewer/laporan-token.md dilewati tanpa galat bila folder hilang/tak bisa ditulis; keluaran berupa data, bukan HTML dari isi run. Uji unit. Bukti: output tes."
+      "done": "token-report: bagian teratas memuat tiga penyumbang setara terbesar (agent atau item) dengan persen; semua persen dari token setara (rumus PRD 4a, sama dengan pita dan Riwayat); maks 200 run terbaru + catatan batas; jumlah run belum dianalisis; salinan <proyek>/.flow-viewer/laporan-token.md dilewati tanpa galat bila folder hilang/tak bisa ditulis; keluaran berupa data, bukan HTML dari isi run. Uji unit. Bukti: output tes.",
+      "attempts": 1,
+      "startedAt": "2026-11-04T01:31:21.895Z",
+      "evidence": "node --test test/unit/tokens.test.js: 11 lulus, 0 gagal (4 tes baru); build() top-3 + limit 200 + writeCopy; server.js default n 60->200",
+      "finishedAt": "2026-11-04T01:34:10.864Z"
     },
     {
       "status": "todo",
@@ -2459,7 +2471,7 @@
       "done": "Lulus/gagal per AC F12 (8 kriteria + dua edge case) dengan Playwright dan tes HTTP; persen laporan = persen pita/Riwayat untuk data yang sama. Bukti: ringkasan per AC + path screenshot."
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "t04-backlog-ringkas"
       ],
@@ -2488,7 +2500,11 @@
       "value": "high",
       "size": "m",
       "done": "Ringkasan backlog dikelompokkan per slice (nama biasa; tanpa slice = \"Tanpa bagian\"), keadaan Butuh keputusan > Macet > Berjalan > Belum mulai > Selesai, item keputusan yang sudah selesai tidak pernah berlabel perlu keputusan, baris atas \"<n> bagian macet · <m> keputusan menunggu kamu · Berikutnya: <judul>\", urutan item di bagian, grup Diparkir, persen = indikator (b); edge: tanpa backlog.json, tanpa slice sama sekali, bagian >20 item, file rusak/>2 MB. Uji unit dengan backlog fixture proyek ini. Bukti: output tes.",
-      "notes": "t04 (selesai) menyediakan ringkasan datar; ini menambah pengelompokan tanpa membuka ulang t04."
+      "notes": "t04 (selesai) menyediakan ringkasan datar; ini menambah pengelompokan tanpa membuka ulang t04.",
+      "attempts": 1,
+      "startedAt": "2026-11-04T01:31:22.012Z",
+      "evidence": "node --test test/unit/backlog-sections.test.js: 11 lulus, 0 gagal; suite test/unit/*.test.js 109 lulus. Diubah: server/backlog-summary.js (bukan backlog.js)",
+      "finishedAt": "2026-11-04T01:34:39.731Z"
     },
     {
       "status": "todo",
@@ -2775,7 +2791,58 @@
       "startedAt": "2026-11-04T01:13:45.997Z",
       "evidence": "app.css:78-79 .sm:not(.btn); node --test R1-klik 3/3 lulus (1440/1200/900)",
       "finishedAt": "2026-11-04T01:14:09.632Z"
+    },
+    {
+      "id": "selaraskan-adr0002-subfolder",
+      "title": "Selaraskan ADR 0002 dan ARCHITECTURE 4.3 soal sesi di subfolder (induk terluar atau proyek sendiri)",
+      "type": "review",
+      "agent": "architect",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: t09a-projects-kunci; projects.js memilih induk terluar yang dikenal (ARCH 4.3 no.3), ADR 0002 Konsekuensi bilang subfolder tetap proyek sendiri"
+    },
+    {
+      "id": "aturan-macet-terlalu-literal",
+      "title": "Aturan Macet PRD F11 terbaca literal: 13 bagian macet padahal menunggu bagian lain yang berjalan (putusan pemilik)",
+      "type": "keputusan",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: t34a-backlog-bagian-server"
+    },
+    {
+      "id": "selaraskan-nama-backlog-summary",
+      "title": "ARCHITECTURE.md menyebut server/backlog.js, modul sebenarnya server/backlog-summary.js",
+      "type": "review",
+      "agent": "architect",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: t34a-backlog-bagian-server"
+    },
+    {
+      "id": "t13a-sisa-js-lama",
+      "title": "Putuskan nasib js/header.js, js/model.js, js/md.js (lama, tak dimuat) dan uji UI lama yang gagal sampai T26",
+      "type": "review",
+      "agent": "fe",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: t13a-kerangka-html"
     }
   ],
-  "updatedAt": "2026-11-04T01:23:08.179Z"
+  "updatedAt": "2026-11-04T01:36:23.524Z"
 }

@@ -4,33 +4,63 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Flow Viewer</title>
+<link rel="stylesheet" href="/css/fonts.css">
 <link rel="stylesheet" href="/css/tokens.css">
 <link rel="stylesheet" href="/css/app.css">
 <script src="/boot.js"></script>
 </head>
 <body>
-<header class="top">
-  <div class="c brandc"><span class="brand">Flow Viewer</span><button class="proj" id="proj" title="Ganti proyek"><span id="pname">proyek</span><span class="ar">▾</span></button></div>
-  <div class="c" id="hb-run"></div>
-  <div class="c" id="hb-dur"></div>
-  <div class="c" id="hb-prog" title="Berapa langkah alur yang sudah selesai"></div>
-  <div class="c tkc" id="tkov" title="Klik untuk detail token per agent"></div>
-  <button class="need" id="need" type="button"></button>
-  <span class="conn off" id="conn" title="Belum terhubung"><i></i><span id="conntx">terputus</span></span>
-  <button class="ib" id="theme" type="button">Gelap</button>
-  <button class="ib" id="more" type="button" title="Pengaturan" aria-haspopup="true">⋯</button>
+<header>
+  <h1 class="brand">Flow Viewer</h1>
+  <button id="proj" type="button" aria-haspopup="true" title="Ganti proyek"><span id="pname"></span></button>
+  <nav id="tabs" aria-label="Tampilan">
+    <button type="button" data-v="live" aria-pressed="true">Live</button>
+    <button type="button" data-v="history" aria-pressed="false">Riwayat</button>
+  </nav>
+  <span id="conn" class="off"></span><span id="connt">terputus</span>
+  <button id="theme" type="button" aria-label="Ganti tema"></button>
+  <button id="tchat" type="button" aria-controls="side" aria-expanded="true">Panel</button>
+  <button id="more" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Menu lainnya">Lainnya</button>
+  <div id="pmenu" hidden><button id="reset" type="button">Reset run</button></div>
 </header>
-<div id="pmenu" hidden></div>
-<main class="wrap">
-  <section id="stage" aria-label="Alur agent"><div id="histbar" role="status" hidden></div><div id="canvas"><div id="cv"></div></div>
-    <div id="empty" class="empty" hidden><b>Belum ada run</b><span>Jalankan sebuah perintah di Claude Code. Alurnya terisi di sini.</span></div>
-    <div class="zoom" id="zwrap"><button id="zout" type="button" aria-label="Perkecil">−</button><button id="zfit" type="button">Pas layar</button><button id="zin" type="button" aria-label="Perbesar">+</button><span id="zlbl" hidden></span></div>
-    <div class="legend"><span><i style="background:var(--acc)"></i>berjalan</span><span><i style="background:var(--ok)"></i>selesai</span><span><i style="background:var(--warn)"></i>butuh input</span><span><i style="background:var(--wait)"></i>menunggu</span></div>
+<div id="offline" role="status">Terputus dari server. Menyambung ulang otomatis; data di layar mungkin sudah lama.</div>
+<div id="strip"><div id="now" aria-live="polite"></div><span id="verdict"></span></div>
+<div id="histbar" role="status" hidden></div>
+<main>
+  <section id="stage" aria-label="Alur agent">
+    <div id="canvas"></div>
+    <div id="empty" hidden></div>
+    <div id="zwrap" class="zoom"><button id="zout" type="button" aria-label="Perkecil">−</button><span id="zlbl">100%</span><button id="zin" type="button" aria-label="Perbesar">+</button><button id="zfit" type="button">Pas layar</button></div>
   </section>
-  <aside id="side"><div class="pan" id="pan"><div class="pi" id="pi"></div></div><nav class="rail" aria-label="Panel"><div class="pill2" id="rail"></div></nav></aside>
+  <section id="history" hidden>
+    <header><h2>Riwayat</h2><button type="button" data-act="hall">Semua proyek</button><button type="button" data-act="trep" disabled>Laporan token</button></header>
+    <div id="hstats"></div>
+    <div id="hcmp" hidden></div>
+    <div id="htrend"></div>
+    <div id="hrows"></div>
+  </section>
+  <aside id="side" aria-label="Panel samping">
+    <div id="pan"><div id="pi"></div></div>
+    <div id="drawer" hidden>
+      <div id="dhead"></div>
+      <div id="dwarn"></div>
+      <div id="dans"></div>
+      <div id="dnums"></div>
+      <div id="dsecs"></div>
+    </div>
+    <nav id="rail" aria-label="Panel">
+      <button type="button" data-v="chat">Percakapan</button>
+      <button type="button" data-v="backlog">Backlog</button>
+      <button type="button" data-v="files">File</button>
+      <button type="button" data-v="skill">Skill</button>
+      <button type="button" data-v="token">Token</button>
+      <button type="button" data-v="log">Log</button>
+    </nav>
+  </aside>
 </main>
-<div id="pop"></div><div id="modal"><div class="mc" id="mc"></div></div>
-<noscript><p style="padding:20px">Flow Viewer butuh JavaScript.</p></noscript>
+<div id="pop"></div>
+<div id="modal" hidden><div id="mc" role="dialog" aria-modal="true" tabindex="-1"></div></div>
+<noscript><p>Flow Viewer butuh JavaScript.</p></noscript>
 <script type="module" src="/js/app.js"></script>
 </body>
 </html>
