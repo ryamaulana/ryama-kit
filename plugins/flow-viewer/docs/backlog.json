@@ -2131,7 +2131,7 @@
       "finishedAt": "2026-11-04T00:45:13.828Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "fix-riwayat-laporan-baris"
       ],
@@ -2151,10 +2151,14 @@
       "slice": "bug-laporan",
       "value": "urgent",
       "size": "s",
-      "done": "Uji regresi R1 di test/ui/ui.test.mjs: (a) 0 tombol Laporan di baris, \"Laporan token\" hanya di kepala; (b) klik Buka membuka run; (c) laporan berjudul proyek Riwayat. Gagal bila perbaikan dibalik. Bukti: output tes."
+      "done": "Uji regresi R1 di test/ui/ui.test.mjs: (a) 0 tombol Laporan di baris, \"Laporan token\" hanya di kepala; (b) klik Buka membuka run; (c) laporan berjudul proyek Riwayat. Gagal bila perbaikan dibalik. Bukti: output tes.",
+      "attempts": 1,
+      "startedAt": "2026-11-04T00:47:59.043Z",
+      "evidence": "test/ui/ui.test.mjs tes R1 (baris 136) dan R1c (149); node --test: 26 lulus 0 gagal; R1 gagal bila klik Buka dibalik ke modal (25 lulus, 1 gagal). Catatan: judul laporan asli dari server tidak diuji, mock mencegat /report/tokens.md",
+      "finishedAt": "2026-11-04T00:50:59.864Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [],
       "criteria": [],
       "context": [
@@ -2172,7 +2176,11 @@
       "value": "high",
       "size": "s",
       "done": "DESIGN.md punya bagian \"Dial per jenis area\" (area dashboard Flow Viewer) yang dirujuk item ui-designer/ui-critic; §8 butir 5 diganti: detail agent satu kolom dengan bagian berlipat (bukan tab Aktivitas/Hasil). Diff dikutip sebagai bukti.",
-      "notes": "Bagian \"Dial per jenis area\" belum ada di DESIGN.md (hanya baris Dial taste di §1); item ui yang merujuknya menunggu ini."
+      "notes": "Bagian \"Dial per jenis area\" belum ada di DESIGN.md (hanya baris Dial taste di §1); item ui yang merujuknya menunggu ini.",
+      "attempts": 1,
+      "startedAt": "2026-11-04T00:47:59.116Z",
+      "evidence": "docs/DESIGN.md: bagian 'Dial per jenis area' (baris 12) dan butir 8.5 detail agent satu kolom berlipat (baris 191) ada",
+      "finishedAt": "2026-11-04T00:48:39.940Z"
     },
     {
       "status": "done",
@@ -2673,7 +2681,7 @@
       "title": "Perketat keamanan server lokal: tolak situs asing mendaftarkan folder, membaca laporan, atau mereset",
       "type": "be",
       "agent": "be",
-      "status": "todo",
+      "status": "done",
       "needs": [
         "sec-laporan-project"
       ],
@@ -2685,12 +2693,16 @@
         "docs/ARCHITECTURE.md#8.2 Threat model",
         "server/server.js"
       ],
-      "value": "mid",
+      "value": "urgent",
       "size": "s",
       "done": "Tes HTTP lulus untuk tiap perbaikan, tes yang ada tetap lulus. (1) POST /event hanya bila Origin kosong/localhost dan Content-Type application/json (text/plain dari web asing ditolak); folder dikenal wajib punya docs/ atau .claude/ atau pernah berisi sesi nyata (server.js:77, :290). (2) Host selain localhost:PORT/127.0.0.1:PORT -> 403 (cegah DNS rebinding pada /report/tokens.json, /history, /report.md, POST /reset); Origin non-localhost pada semua POST -> 403 (:335). (3) Symlink/junction: realpath lalu bandingkan (:296-299). (4) 500 tidak membocorkan err.message; store.list di-cache sebagai Set proyek, tidak dipindai tiap request (:363/:369).",
       "slice": "bug-laporan",
-      "model": "opus"
+      "model": "opus",
+      "attempts": 1,
+      "startedAt": "2026-11-04T00:47:59.182Z",
+      "evidence": "node --test test/unit + test/http: 78 tes, 78 lulus, 0 gagal; tes baru test/http/security.http.test.js (7 tes, 5 gagal sebelum perbaikan). Terbuka: 415 belum di ARCHITECTURE.md, /history/rescan masih kirim err.message, symlink file tidak diuji di Windows",
+      "finishedAt": "2026-11-04T00:51:14.040Z"
     }
   ],
-  "updatedAt": "2026-11-04T00:45:13.830Z"
+  "updatedAt": "2026-11-04T00:51:14.042Z"
 }

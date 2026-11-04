@@ -16,6 +16,7 @@ const store = require('./store').open(DIR); // riwayat run (SQLite, atau JSON ka
 const readline = require('readline');
 const { analyze } = require('./tokens'); // token per pemanggilan, cache ditulis ulang, output tool, limit
 const tokenReport = require('./token-report');
+const guard = require('./guard');
 
 const norm = (n) => String(n || '').split(':').pop().trim();
 const MAIN = '__main';
@@ -63,7 +64,7 @@ let cwdNow = '';
 let persistT = null;
 function flushRun() {
   clearTimeout(persistT); persistT = null;
-  try { const r = store && run && run.row(cwdNow); if (r) store.save(r); } catch (_) { /* riwayat tidak boleh mengganggu viewer */ }
+  try { const r = store && run && run.row(cwdNow); if (r) { store.save(r); noteSaved(r); } } catch (_) { /* riwayat tidak boleh mengganggu viewer */ }
 }
 function persistSoon() { if (!store || persistT) return; persistT = setTimeout(flushRun, 1500); }
 process.on('exit', () => { try { flushRun(); } catch (_) {} });
@@ -74,7 +75,7 @@ function startRun(flowKey, opts = {}) {
   run = createRun({ key: cwdNow, flow: flowKey, catalog, usage: { refresh: refreshUsage }, prev: run, backlog: backlogSummary, onChange: (r) => { if (r === run) broadcast(); }, ...opts });
 }
 function ingest(ev) {
-  if (ev.cwd) cwdNow = ev.cwd;
+  if (typeof ev.cwd === 'string' && path.isAbsolute(ev.cwd)) cwdNow = ev.cwd;
   const fk = flowCommand(ev, FLOWS);
   if (fk || (run && run.rollover(ev))) startRun(fk || 'free'); // perintah flow, sesi baru, atau prompt setelah selesai = run baru
   const ok = run.apply(ev);
@@ -274,6 +275,7 @@ async function rescanRun(id) {
   row.tokens_eq = us.reduce((a, u) => a + eqOf(u), 0); row.tokens_raw = us.reduce((a, u) => a + rawOf(u), 0);
   st.tokensScan = { at: Date.now(), agents: agents.size, analysed: Object.values(byNode).reduce((a, x) => a + x.length, 0), sessions: mains.size };
   store.save({ ...row, state: JSON.stringify(st) });
+  noteSaved(row);
   writeTokenFile(row.project);
   return st.tokensScan;
 }
@@ -287,16 +289,34 @@ function tokenBuild(project, n = 60) {
 }
 // Salinan markdown untuk dibaca AI di folder proyek: <proyek>/.flow-viewer/laporan-token.md (folder itu meng-ignore dirinya sendiri).
 // Hanya proyek yang tercatat di riwayat run; nilai dari luar (?project=) tidak pernah dipakai mentah sebagai folder.
-function knownProject(p) { return typeof p === 'string' && p !== '' && store.list('', 1000).some((r) => r.project === p); }
+// Peta proyek -> pernah berisi sesi nyata (token > 0); dibangun sekali, diperbarui saat simpan/hapus run.
+let projCache = null;
+function projectMap() {
+  if (!projCache) { projCache = new Map(); for (const r of store.list('', 1000)) if (r.project) projCache.set(r.project, projCache.get(r.project) || r.tokens_raw > 0); }
+  return projCache;
+}
+function noteSaved(r) { if (projCache && r && r.project) projCache.set(r.project, projCache.get(r.project) || r.tokens_raw > 0); }
+const isDir = (p) => { try { return fs.statSync(p).isDirectory(); } catch (_) { return false; } };
+// Folder sembarang dari event palsu tidak dianggap proyek: wajib docs/ atau .claude/, atau pernah ada sesi bertoken.
+function knownProject(p) {
+  if (typeof p !== 'string' || p === '' || !projectMap().has(p)) return false;
+  return projectMap().get(p) || isDir(path.join(p, 'docs')) || isDir(path.join(p, '.claude'));
+}
 function writeTokenFile(project) {
   try {
     if (!knownProject(project) || !fs.statSync(project).isDirectory()) return;
     const { rows, R } = tokenBuild(project);
     if (!rows) return;
-    const dir = path.join(project, '.flow-viewer');
+    // Symlink/junction: .flow-viewer dan file di dalamnya wajib tetap di dalam folder proyek asli.
+    const root = fs.realpathSync(project);
+    const dir = path.join(root, '.flow-viewer');
     fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(path.join(dir, '.gitignore'), '*\n');
-    fs.writeFileSync(path.join(dir, 'laporan-token.md'), tokenReport.markdown(R));
+    if (fs.realpathSync(dir) !== dir) return;
+    for (const [name, text] of [['.gitignore', '*\n'], ['laporan-token.md', tokenReport.markdown(R)]]) {
+      const f = path.join(dir, name);
+      try { if (fs.lstatSync(f).isSymbolicLink()) return; } catch (_) { /* belum ada */ }
+      fs.writeFileSync(f, text);
+    }
   } catch (_) { /* laporan tidak boleh mengganggu viewer */ }
 }
 let tokenFileAt = 0;
@@ -332,9 +352,15 @@ function broadcast() {
 const BUILD = require('./build-id')();
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css' };
 
+const sendErr = (res, e) => { res.writeHead(e.status, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: e.code, message: e.message })); };
 const server = http.createServer((req, res) => {
   const url = req.url.split('?')[0];
+  // [SEC] DNS rebinding (Host) dan CSRF (Origin/Sec-Fetch-Site pada POST) untuk semua path.
+  const bad = guard.checkRequest(req, PORT);
+  if (bad) { req.resume(); return sendErr(res, bad); }
   if (req.method === 'POST' && url === '/event') {
+    // Form/sendBeacon lintas situs hanya bisa mengirim text/plain tanpa preflight; hook selalu application/json.
+    if (!/^application\/json(\s*;|$)/i.test(req.headers['content-type'] || '')) { req.resume(); return sendErr(res, { status: 415, code: 'bad_content_type', message: 'Content-Type wajib application/json.' }); }
     let body = '';
     req.on('data', (c) => { body += c; if (body.length > 4e6) req.destroy(); });
     req.on('end', () => {
@@ -366,7 +392,7 @@ const server = http.createServer((req, res) => {
       if (rows && q.get('write') !== '0') writeTokenFile(project);
       if (url.endsWith('.json')) { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(R)); }
       else { res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' }); res.end(tokenReport.markdown(R)); }
-    } catch (err) { res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' }); res.end('laporan gagal: ' + err.message); }
+    } catch (_) { res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' }); res.end('Laporan gagal dibuat.'); } // err.message bisa memuat path lokal
     return;
   }
   if (req.method === 'POST' && url === '/history/rescan') {
@@ -394,7 +420,7 @@ const server = http.createServer((req, res) => {
   }
   if (req.method === 'POST' && url === '/history/delete') {
     const id = Number(new URLSearchParams(req.url.split('?')[1] || '').get('id'));
-    try { if (store && id && id !== run.id) store.remove(id); } catch (_) {}
+    try { if (store && id && id !== run.id) { store.remove(id); projCache = null; } } catch (_) {}
     res.writeHead(204); res.end(); return;
   }
   if (url === '/detail') {

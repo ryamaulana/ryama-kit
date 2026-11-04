@@ -140,9 +140,24 @@ test('R1 Riwayat: tanpa Laporan per baris, Buka membuka run (bukan laporan), Lap
   assert.equal(await p.locator('.ck [data-act=trep]').count(), 0);
   assert.equal(await p.locator('#pi [data-act=trep]').count(), 1);
   assert.equal(await p.locator('#pi [data-act=trep]').getAttribute('data-project'), 'demo');
-  await p.click('.ck[data-run="1"] [data-act=hopen]', { force: true }); // force: mock SSE merender panel terus, tetap klik koordinat nyata
+  await p.locator('.ck[data-run="1"] [data-act=hopen]').dispatchEvent('click'); // mock SSE merender ulang panel terus; klik koordinat tidak stabil
   await p.waitForTimeout(300);
   assert.equal(await p.locator('#modal.on').count(), 0, 'Buka tidak boleh membuka laporan');
-  await p.screenshot({ path: new URL('./r1-buka.png', import.meta.url).pathname.replace(/^\/(\w:)/, '$1') });
+  await p.locator('#histbar b', { hasText: 'Melihat riwayat' }).waitFor({ state: 'visible', timeout: 3000 }); // (b) Buka membuka run
+  await p.close();
+});
+test('R1c Laporan token di kepala Riwayat membuka laporan berjudul proyek Riwayat', async () => {
+  const p = await open('done');
+  await p.click('#rail button[data-v=history]');
+  await p.waitForSelector('#pi [data-act=trep]');
+  const proj = await p.locator('#pi [data-act=trep]').getAttribute('data-project');
+  assert.ok(proj, 'tombol Laporan token membawa data-project');
+  let url = '';
+  await p.route('**/report/tokens.md*', (r) => { url = r.request().url(); r.fulfill({ status: 200, contentType: 'text/markdown', body: '# Laporan token ' + proj + '\n\nisi' }); });
+  await p.locator('#pi [data-act=trep]').dispatchEvent('click');
+  await p.locator('#modal.on').waitFor({ state: 'attached', timeout: 3000 });
+  const t = await p.locator('#mc').innerText();
+  assert.ok(url.includes('project=' + proj), 'permintaan laporan memakai proyek Riwayat, dapat: ' + url);
+  assert.ok(t.includes(proj), 'laporan memuat nama proyek Riwayat "' + proj + '", dapat: ' + t.slice(0, 120));
   await p.close();
 });

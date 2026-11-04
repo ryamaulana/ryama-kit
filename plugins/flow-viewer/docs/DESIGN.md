@@ -9,6 +9,15 @@ Aturan hierarki: token di dokumen ini menang atas selera lain. Mockup adalah con
 **Ide satu kalimat:** panel putih-gading melayang dan bulat, angka besar bertipe serif, satu aksen biru untuk aksi, dan satu garis teal yang hidup menandai siapa yang sedang bekerja.
 **Konsep:** viewer ini dilirik sepintas dan dibaca saat dibutuhkan. Karena itu satu hal selalu paling berat di layar: kotak **Butuh input** (bila ada). Grafik kedua, tiga angka ketiga.
 **Dial taste:** ENERGY 1-2 · RHYTHM 2 (pita, kotak, grafik, panel berbeda komposisi) · MOTION 1 (hanya status hidup: putaran ikon Berjalan dan titik di konektor aktif; mati bila `prefers-reduced-motion`).
+**Dial per jenis area:** semua layar Flow Viewer berjenis dashboard (UX.md §3; tidak ada layar pemasaran, tidak ada layar tugas). Dial Live di atas jadi acuan; area lain hanya menurunkan RHYTHM menurut isinya.
+
+| Area | Jenis | ENERGY | RHYTHM | MOTION |
+|---|---|---|---|---|
+| Live (pita, kotak, grafik, panel) | dashboard | 1-2 | 2 | 1 (hanya status hidup) |
+| Detail agent (panel, satu kolom berlipat) | dashboard | 1 | 2 | 1 (hanya ikon Berjalan) |
+| Daftar proyek, Riwayat, Laporan token | dashboard | 1 | 1-2 (tabel/daftar boleh seragam, angka serif tetap fokus) | 0-1 |
+| Ringkasan run, panel data (Skill, File, Token, Log, Percakapan, Backlog) | dashboard / pendukung | 1 | 1 | 0 |
+
 **Titik fokus per layar:** Live: kotak Butuh input (bila ada), bila tidak, sel "Siapa kerja". Ringkasan run: kartu "Menunggu keputusanmu", bila tidak ada, hasil run. Urutan baca Live: judul sel Siapa kerja, kotak Butuh input, grafik, panel.
 **Di mana konsep terlihat:** serif hangat untuk kalimat penting (pertanyaan agent, judul sel, angka), ivory bukan abu, garis teal hidup.
 
@@ -149,7 +158,7 @@ Tinggi acuan: viewport 900 px. Tampilan Live tidak menggulung sebagai halaman; g
 
 ## 6. Istilah & nada
 Sapaan "kamu", sentence case, tanpa seruan, tanpa slogan di layar fungsional. Tugas dulu, merek belakangan. Fakta hanya dari PRD dan UX.md. Durasi: "14 mnt 32 dtk" (kalimat dan KPI), "Durasi 38 mnt 12 dtk"; di tabel padat dengan kepala kolom "Durasi" tetap "N mnt N dtk".
-Glosarium (dari UX.md bagian 7, satu istilah satu makna):
+Glosarium (dari UX.md bagian 10, dulu bagian 7; satu istilah satu makna):
 | Istilah | Makna |
 |---|---|
 | Proyek | Folder kerja tempat Claude Code dijalankan |
@@ -176,10 +185,10 @@ Glosarium (dari UX.md bagian 7, satu istilah satu makna):
 ## 8. Tahap B: layar sisanya (belum dibuat)
 Dibuat setelah dokumen ini Approved, dengan token dan dua layar kunci di atas, lewat backlog:
 1. **Daftar proyek** (`/`): satu baris per proyek aktif, urut butuh input dulu; keadaan kosong.
-2. **Riwayat**: tabel run, tren token 12 run, banding dua run (peringatan flow berbeda), Hapus dua langkah, run live tanpa Hapus.
+2. **Riwayat**: tabel run, tren token 12 run, banding dua run (peringatan flow berbeda), Hapus dengan satu konfirmasi di tempat (UX v1.2 §5, A15), run live tanpa Hapus.
 3. **Tampilan run lama** (tata letak Live hanya baca, bilah "Kembali ke live").
 4. **Tab panel data proyek**: Skill, File (diff di tempat), Token (tabel per agent), Log (linimasa); Percakapan dan Backlog sudah digambar di mockup, perlu state lengkap.
-5. **Detail node tersisa:** tab Aktivitas dan Hasil penuh, agent belum jalan, state gagal dimuat.
+5. **Detail agent satu kolom, bukan tab:** Ringkasan, Aktivitas, File, dan Hasil menjadi bagian berlipat (disclosure) dalam satu kolom panel yang sama; Ringkasan terbuka, sisanya terlipat dengan judul dan hitungan (mis. "File (4)"). Tidak ada baris tab Aktivitas/Hasil di detail agent. Tambahan: agent belum jalan, state gagal dimuat.
 6. **State:** kosong, memuat (kerangka), terputus (bilah + jam pembaruan terakhir), notifikasi diblokir, tanpa flow.
 7. **Agent di luar flow** ("di luar flow", node redup "tidak dipakai di flow ini") dan node di luar flow yang dipakai.
 8. **Di bawah 900 px:** daftar kartu agent dan lapisan panel.
