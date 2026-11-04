@@ -27,10 +27,13 @@
 <div id="strip"><div id="now" aria-live="polite"></div><span id="verdict"></span></div>
 <div id="histbar" role="status" hidden></div>
 <main>
-  <section id="stage" aria-label="Alur agent">
-    <div id="canvas"></div>
-    <div id="empty" hidden></div>
-    <div id="zwrap" class="zoom"><button id="zout" type="button" aria-label="Perkecil">−</button><span id="zlbl">100%</span><button id="zin" type="button" aria-label="Perbesar">+</button><button id="zfit" type="button">Pas layar</button></div>
+  <section id="plist" aria-label="Daftar proyek" hidden></section>
+  <section id="stage" class="graph" aria-label="Alur agent">
+    <div class="stage-wrap">
+      <div class="stage" id="gscroll" tabindex="0" aria-label="Grafik alur agent, bisa digulir"><div id="canvas" class="canvas" role="group" aria-label="Agent dan hubungannya"></div></div>
+      <div id="empty" class="g-empty" role="status" hidden></div>
+      <div id="zwrap" class="zoom"><button id="zout" type="button" aria-label="Perkecil">−</button><span id="zlbl" class="zlbl">100%</span><button id="zin" type="button" aria-label="Perbesar">+</button><button id="zfit" type="button">Pas layar</button></div>
+    </div>
   </section>
   <section id="history" hidden>
     <header><h2>Riwayat</h2><button type="button" data-act="hall">Semua proyek</button><button type="button" data-act="trep" disabled>Laporan token</button></header>

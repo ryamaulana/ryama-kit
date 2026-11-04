@@ -435,6 +435,7 @@
   },
   "run": {
     "title": "run",
+    "batch": true,
     "nodes": [
       {
         "id": "backlog",

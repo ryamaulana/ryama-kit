@@ -77,13 +77,14 @@ test('tampilan dari flows.json.agents; tanpa entri: label = nama, peran = kalima
   } finally { fx.cleanup(); }
 });
 
-test('flow(name): flow dikenal apa adanya; "agents" dan nama asing jatuh ke free yang memuat agent baru', () => {
+test('flow(name): flow dikenal apa adanya; "agents" dan nama asing = null; "free" memuat agent baru', () => {
   const fx = fixture();
   try {
     const cat = agents.createAgents({ pluginsDir: fx.pluginsDir, home: fx.home, flows: FLOWS }).catalogFor(fx.proj);
-    assert.deepStrictEqual(cat.flow('build'), { name: 'build', title: 'build', nodes: [{ id: 'a' }], edges: [] });
-    for (const n of ['agents', 'tidak-ada', undefined]) {
-      const f = cat.flow(n);
+    assert.deepStrictEqual(cat.flow('build'), { name: 'build', title: 'build', nodes: [{ id: 'a' }], edges: [], batch: undefined });
+    for (const n of ['agents', 'tidak-ada', undefined]) assert.strictEqual(cat.flow(n), null);
+    {
+      const f = cat.flow('free');
       assert.strictEqual(f.name, 'free');
       assert.deepStrictEqual(f.nodes.map((x) => x.id), ['a', 'b', 'c', 'baru', 'zeta']);
       assert.deepStrictEqual(f.nodes[0], { id: 'a', role: 'langkah a', col: 1, row: 0 });

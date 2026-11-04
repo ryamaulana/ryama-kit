@@ -179,3 +179,43 @@ test('run baru per sesi: sesi lain di folder yang sama memulai run baru dan run 
   assert.strictEqual(saved.length, 1);
   assert.strictEqual(saved[0].prompt, 'sesi satu');
 });
+
+test('t09b: snapshot membawa id proyek (slug kembar belakangan ikut) dan pembanding dari store.previous', () => {
+  const asked = [];
+  const { reg, saved } = setup();
+  const store = { save: (r) => saved.push(r), projects: () => [], previous: (...a) => { asked.push(a); return { id: 7, tokens_eq: 200, started_at: 0, updated_at: 5000 }; } };
+  const r2 = createRegistry({ store, catalog, now: () => (T += 10) });
+  const p = r2.ingest(prompt(dir('alfa'), 's1', 'halo'));
+  const s = p.run.snapshot();
+  assert.deepStrictEqual([s.project.id, s.project.name, s.project.path, s.live], ['alfa', 'alfa', dir('alfa'), true]);
+  assert.deepStrictEqual([s.tokens.prevEq, asked[0].slice(0, 2), asked[0][2] === p.run.id, asked[0][3]], [200, [dir('alfa'), 'free'], true, false]);
+  r2.ingest(prompt(dir('x', 'alfa'), 's2', 'proyek lain slug sama'));
+  assert.match(p.run.snapshot().project.id, /^alfa-[0-9a-f]{6}$/);
+  assert.ok(reg);
+});
+
+test('t10b: inactive() memberi proyek dari Riwayat dan proyek lewat 6 jam, dengan id yang bisa di-resolve; idFor konsisten', () => {
+  const { reg, history } = setup();
+  history.push(dir('lama'));
+  reg.ingest(prompt(dir('alfa'), 's1', 'x'));
+  assert.deepStrictEqual(reg.inactive().map((p) => p.id), ['lama']);
+  assert.deepStrictEqual(Object.keys(reg.inactive()[0]).sort(), ['id', 'lastEventAt', 'name', 'shortPath']);
+  T += H6 + 1000;
+  assert.deepStrictEqual(reg.inactive().map((p) => p.id).sort(), ['alfa', 'lama']);
+  assert.strictEqual(reg.resolve(reg.idFor(dir('lama'))).key, dir('lama'));
+  assert.strictEqual(reg.isActive(reg.resolve('alfa')), false);
+  assert.strictEqual(reg.isActive(reg.resolve('lama')), false);
+});
+
+test('t10b: reset(key) memulai run kosong baru hanya di proyek itu', () => {
+  const { reg } = setup();
+  reg.ingest(prompt(dir('alfa'), 's1', 'kerja alfa'));
+  reg.ingest(prompt(dir('beta'), 's2', 'kerja beta'));
+  const oldId = reg.resolve('alfa').run.id;
+  const p = reg.reset(dir('alfa'));
+  assert.strictEqual(p.key, dir('alfa'));
+  assert.notStrictEqual(p.run.id, oldId);
+  assert.strictEqual(p.run.snapshot().prompt || '', '');
+  assert.strictEqual(reg.resolve('beta').run.snapshot().prompt, 'kerja beta');
+  assert.strictEqual(reg.reset(dir('tidak-ada')), null);
+});

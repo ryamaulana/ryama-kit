@@ -22,9 +22,9 @@ test.before(async () => {
 });
 test.after(() => { proc.kill(); });
 
-const get = (p, ext = 'md') => fetch(`http://localhost:${PORT}/report/tokens.${ext}?project=${encodeURIComponent(p)}`);
+const get = (p, ext = 'md') => fetch(`http://localhost:${PORT}/report/tokens.${ext}?p=${encodeURIComponent(p)}`);
 
-test('project dari luar daftar: 400 pesan biasa, tidak ada file ditulis', async () => {
+test('p dari luar daftar: 400/404 pesan biasa, tidak ada file ditulis', async () => {
   const bad = ['../../x', '..\\..\\x', outside, projB, '', path.join(projA, '..', 'outside')];
   for (const p of bad) for (const ext of ['md', 'json']) {
     const r = await get(p, ext);
@@ -37,7 +37,7 @@ test('project dari luar daftar: 400 pesan biasa, tidak ada file ditulis', async 
 });
 
 test('proyek terdaftar: 200 dan laporan ditulis hanya di foldernya', async () => {
-  const r = await get(projA);
+  const r = await get('proja');
   assert.strictEqual(r.status, 200);
   assert.ok(fs.existsSync(path.join(projA, '.flow-viewer', 'laporan-token.md')));
   assert.deepStrictEqual(fs.readdirSync(projB), []);

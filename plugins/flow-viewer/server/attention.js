@@ -49,4 +49,15 @@ function attention(inp) {
   return out.filter((x) => !seen.has(x.key) && seen.add(x.key)).sort((a, b) => b.at - a.at); // terbaru di atas; sort stabil
 }
 
-module.exports = { attention };
+const INPUT = new Set(['question', 'permission', 'decision']);
+// Agregat untuk /projects (6): hitungan per jenis + maks 5 item Butuh input/Gagal untuk notifikasi lintas proyek.
+function summarize(items) {
+  const list = Array.isArray(items) ? items : [];
+  const attn = list.filter((i) => i && (INPUT.has(i.kind) || i.kind === 'failed'));
+  return {
+    input: list.filter((i) => i && INPUT.has(i.kind)).length, failed: list.filter((i) => i && i.kind === 'failed').length, done: list.filter((i) => i && i.kind === 'done').length,
+    items: attn.slice(0, 5).map((i) => ({ key: i.key, kind: i.kind, text: i.text })),
+  };
+}
+
+module.exports = { attention, summarize };

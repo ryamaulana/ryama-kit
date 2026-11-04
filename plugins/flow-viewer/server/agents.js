@@ -112,9 +112,12 @@ function createAgents({ pluginsDir, home, flows, now = Date.now }) {
       display[id] = { label: e.label || id, role: e.role || (first ? first[0] : (defs[id] && defs[id].description) || ''), icon: e.icon || generic };
     }
     const freeNodes = crewMeta.map((m) => free.nodes.find((n) => n.id === m.id) || m);
-    const flow = (name) => name !== 'free' && name !== 'agents' && Object.hasOwn(flows, name)
-      ? { name, title: flows[name].title, nodes: flows[name].nodes, edges: flows[name].edges }
-      : { name: 'free', title: free.title, nodes: freeNodes, edges: free.edges };
+    // null untuk nama tak dikenal; 'free' selalu ada. batch diteruskan agar run.js tidak menandai langkah hilang.
+    const flow = (name) => {
+      if (name === 'free') return { name: 'free', title: free.title, nodes: freeNodes, edges: free.edges };
+      if (name === 'agents' || !Object.hasOwn(flows, name)) return null;
+      return { name, title: flows[name].title, nodes: flows[name].nodes, edges: flows[name].edges, batch: flows[name].batch };
+    };
     return { defs, display, crew, crewMeta, edges: free.edges, flow };
   }
   return { catalogFor, refresh };

@@ -1,0 +1,187 @@
+[
+  {
+    "viewport": {
+      "w": 900,
+      "h": 900
+    },
+    "counts": {
+      "high": 0,
+      "medium": 1,
+      "low": 3
+    },
+    "stats": {
+      "ukuranHuruf": [
+        12,
+        13,
+        14,
+        16,
+        24,
+        28
+      ],
+      "keluargaHuruf": [
+        "Hanken Grotesk",
+        "Newsreader"
+      ],
+      "nilaiSpasi": 6,
+      "spasiDiLuarSkalaPersen": 0,
+      "radius": [
+        12,
+        20,
+        28
+      ],
+      "bayangan": 3,
+      "warnaTeks": 8,
+      "tombolSolidDiLayarPertama": 1,
+      "elemenTerkuat": [
+        "p.k-big \"Menunggu kamu: jawab pertany\"",
+        "p.n-title \"Pembahasan soal tampil di ma\"",
+        "p.k-num \"60%\""
+      ],
+      "tepiKiriTerbanyak": [
+        "40px(6)",
+        "240px(4)",
+        "264px(4)",
+        "268px(4)",
+        "442px(4)",
+        "466px(4)"
+      ],
+      "jumlahGambar": 0,
+      "kataJudulTerpanjang": 6,
+      "jumlahSvg": 116,
+      "warnaAksen": 5,
+      "grupKartuSeragam": 0,
+      "jumlahKartuSeragam": 0,
+      "kandidatFokus": [
+        "p.k-big \"Menunggu kamu: jawab pertany\"",
+        "p.n-title \"Pembahasan soal tampil di ma\""
+      ],
+      "blokWarnaJenuhLayarPertamaPersen": 8,
+      "token": {
+        "aktif": true,
+        "warnaDiLuar": 0,
+        "radiusDiLuar": 0,
+        "hurufDiLuar": 0,
+        "fontDiLuar": 0
+      }
+    },
+    "issues": [
+      {
+        "sev": "medium",
+        "rule": "warna-aksen",
+        "detail": "5 kelompok warna jenuh (aksen + status); idealnya 1 aksen ditambah warna status"
+      },
+      {
+        "sev": "low",
+        "rule": "copy-ulang",
+        "detail": "kalimat yang sama muncul dua kali: \"Menyusun kartu skor per bagian di hasil.html\"",
+        "at": "p.n-act \"Menyusun kartu skor per bagi\""
+      },
+      {
+        "sev": "low",
+        "rule": "copy-ulang",
+        "detail": "kalimat yang sama muncul dua kali: \"Menyambungkan GET /api/hasil/:id ke halaman hasil\"",
+        "at": "p.n-act \"Menyambungkan GET /api/hasil\""
+      },
+      {
+        "sev": "low",
+        "rule": "titik-fokus",
+        "detail": "dua kandidat fokus hampir sama kuat di layar pertama: p.k-big \"Menunggu kamu: jawab pertany\" vs p.n-title \"Pembahasan soal tampil di ma\""
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    },
+    "counts": {
+      "high": 0,
+      "medium": 1,
+      "low": 4
+    },
+    "stats": {
+      "ukuranHuruf": [
+        12,
+        13,
+        14,
+        16,
+        24,
+        28
+      ],
+      "keluargaHuruf": [
+        "Hanken Grotesk",
+        "Newsreader"
+      ],
+      "nilaiSpasi": 7,
+      "spasiDiLuarSkalaPersen": 0,
+      "radius": [
+        12,
+        20,
+        28
+      ],
+      "bayangan": 3,
+      "warnaTeks": 8,
+      "tombolSolidDiLayarPertama": 2,
+      "elemenTerkuat": [
+        "p.k-big \"Menunggu kamu: jawab pertany\"",
+        "p.n-title \"Pembahasan soal tampil di ma\"",
+        "p.k-num \"60%\""
+      ],
+      "tepiKiriTerbanyak": [
+        "996px(22)",
+        "40px(5)",
+        "782px(5)",
+        "1048px(5)",
+        "286px(4)",
+        "312px(4)"
+      ],
+      "jumlahGambar": 0,
+      "kataJudulTerpanjang": 6,
+      "jumlahSvg": 116,
+      "warnaAksen": 5,
+      "grupKartuSeragam": 0,
+      "jumlahKartuSeragam": 0,
+      "kandidatFokus": [
+        "p.k-big \"Menunggu kamu: jawab pertany\"",
+        "p.n-title \"Pembahasan soal tampil di ma\""
+      ],
+      "blokWarnaJenuhLayarPertamaPersen": 7,
+      "token": {
+        "aktif": true,
+        "warnaDiLuar": 0,
+        "radiusDiLuar": 0,
+        "hurufDiLuar": 0,
+        "fontDiLuar": 0
+      }
+    },
+    "issues": [
+      {
+        "sev": "medium",
+        "rule": "warna-aksen",
+        "detail": "5 kelompok warna jenuh (aksen + status); idealnya 1 aksen ditambah warna status"
+      },
+      {
+        "sev": "low",
+        "rule": "warna-latar",
+        "detail": "13 warna latar berbeda"
+      },
+      {
+        "sev": "low",
+        "rule": "copy-ulang",
+        "detail": "kalimat yang sama muncul dua kali: \"Menyusun kartu skor per bagian di hasil.html\"",
+        "at": "p.n-act \"Menyusun kartu skor per bagi\""
+      },
+      {
+        "sev": "low",
+        "rule": "copy-ulang",
+        "detail": "kalimat yang sama muncul dua kali: \"Menyambungkan GET /api/hasil/:id ke halaman hasil\"",
+        "at": "p.n-act \"Menyambungkan GET /api/hasil\""
+      },
+      {
+        "sev": "low",
+        "rule": "titik-fokus",
+        "detail": "dua kandidat fokus hampir sama kuat di layar pertama: p.k-big \"Menunggu kamu: jawab pertany\" vs p.n-title \"Pembahasan soal tampil di ma\""
+      }
+    ]
+  }
+]

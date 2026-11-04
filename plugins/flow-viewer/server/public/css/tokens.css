@@ -1,0 +1,115 @@
+/* Token desain Flow Viewer v2, arah "Gading" (docs/DESIGN.md §2-3).
+   Hanya custom properties. app.css memakai var(--...) dari file ini, tanpa nilai lepas.
+   Tema: terang adalah bawaan (:root tanpa data-theme); boot.js memasang data-theme="dark"
+   dari pilihan tersimpan atau prefers-color-scheme sebelum render. */
+
+/* ---------- Tema terang (bawaan) ---------- */
+:root,
+:root[data-theme=light] {
+  color-scheme: light;
+
+  /* Latar dan permukaan */
+  --ground: #F3F0E8;      /* latar halaman */
+  --surface: #FFFEFB;     /* kartu, node, panel */
+  --surface2: #F6F2E9;    /* ubin, status netral, node Dilewati */
+  --line: #DDD6C7;        /* garis kartu (dekoratif, bukan batas kontrol) */
+  --edge: #8A826D;        /* konektor, cincin tombol sekunder: garis grafis >= 3:1 */
+
+  /* Teks */
+  --ink: #1B1914;         /* teks utama, outline node terpilih, logo, nav aktif, lencana netral */
+  --ink2: #46413A;        /* teks sekunder dan keterangan */
+
+  /* Aksi (aksen biru bukan status) */
+  --accent: #1D44D6;      /* tombol utama, tab terpilih, tautan, fokus */
+  --on-accent: #FFFFFF;   /* teks di atas accent, ink, warn */
+  --accent-soft: #E6EBFE; /* hover, tombol ikon aktif, latar tab terpilih */
+
+  /* Status: teks / latar lembut / garis grafis */
+  --run: #0B6B7C;      --run-soft: #DCF0F3;                       /* Berjalan */
+  --ok: #17683F;       --ok-soft: #DFF2E7;   --ok-line: #3E9B6A;   /* Selesai */
+  --warn: #8A4F00;     --warn-soft: #FFEFCF; --warn-line: #B07410; /* Butuh input; garis 3,46:1 ke warn-soft (dulu #C98513 = 2,70:1) */
+  --bad: #B0201A;      --bad-soft: #FCE5E2;  --bad-line: #D14A42;  /* Gagal */
+
+  /* Warna dasar bayangan (r,g,b) */
+  --sh: 60, 48, 20;
+}
+
+/* ---------- Tema gelap ---------- */
+:root[data-theme=dark] {
+  color-scheme: dark;
+
+  --ground: #14120E;
+  --surface: #1F1D17;
+  --surface2: #191712;
+  --line: #39352B;
+  --edge: #847E6C;
+
+  --ink: #F5F1E7;
+  --ink2: #D3CDBE;
+
+  --accent: #8EAAFF;
+  --on-accent: #0E1330;
+  --accent-soft: #222C5E;
+
+  --run: #6FD3E3;      --run-soft: #103A42;
+  --ok: #73D6A2;       --ok-soft: #163526;   --ok-line: #3E9B6A;
+  --warn: #F4C068;     --warn-soft: #3B2A0C; --warn-line: #D69A2B;
+  --bad: #FF9C92;      --bad-soft: #43191A;  --bad-line: #E5645B;
+
+  --sh: 0, 0, 0;
+}
+
+/* ---------- Token tanpa tema ---------- */
+:root {
+  /* Huruf: maks 2 keluarga, 3 bobot */
+  --sans: 'Hanken Grotesk', 'Segoe UI', system-ui, sans-serif; /* semua teks antarmuka */
+  --serif: 'Newsreader', Georgia, serif;                        /* pertanyaan, judul besar, angka */
+  --w-regular: 400;
+  --w-medium: 500;   /* Newsreader */
+  --w-semibold: 600;
+  --w-bold: 700;
+
+  /* Skala huruf (px), lihat tabel DESIGN §2 Huruf */
+  --fs-12: 12px;  /* label kecil di luar node, lencana, tag, kepala tabel */
+  --fs-13: 13px;  /* teks sekunder, isi panel, tautan, tab */
+  --fs-14: 14px;  /* teks dasar, nama dan isi node ringkas, tombol */
+  --fs-16: 16px;  /* judul panel, cuplikan hasil (serif) */
+  --fs-24: 24px;  /* pertanyaan Butuh input (serif), judul "Alur build" */
+  --fs-28: 28px;  /* judul sel Siapa kerja, judul Ringkasan run (serif) */
+  --fs-32: 32px;  /* angka KPI saat ada pemberitahuan / 900-1199 px */
+  --fs-44: 44px;  /* angka KPI tanpa pemberitahuan, angka besar Ringkasan run */
+
+  --lh-body: 1.45;  /* isi 1.4-1.5 */
+  --lh-title: 1.22; /* judul serif 1.2-1.25 */
+
+  /* Spasi (px): dalam grup 4-12, antar grup 12-24, antar panel 12, padding halaman 16 */
+  --sp-2: 2px;
+  --sp-4: 4px;
+  --sp-8: 8px;
+  --sp-12: 12px;
+  --sp-16: 16px;
+  --sp-20: 20px;
+  --sp-24: 24px;
+  --sp-28: 28px;
+
+  /* Radius: kartu dan node bukan pil */
+  --r-s: 12px;    /* chip, ubin, tombol kecil, strip */
+  --r-m: 20px;    /* kartu, node, kotak pemberitahuan */
+  --r-l: 28px;    /* panel besar */
+  --r-pill: 999px; /* nav, tab, status, tombol */
+
+  /* Bayangan (maks 3); tidak ada glow atau blur latar */
+  --s1: 0 1px 2px rgba(var(--sh), .06), 0 8px 24px rgba(var(--sh), .08); /* panel melayang, kartu KPI */
+  --s2: 0 1px 2px rgba(var(--sh), .12);                                   /* kartu kecil, node, tombol ikon */
+  --s3: 0 12px 40px rgba(var(--sh), .25);                                 /* menu Lainnya */
+
+  /* Garis */
+  --bw-1: 1px;      /* border kartu, kotak Butuh input, kartu Gagal */
+  --bw-2: 2px;      /* border status node, cincin tombol sekunder */
+  --bw-3: 3px;      /* konektor aktif, outline node terpilih, cincin fokus */
+  --focus-offset: 2px;    /* fokus: outline 3px --accent, offset 2 */
+  --select-offset: 3px;   /* node terpilih: outline 3px --ink, offset 3 */
+
+  /* Ukuran kontrol */
+  --control-h: 36px; /* tombol utama, tombol ikon */
+}

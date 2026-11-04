@@ -71,9 +71,14 @@ function createRegistry({ store = null, catalog, now = Date.now, watched = () =>
     return key;
   }
 
-  function startRun(p, flow) {
+  function startRun(p, flow, opts = {}) {
     saveRun(p);
-    p.run = createRun({ key: p.key, flow, catalog: catFor(p.key), now, prev: p.run, ...runOpts(p) });
+    p.run = createRun({
+      key: p.key, flow, catalog: catFor(p.key), now, prev: p.run, ...opts,
+      project: () => ({ id: p.id, name: p.name, shortPath: p.shortPath }), // id bisa berubah saat slug kembar muncul
+      compare: store && store.previous ? (q) => store.previous(p.key, q.flow, q.beforeId, q.withAgents) : null,
+      ...runOpts(p),
+    });
   }
 
   function ingest(ev) {
@@ -114,13 +119,27 @@ function createRegistry({ store = null, catalog, now = Date.now, watched = () =>
     return { ...make(hit), lastEventAt: h.last_at || 0, live: false };
   }
 
+  // Proyek di memori yang lewat 6 jam, ditambah proyek dari Riwayat yang tidak di memori (maks 50, terbaru dulu).
+  function inactive() {
+    return known().filter((k) => !(mem.has(k) && isActive(mem.get(k)))).map((k) => {
+      const m = mem.get(k), h = history().get(k) || {}, v = m || make(k);
+      return { id: v.id, name: v.name, shortPath: v.shortPath, lastEventAt: m ? m.lastEventAt : h.last_at || 0 };
+    }).sort((a, b) => b.lastEventAt - a.lastEventAt).slice(0, 50);
+  }
+  // Reset run: hanya proyek itu; null bila proyek tidak di memori.
+  function reset(key) {
+    const p = mem.get(key);
+    if (!p) return null;
+    startRun(p, p.run ? p.run.state.flow : 'free', { fresh: true });
+    return p;
+  }
   const list = () => byRecent().filter(isActive);
   const latest = () => list()[0] || null;
   function sweep() {
     hist = null;
     for (const p of [...mem.values()]) if (!isActive(p) && !watched(p)) evict(p);
   }
-  return { ingest, resolve, latest, list, sweep };
+  return { all: () => [...mem.values()], ingest, resolve, latest, list, sweep, inactive, reset, isActive, idFor: idOf };
 }
 
 module.exports = { createRegistry, normKey, slugOf };

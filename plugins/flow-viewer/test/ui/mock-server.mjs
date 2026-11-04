@@ -37,6 +37,18 @@ export function scenario(name) {
     }
     return { S, D };
   }
+  if (name === 'n12' || name === 'n20') { // 12 / 20 agent; posisi seperti place() di server (kolom 2-3, baris berikutnya)
+    const LB = { prd: 'Penulis PRD', ux: 'Perancang UX', architect: 'Arsitek', 'ui-designer': 'Perancang UI', be: 'Backend', fe: 'Frontend', 'ui-critic': 'Pengkritik UI', qa: 'Penguji QA', cyber: 'Keamanan', backlog: 'Pengatur Backlog' };
+    for (const m of S.crewMeta) { m.label = LB[m.id] || m.id; m.role = 'Peran ' + m.label; }
+    for (const n of Object.values(S.nodes)) if (n.status === 'running') n.startedAt = now - 40e3;
+    const extra = name === 'n12' ? 2 : 10;
+    for (let i = 0; i < extra; i++) {
+      const id = 'ext' + i, col = 2 + (i % 2), row = 3 + Math.floor(i / 2);
+      S.crew.push(id); S.crewMeta.push({ id, col, row, label: 'Agent Tambahan ' + (i + 1), role: 'Tambahan' });
+      S.nodes[id] = { id, role: 'Tambahan', status: i % 3 === 0 ? 'running' : 'idle', count: i % 3 === 0 ? 2 : 0, last: i % 3 === 0 ? 'Read x.md' : '', startedAt: now - 3e4, ms: 20e3, usage: null, snippet: '' };
+    }
+    return { S, D };
+  }
   throw new Error('skenario tidak dikenal: ' + name);
 }
 

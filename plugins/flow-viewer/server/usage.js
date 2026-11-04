@@ -159,4 +159,4 @@ async function agentUsage(ev, agentId, names) {
     || (tp && id ? readUsage([tp], { filter: { agentId: id }, skillNames: names }) : null);
 }
 
-module.exports = { readUsage, agentUsage };
+module.exports = { readUsage, agentUsage, safePath };

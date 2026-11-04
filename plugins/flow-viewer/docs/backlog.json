@@ -380,7 +380,7 @@
       "finishedAt": "2026-11-04T01:34:10.760Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "t09a-projects-kunci",
         "t07-attention"
@@ -405,7 +405,11 @@
       "slice": "server",
       "value": "high",
       "size": "m",
-      "done": "Snapshot superset 1.7.1 + project, progress, tokens (pembanding), attention. Uji unit: field baru terisi, field lama tidak berubah."
+      "done": "Snapshot superset 1.7.1 + project, progress, tokens (pembanding), attention. Uji unit: field baru terisi, field lama tidak berubah.",
+      "attempts": 1,
+      "startedAt": "2026-11-04T01:41:17.525Z",
+      "evidence": "node --test test/unit + test/http: 144 lulus 0 gagal (10 tes baru run-snapshot, 1 projects); node --check server/server.js ok",
+      "finishedAt": "2026-11-04T01:46:01.734Z"
     },
     {
       "status": "done",
@@ -434,7 +438,7 @@
       "finishedAt": "2026-10-27T07:43:59.479Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "t09b-snapshot-proyek",
         "t10a-guard"
@@ -459,10 +463,14 @@
       "slice": "server",
       "value": "high",
       "size": "l",
-      "done": "server.js memakai guard; /projects; ?p= di semua endpoint; /stream dan /state tanpa ?p= ikut proyek terbaru + event: projects; throttle 250 ms; maks 50 SSE; rotasi events.jsonl 20 MB. Semua endpoint 1.7.1 tetap. Bukti: server hidup dan curl /health, /projects, /state?p=."
+      "done": "server.js memakai guard; /projects; ?p= di semua endpoint; /stream dan /state tanpa ?p= ikut proyek terbaru + event: projects; throttle 250 ms; maks 50 SSE; rotasi events.jsonl 20 MB. Semua endpoint 1.7.1 tetap. Bukti: server hidup dan curl /health, /projects, /state?p=.",
+      "attempts": 1,
+      "startedAt": "2026-11-04T01:46:09.711Z",
+      "evidence": "node --test test/http + test/unit: 163 lulus 0 gagal; node --check server.js ok; server hidup port 4799: curl /health ok, /projects latest=beta 2 proyek, /state?p=alfa live:true, /state?p=zzz 404 project_not_found",
+      "finishedAt": "2026-11-04T01:56:41.292Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "t10b-server-endpoint"
       ],
@@ -483,10 +491,14 @@
       "slice": "server",
       "value": "high",
       "size": "m",
-      "done": "`node --test test/http` hijau: isolasi dua proyek bergantian, /state dan /stream lama ikut terbaru, Host jahat, Origin jahat, %2e%2e, ?p=../x, transkrip di luar ~/.claude, body 5 MB (413), 51 stream. Bukti: output tes."
+      "done": "`node --test test/http` hijau: isolasi dua proyek bergantian, /state dan /stream lama ikut terbaru, Host jahat, Origin jahat, %2e%2e, ?p=../x, transkrip di luar ~/.claude, body 5 MB (413), 51 stream. Bukti: output tes.",
+      "attempts": 1,
+      "startedAt": "2026-11-04T01:56:51.967Z",
+      "evidence": "node --test test/http/*.test.js: 27 lulus 0 gagal 1 todo (limits.http.test.js baru, 5 tes). F1-1/F1-3 tercakup. CATATAN: tes 'transcript_path di luar ~/.claude' diberi todo karena bug nyata di server.js (readText tanpa safePath); perbaikan urgent t11-fix-transcript-path",
+      "finishedAt": "2026-11-04T01:58:46.843Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "t10b-server-endpoint"
       ],
@@ -508,10 +520,14 @@
       "value": "high",
       "size": "m",
       "done": "test/replay.js memutar ~/.claude/flow-viewer/events.jsonl (3.428 event, 73 Stop); tabel klasifikasi tiap Stop (selesai/jeda/berjalan) vs penilaian manual; cek dukungan StopFailure/PostToolUseFailure; aturan t06a disesuaikan bila salah > 10%, bila tetap > 10% fail dan lapor pemilik; fixture event tersamar (path, isi prompt) di test/fixtures/events/. Bukti: tabel hasil dan persen salah.",
-      "notes": "Pintu masuk Tahap A: tidak ada layar dibangun sebelum item ini selesai."
+      "notes": "Pintu masuk Tahap A: tidak ada layar dibangun sebelum item ini selesai.",
+      "attempts": 1,
+      "startedAt": "2026-11-04T01:56:52.140Z",
+      "evidence": "node test/replay.js exit 0: 473 Stop berlabel, salah 13 = 2.7% (awal 14.0%, ambang 10%); node --test unit+http: 179 lulus 0 gagal; fixture test/fixtures/events/stop-tersamar.jsonl + labels.json",
+      "finishedAt": "2026-11-04T02:11:33.483Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "t12-replay-nyata"
       ],
@@ -531,10 +547,12 @@
       "size": "s",
       "checkpoint": "Hasil replay 73 kejadian berhenti: sebutkan berapa persen \"Selesai\" meleset. Pilih: (a) terima, notifikasi Selesai tetap; (b) ketatkan: kurangi notifikasi palsu dengan risiko Selesai terlambat. (rekomendasi: ikuti angka replay; terima bila meleset <= 10%)",
       "done": "Jawaban pemilik tercatat; bila (b), agent backlog menambah item be penyesuaian aturan t06a",
-      "notes": "needs-decision. Menghalangi notifikasi Selesai di layar (t20b)."
+      "notes": "needs-decision. Menghalangi notifikasi Selesai di layar (t20b).",
+      "evidence": "Keputusan pemilik: Terima: notifikasi Selesai tetap; meleset 2,7% (13/473) di bawah ambang 10%",
+      "finishedAt": "2026-11-04T02:13:54.717Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "t11-uji-http",
         "t10b-server-endpoint"
@@ -555,10 +573,14 @@
       "slice": "server",
       "value": "high",
       "size": "m",
-      "done": "Review atas semua permukaan [SEC] server + hasil t11, uji tembus manual (DNS rebinding Host, Origin palsu POST /event /reset /quit, traversal statis dan ?p=, transkrip di luar ~/.claude, payload besar). Daftar temuan dengan tingkat; tidak ada temuan tinggi terbuka; temuan menengah dijadikan item oleh agent backlog. Bukti: daftar temuan + perintah uji."
+      "done": "Review atas semua permukaan [SEC] server + hasil t11, uji tembus manual (DNS rebinding Host, Origin palsu POST /event /reset /quit, traversal statis dan ?p=, transkrip di luar ~/.claude, payload besar). Daftar temuan dengan tingkat; tidak ada temuan tinggi terbuka; temuan menengah dijadikan item oleh agent backlog. Bukti: daftar temuan + perintah uji.",
+      "attempts": 1,
+      "startedAt": "2026-11-04T01:59:44.010Z",
+      "evidence": "Review cyber PASS: 0 tinggi/kritis, 1 menengah, 4 rendah. Uji tembus port 4801: Host 11 kasus, Origin/Sec-Fetch-Site 35/35 403, traversal statis 30 variasi 404, payload 413, transcript_path di luar akar/junction tidak terbaca; node --test unit+http 169 lulus",
+      "finishedAt": "2026-11-04T02:08:17.999Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "t10b-server-endpoint",
         "t09b-snapshot-proyek",
@@ -581,7 +603,12 @@
       "slice": "server",
       "value": "mid",
       "size": "m",
-      "done": "Skill ponytail-review atas server/*.js baru (run, projects, attention, store, usage, agents, guard, server): daftar temuan; tidak ada temuan tinggi terbuka. Bukti: ringkasan review."
+      "done": "Skill ponytail-review atas server/*.js baru (run, projects, attention, store, usage, agents, guard, server): daftar temuan; tidak ada temuan tinggi terbuka. Bukti: ringkasan review.",
+      "attempts": 2,
+      "startedAt": "2026-11-04T02:16:51.228Z",
+      "lastFailure": "1 temuan TINGGI terbuka: flag batch flows.json tidak sampai ke server asli (agents.js:115-117 flow() tidak mengembalikan batch), perbaikan t12 mati di produksi. +4 menengah, 4 rendah. Syarat 'tidak ada temuan tinggi terbuka' belum terpenuhi; ulangi setelah t-review-fix-server",
+      "evidence": "Review ulang cyber: LULUS, tidak ada temuan tinggi terbuka; 4 perbaikan diverifikasi di kode asli (agents.js:115-120 batch, null flow() aman di 2 pemanggil, /\\s+/ benar); node --test unit+http 183 lulus 0 gagal. Menengah/rendah lain diparkir (review-server-*)",
+      "finishedAt": "2026-11-04T02:17:39.803Z"
     },
     {
       "status": "done",
@@ -613,7 +640,7 @@
       "finishedAt": "2026-11-04T01:36:23.398Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "t13a-kerangka-html"
       ],
@@ -632,10 +659,14 @@
       "slice": "kerangka",
       "value": "high",
       "size": "s",
-      "done": "app.js: rute ?p, v=riwayat, daftar vs proyek, buka otomatis bila tepat satu proyek aktif; migrasi kunci fv-view lama. Bukti: Playwright atau screenshot tiap rute tanpa error konsol."
+      "done": "app.js: rute ?p, v=riwayat, daftar vs proyek, buka otomatis bila tepat satu proyek aktif; migrasi kunci fv-view lama. Bukti: Playwright atau screenshot tiap rute tanpa error konsol.",
+      "attempts": 1,
+      "startedAt": "2026-11-04T01:43:28.999Z",
+      "evidence": "node --test test/unit/route.test.js: 6 lulus 0 gagal; 8 screenshot rute-1..8 ada di scratchpad (Playwright 8 skenario, galat konsol hanya 500 yang sengaja dipicu)",
+      "finishedAt": "2026-11-04T01:48:17.959Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "t13a-kerangka-html"
       ],
@@ -655,10 +686,14 @@
       "slice": "kerangka",
       "value": "high",
       "size": "s",
-      "done": "dom.js (tag html escape otomatis, raw, patch), format.js (durasi \"N mnt N dtk\", token), icons.js (enam status). Uji unit: <img onerror> jadi teks; grep innerHTML di luar dom.js = 0. Bukti: output node --test + hasil grep."
+      "done": "dom.js (tag html escape otomatis, raw, patch), format.js (durasi \"N mnt N dtk\", token), icons.js (enam status). Uji unit: <img onerror> jadi teks; grep innerHTML di luar dom.js = 0. Bukti: output node --test + hasil grep.",
+      "attempts": 1,
+      "startedAt": "2026-11-04T01:41:17.630Z",
+      "evidence": "node --test test/unit/dom-format.test.js: 8 lulus 0 gagal; grep innerHTML/outerHTML/insertAdjacentHTML di server/public selain js/dom.js = 0",
+      "finishedAt": "2026-11-04T01:43:28.601Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "t14a-dom-format"
       ],
@@ -677,10 +712,14 @@
       "slice": "kerangka",
       "value": "high",
       "size": "m",
-      "done": "api.js: SSE per ?p=, sambung ulang otomatis, bilah terputus (ikon + teks) dengan \"diperbarui HH.MM\", hilang saat tersambung; bilah #offline tetap terlihat di file:// (modul ES tidak termuat). Bukti: Playwright putus-sambung server."
+      "done": "api.js: SSE per ?p=, sambung ulang otomatis, bilah terputus (ikon + teks) dengan \"diperbarui HH.MM\", hilang saat tersambung; bilah #offline tetap terlihat di file:// (modul ES tidak termuat). Bukti: Playwright putus-sambung server.",
+      "attempts": 1,
+      "startedAt": "2026-11-04T01:48:20.800Z",
+      "evidence": "test/unit/api.test.js 4 lulus; Playwright test/ui/live-conn.test.mjs 3 lulus 0 gagal (putus-sambung server); screenshot test/ui/t14b-terputus.png",
+      "finishedAt": "2026-11-04T01:53:19.393Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "t13a-kerangka-html"
       ],
@@ -700,10 +739,14 @@
       "slice": "kerangka",
       "value": "high",
       "size": "m",
-      "done": "css/tokens.css lengkap terang dan gelap sesuai DESIGN §2; --warn-line diperbaiki agar border putus-putus node Butuh input >= 3:1 di terang dan gelap (kini 2,70:1, masalah ui-critic #2). Bukti: tabel rasio kontras terukur >= AA dan >= 3:1 untuk garis grafis."
+      "done": "css/tokens.css lengkap terang dan gelap sesuai DESIGN §2; --warn-line diperbaiki agar border putus-putus node Butuh input >= 3:1 di terang dan gelap (kini 2,70:1, masalah ui-critic #2). Bukti: tabel rasio kontras terukur >= AA dan >= 3:1 untuk garis grafis.",
+      "attempts": 1,
+      "startedAt": "2026-11-04T01:41:17.773Z",
+      "evidence": "server/public/css/tokens.css terisi 4646 B, 21 peran warna x2 tema; skrip kontras: FAIL 0, teks >=4.5:1, garis >=3:1; --warn-line terang #B07410 (3,46:1 vs warn-soft)",
+      "finishedAt": "2026-11-04T01:43:14.948Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "t15a-tokens-tema"
       ],
@@ -725,10 +768,14 @@
       "slice": "kerangka",
       "value": "high",
       "size": "l",
-      "done": "css/app.css: bilah atas, pita KPI, kotak pemberitahuan (border 1 px --warn-line, kartu Gagal border 1 px --bad-line), panel dan rel, node penuh/ringkas, enam status ikon + teks, tombol. Tab terpilih: latar --accent-soft, teks --accent (masalah #7). Rel max-height:100% overflow-y:auto (masalah #1). Bukti: screenshot 1440x900 dan 900x780 terang/gelap + audit kontras AA."
+      "done": "css/app.css: bilah atas, pita KPI, kotak pemberitahuan (border 1 px --warn-line, kartu Gagal border 1 px --bad-line), panel dan rel, node penuh/ringkas, enam status ikon + teks, tombol. Tab terpilih: latar --accent-soft, teks --accent (masalah #7). Rel max-height:100% overflow-y:auto (masalah #1). Bukti: screenshot 1440x900 dan 900x780 terang/gelap + audit kontras AA.",
+      "attempts": 1,
+      "startedAt": "2026-11-04T01:46:09.818Z",
+      "evidence": "server/public/css/app.css 30447 B; 6 screenshot di docs/mockups/t15b/screenshots/ (1440x900 dan 900x780, terang/gelap); run-audit --widths 900,1440 --tokens: tinggi 0, kontras 0, VERDICT LULUS (audit-light/dark.json)",
+      "finishedAt": "2026-11-04T01:52:41.095Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "t14a-dom-format",
         "t15b-komponen-dasar",
@@ -755,10 +802,14 @@
       "screen": "Tampilan proyek (live)",
       "value": "high",
       "size": "l",
-      "done": "graph.js: layout dari crewMeta (kolom per fase), node penuh dan ringkas, konektor kurva, pembaruan berkunci tanda tangan, crew bawaan Menunggu + teks panduan saat belum ada run, jumlah putaran. Playwright: 14 node (12 agent) tanpa tumpang tindih, teks node terkecil >= 12 px di 900 dan 1440; node diperbarui < 1 dtk saat event datang. Bukti: hasil Playwright + screenshot."
+      "done": "graph.js: layout dari crewMeta (kolom per fase), node penuh dan ringkas, konektor kurva, pembaruan berkunci tanda tangan, crew bawaan Menunggu + teks panduan saat belum ada run, jumlah putaran. Playwright: 14 node (12 agent) tanpa tumpang tindih, teks node terkecil >= 12 px di 900 dan 1440; node diperbarui < 1 dtk saat event datang. Bukti: hasil Playwright + screenshot.",
+      "attempts": 1,
+      "startedAt": "2026-11-04T02:13:54.785Z",
+      "evidence": "node --test test/unit: 165 lulus 0 gagal (10 baru graph.test.js); Playwright test/ui/graph.test.mjs: 6 lulus 0 gagal (14 node 0 tumpang tindih, teks min 12 px di 1440 dan 900, update 13 ms); screenshot test/ui/t16a-1440.png, t16a-900.png",
+      "finishedAt": "2026-11-04T02:20:59.033Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "t16a-graph-layout"
       ],
@@ -780,7 +831,11 @@
       "screen": "Tampilan proyek (live)",
       "value": "high",
       "size": "m",
-      "done": "Zoom/pan/pas layar/Ctrl+scroll/klik dua kali; batas zoom minimum 74% sama dengan Pas layar (masalah #3); kontrol zoom tidak menutupi node, sisakan 48 px di bawah area pas layar (masalah #4); node fokus Tab, Enter membuka, seleksi outline ink 3 px. Bukti: Playwright ukur teks node dan jarak kontrol-ke-node."
+      "done": "Zoom/pan/pas layar/Ctrl+scroll/klik dua kali; batas zoom minimum 74% sama dengan Pas layar (masalah #3); kontrol zoom tidak menutupi node, sisakan 48 px di bawah area pas layar (masalah #4); node fokus Tab, Enter membuka, seleksi outline ink 3 px. Bukti: Playwright ukur teks node dan jarak kontrol-ke-node.",
+      "attempts": 1,
+      "startedAt": "2026-11-04T02:21:03.947Z",
+      "evidence": "Playwright graph-zoom.test.mjs + graph.test.mjs: 13 lulus 0 gagal (zoom min 74%, jalur kontrol 48 px, tumpang tindih 0, Tab/Enter/Esc, outline 3 px ink); node --test test/unit: 165 lulus 0 gagal",
+      "finishedAt": "2026-11-04T02:27:22.471Z"
     },
     {
       "status": "todo",
@@ -2842,7 +2897,324 @@
       "value": "mid",
       "size": "m",
       "notes": "asal: t13a-kerangka-html"
+    },
+    {
+      "id": "t15a-selaraskan-design-md",
+      "title": "Selaraskan DESIGN.md dengan tokens.css: --warn-line #B07410, baris kontras warn-line, token baru",
+      "type": "ui",
+      "agent": "ui-designer",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: t15a-tokens-tema. DESIGN §2 masih #C98513; tambah token --bw-1..3, --focus-offset, --select-offset, --control-h"
+    },
+    {
+      "id": "t15a-ok-line-di-ok-soft",
+      "title": "Pastikan ok-line tidak dipakai di atas ok-soft (2,95:1, di bawah 3:1)",
+      "type": "ui",
+      "agent": "ui-designer",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: t15a-tokens-tema. Terang: ok-line/ok-soft 2,95; ok-line/ground 3,02"
+    },
+    {
+      "id": "t14a-css-ikon-status",
+      "title": "CSS ikon status: warna dan animasi putar Berjalan (.ic-*)",
+      "type": "ui",
+      "agent": "ui-designer",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: t14a-dom-format. icons.js memakai class ic ic-<status>; belum ada gaya di css/"
+    },
+    {
+      "id": "t14a-peta-status-input",
+      "title": "Petakan status node 'butuh input' ke kunci 'input' di icons.js/app",
+      "type": "fe",
+      "agent": "fe",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: t14a-dom-format. run.js hanya idle/running/done/failed/skipped/optional; format token 'rb'/'jt' ikut UX.md, perlu konfirmasi"
+    },
+    {
+      "id": "t09b-sambung-t10b",
+      "title": "Sambungan sisa snapshot ke server: compare/project di server.js, sapuan 30 dtk quiet, dropCompare setelah hapus Riwayat, agregat attention untuk /projects, baris Riwayat deltaPct/boros",
+      "type": "be",
+      "agent": "be",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: t09b-snapshot-proyek; ranah t10b. progress.label kosong bila pct null (klien tampilkan '-')"
+    },
+    {
+      "id": "t15b-docs-komponen",
+      "title": "Tulis docs/KOMPONEN.md dari kontrak komponen di komentar kepala app.css",
+      "type": "ui",
+      "agent": "ui-designer",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: t15b-komponen-dasar. Juga: kandidat seri k-big vs n-title 28 px (rendah); kontrol zoom menutupi node di 900 (masalah #4) milik t16b/t16c"
+    },
+    {
+      "id": "t14b-css-offline",
+      "title": "CSS bilah #offline (#offline[hidden]{display:none})",
+      "type": "ui",
+      "agent": "ui-designer",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: t14b-api-sse"
+    },
+    {
+      "id": "t14b-sisa-klien",
+      "title": "Klien: fetch otomatis dengan p, pemantau koneksi macet diam-diam, playwright terpasang di proyek (tes memakai env PW)",
+      "type": "fe",
+      "agent": "fe",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: t14b-api-sse. ARCHITECTURE baris 47 belum dikerjakan; shortcut tanpa pemantau ping"
+    },
+    {
+      "id": "t10b-selaras-token-json",
+      "title": "Selaraskan kontrak /report/tokens.json dengan keluaran token-report.js (perRun/perAgent/costliest/limit:200) dan pasang usage.js inkremental",
+      "type": "be",
+      "agent": "be",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: t10b-server-endpoint. Juga: perintah uji 'Run locally' pakai glob test/**/*.test.js; sapuan diam 10 mnt tanpa uji otomatis; uji beban 3 proyek x 12 agent (T28) belum ada"
+    },
+    {
+      "id": "t11-fix-transcript-path",
+      "title": "Perbaiki: transcript_path di luar ~/.claude harus ditolak (pasang safePath usage.js ke server.js), hapus todo di tesnya",
+      "type": "be",
+      "agent": "be",
+      "status": "done",
+      "needs": [],
+      "criteria": [
+        "PRD-8"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#8.2 Threat model"
+      ],
+      "value": "urgent",
+      "size": "s",
+      "done": "refreshUsage dan agentUsage memakai safePath; transcript di luar akar, bukan .jsonl, atau berisi .. diabaikan; hapus opsi todo di test/http/limits.http.test.js; node --test test/http/*.test.js hijau tanpa todo",
+      "slice": "server",
+      "attempts": 1,
+      "startedAt": "2026-11-04T01:58:55.161Z",
+      "evidence": "node --test test/http/*.test.js test/unit/*.test.js: 169 tes, 169 lulus, 0 gagal, 0 todo; opsi todo di limits.http.test.js dihapus (grep todo = 0)",
+      "finishedAt": "2026-11-04T01:59:43.913Z"
+    },
+    {
+      "id": "sec-proto-pollution-agent",
+      "title": "Perbaiki prototype pollution: agent_type/subagent_type '__proto__' mencemari Object.prototype server (menengah)",
+      "type": "be",
+      "agent": "be",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: sec-server-hardening, temuan MENENGAH. run.js:109,194 dan agents.js:100: nodes/details/fileSets/defs/display jadi Object.create(null) atau Map, atau tolak nama di luar /^[a-z0-9][a-z0-9._:-]*$/. Juga /detail?id=constructor 500 (rendah). Kode sedang dipakai: jadwalkan urgent"
+    },
+    {
+      "id": "sec-server-rendah",
+      "title": "Hardening rendah server: GET /report/tokens.md menulis file (tolak cross-site), cwd palsu menulis .flow-viewer di luar proyek, transcript_path dibatasi projects/** dan */subagents/*, riwayat per cwd tanpa batas",
+      "type": "be",
+      "agent": "be",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: sec-server-hardening, 4 temuan RENDAH (server.js:455-461, 268-280; token-report.js:169; usage.js:125; server.js:111)"
+    },
+    {
+      "id": "t12-sinkron-dokumen",
+      "title": "Selaraskan dokumen dengan aturan batas run baru: ARCHITECTURE 5.1/5.2(c), adr/0001-batas-run (tugas shell, flag batch, asksOwner, pembersihan node basi, jumlah Stop 498)",
+      "type": "architect",
+      "agent": "architect",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: t12-replay-nyata"
+    },
+    {
+      "id": "t12-event-gagal",
+      "title": "Dukung event StopFailure dan PostToolUseFailure: cabang case di run.js dan daftarkan di hooks/hooks.json",
+      "type": "be",
+      "agent": "be",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: t12-replay-nyata. Didukung Claude Code 2.1.314 tapi belum terdaftar, event tak dikenal kini ditolak"
+    },
+    {
+      "id": "t12-nilai-ulang-sampel",
+      "title": "Pemilik menilai ulang 13 Stop salah (node test/replay.js --table) karena label hanya satu penilai",
+      "type": "keputusan",
+      "agent": "architect",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: t12-replay-nyata. 8 jeda terbaca selesai (menunggu jawaban Commit tanpa petunjuk teks), 5 selesai terbaca jeda"
+    },
+    {
+      "id": "review-fix-server",
+      "title": "Perbaiki temuan review server: flag batch sampai ke server asli (tinggi), flow tak dikenal jadi null, regex \\s+ di /report.md, evIndex dibersihkan, tes lewat katalog asli",
+      "type": "be",
+      "agent": "be",
+      "status": "done",
+      "needs": [],
+      "criteria": [
+        "F5-3"
+      ],
+      "context": [
+        "docs/ARCHITECTURE.md#3. Module dan seam"
+      ],
+      "value": "urgent",
+      "size": "s",
+      "done": "agents.js flow() mengembalikan batch dan null untuk nama flow tak dikenal selain free; run.js:588 memakai /\\s+/g; evIndex dihapus saat events.shift(); tes baru lewat katalog asli (flow('run').batch true, /build xyz tidak membuat run 10 langkah, kalimat uji berisi huruf s di JEDA); node --test test/unit/*.test.js test/http/*.test.js hijau",
+      "slice": "server",
+      "attempts": 1,
+      "startedAt": "2026-11-04T02:15:05.033Z",
+      "evidence": "node --test test/unit + test/http: 183 lulus 0 gagal; test/unit/katalog-asli.test.js 4 lulus (flow('run').batch true, flow tak dikenal null, huruf s utuh di JEDA). Temuan 6 (evIndex) tanpa tes. Tes baru ditulis sesudah perbaikan",
+      "finishedAt": "2026-11-04T02:16:51.143Z"
+    },
+    {
+      "id": "review-server-usage-inkremental",
+      "title": "Pakai usage.js inkremental di server.js (hapus parseUsage/agentUsage/readText duplikat), analyze hanya pada refresh paksa; tes",
+      "type": "be",
+      "agent": "be",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: review-kode-server temuan MENENGAH 4: transkrip 109 MB menahan event loop 0,3-0,5 dtk per refresh, melanggar ARCHITECTURE 9. Gabung dengan t10b-selaras-token-json"
+    },
+    {
+      "id": "review-server-induk-proyek",
+      "title": "Konfirmasi ADR 0002: induk terluar menang meleburkan proyek bila sesi pernah dibuka di folder induk; abaikan induk tanpa docs/ atau .claude/, akar drive, home",
+      "type": "keputusan",
+      "agent": "architect",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: review-kode-server temuan MENENGAH 5 (projects.js:64). Keputusan pemilik"
+    },
+    {
+      "id": "review-server-rendah",
+      "title": "Rendah server: id run bertabrakan lintas proyek (store.nextId), penjaga masuk ganda /history/rescan, urutan log, tes pembersihan node basi dan rescanRun, bersihkan duplikasi (-80 baris), cek rotasi events.jsonl 238 MB di server berjalan",
+      "type": "be",
+      "agent": "be",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: review-kode-server temuan RENDAH 7-9 dan catatan belum diperiksa (events.jsonl 238 MB tanpa events.1.jsonl, kemungkinan server lama)"
+    },
+    {
+      "id": "t16a-crewmeta-label",
+      "title": "Server mengirim label, role, ikon per node di crewMeta (kini hanya id/col/row, node tampil id mentah)",
+      "type": "be",
+      "agent": "be",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: t16a-graph-layout. graph.js sudah membaca node.label lalu crewMeta.label lalu id"
+    },
+    {
+      "id": "t16a-diam-luar-flow",
+      "title": "Penanda 'Diam N mnt' di node dan tampilan agent di luar flow yang redup; ukur ulang lebar panggung saat panel dan rel terhubung (t16c, t18a)",
+      "type": "fe",
+      "agent": "fe",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: t16a-graph-layout. Di luar F2-1/3/4"
+    },
+    {
+      "id": "t16b-ui-test-pw",
+      "title": "test/ui/ui.test.mjs gagal: mengimpor playwright langsung, tidak membaca env PW; pasang playwright di proyek atau satukan pemuat",
+      "type": "fe",
+      "agent": "fe",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: t16b-graph-zoom; kegagalan sudah ada sebelum item. Gabung dengan t14b-sisa-klien"
+    },
+    {
+      "id": "t16b-simpan-zoom",
+      "title": "Simpan pengaturan zoom di localStorage (PRD Pengaturan tampilan, opsional); fv-pick belum didengarkan panel (t18a)",
+      "type": "fe",
+      "agent": "fe",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: t16b-graph-zoom. Maks zoom 200% asumsi agent (tidak ada di DESIGN)"
     }
   ],
-  "updatedAt": "2026-11-04T01:36:23.524Z"
+  "updatedAt": "2026-11-04T02:27:22.648Z"
 }

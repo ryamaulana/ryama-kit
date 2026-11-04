@@ -77,7 +77,7 @@ Prinsip: `server.js` hanya meneruskan; perilaku ada di module yang dalam dan bis
 
 | Module | Interface (yang harus diketahui pemanggil) | Yang disembunyikan |
 |---|---|---|
-| `projects.js` | `createRegistry({store, catalog, now})` -> `ingest(ev)` (kembalikan proyek yang berubah atau null), `resolve(p)`, `latest()`, `list()`, `sweep()` | normalisasi kunci, ikatan sesi, cwd di subfolder, slug kembar, run baru per sesi/prompt, eviksi |
+| `projects.js` | `createRegistry({store, catalog, now})` -> `ingest(ev)` (kembalikan proyek yang berubah atau null), `resolve(p)`, `latest()`, `list()`, `all()`, `inactive()`, `reset(key)`, `isActive(p)`, `idFor(key)`, `sweep()` | normalisasi kunci, ikatan sesi, cwd di subfolder, slug kembar, run baru per sesi/prompt, eviksi |
 | `run.js` | `createRun({key, flow, catalog, usage, now, prev})` -> `apply(ev)`, `applyForeign(ev)`, `snapshot()`, `detail(id)`, `report()`, `phase`, `id` | seluruh mesin status 1.7.1 (`handle`, `start/stop`, detail, convo), daftar pending, aturan fase, ringkasan |
 | `attention.js` | `attentionOf(snapshot, backlog)` -> `Item[]` | aturan pemicu dan kapan hilang; kunci stabil |
 | `agents.js` | `catalogFor(key)` -> `{defs, crew, crewMeta, edges, flow(name)}`; `refresh(key)` | sumber folder, parsing frontmatter (inline dan daftar YAML), cache mtime, penempatan agent baru |
@@ -185,7 +185,7 @@ Dibuat server saat `finished`, disimpan di `state.summary` (ikut tersimpan ke Ri
 
 ## 6. API
 
-Semua endpoint: tanpa login (PRD: satu pemilik, lokal), dilindungi guard lokal (bagian 8). Galat berbentuk `{"error":"kode","message":"teks"}`. `p` opsional di mana pun; tanpa `p` = proyek terbaru aktif (kompatibel 1.7.1). `p` salah bentuk -> 400 `bad_project`; bentuk benar tapi tidak dikenal -> 404 `project_not_found`.
+Semua endpoint: tanpa login (PRD: satu pemilik, lokal), dilindungi guard lokal (bagian 8). Galat berbentuk `{"error":"kode","message":"teks"}`. `p` opsional di mana pun; tanpa `p` = proyek terbaru aktif (kompatibel 1.7.1). `p` salah bentuk -> 400 `bad_project`; bentuk benar tapi tidak dikenal -> 404 `project_not_found`. Endpoint yang butuh run hidup (`/detail`, `/report`, `/reset`) untuk proyek yang hanya ada di Riwayat -> 404 `not_live`. `/state` tanpa `p` dan tanpa proyek aktif -> 200 snapshot kosong (`live:false`), seperti 1.7.1.
 
 | Metode | Path | Request | Response | Galat | Catatan |
 |---|---|---|---|---|---|
@@ -277,7 +277,7 @@ Prune 200 run per proyek terjadi di `store.save` (4.2). Riwayat kosong -> "Belum
 | File di folder plugin | Pengunjung viewer | Path traversal lewat URL statis | `decodeURIComponent` -> tolak bila ada `\0`, `..`, atau `\` -> `path.resolve(PUBLIC, '.' + p)` wajib di dalam `PUBLIC + sep` -> whitelist ekstensi -> 404. `?p=` dan `id` divalidasi regex dan hanya dipakai sebagai kunci peta |
 | Browser pemilik | Teks agent hasil prompt injection | XSS saat merender percakapan, hasil, diff, judul backlog | Semua HTML dibuat lewat tag `html` di `dom.js` yang meng-escape tiap sisipan (`& < > " '`); `raw()` hanya untuk konstanta ikon. Uji: grep `innerHTML` di luar `dom.js` = 0. CSP tanpa skrip inline sebagai lapis kedua. Judul tab dan Notification memakai teks biasa |
 | Riwayat pribadi | Commit tidak sengaja | `history.db` atau `events.jsonl` masuk git | Data di `~/.claude/flow-viewer` (di luar repo). `.gitignore` plugin untuk `*.db`, `*.db-*`, `events*.jsonl`, `history/`, `server.log`. Fixture uji dari event nyata disamarkan (path, isi prompt) sebelum masuk `test/fixtures` |
-| Ketersediaan viewer dan Claude Code | Payload besar atau banyak tab | Memori habis, hook lambat | Body `/event` maks 4 MB (413). Maks 50 koneksi SSE. Batas per run: convo 150, event per agent 400, log 200, file 40 di snapshot. Siaran di-throttle. `events.jsonl` dirotasi 20 MB (sekarang 85 MB). `send.js` tetap timeout 800 ms dan selalu exit 0 |
+| Ketersediaan viewer dan Claude Code | Payload besar atau banyak tab | Memori habis, hook lambat | Body `/event` maks 4 MB (413). Maks 50 koneksi SSE. Batas per run: convo 150, event per agent 400, log 200, file 40 di snapshot. Siaran di-throttle. `events.jsonl` dirotasi 20 MB ke `events.1.jsonl` (satu generasi; `FLOW_VIEWER_LOG_MAX` hanya untuk uji). `send.js` tetap timeout 800 ms dan selalu exit 0 |
 | Mesin lain di jaringan | Perangkat di LAN | Akses ke port 4777 | Bind `127.0.0.1` saja; tidak ada opsi bind lain |
 
 Rahasia: tidak ada (tanpa login, tanpa API eksternal, tanpa kunci). Upload dan pembayaran: tidak ada. Rate limit: tidak dipakai (lokal, satu pengguna); batas ukuran dan jumlah koneksi di atas cukup.

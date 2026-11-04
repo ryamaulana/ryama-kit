@@ -37,7 +37,8 @@ function req(method, p, headers = {}, body) {
   });
 }
 const H = `localhost:${PORT}`;
-const tokens = (p, headers = {}) => req('GET', `/report/tokens.json?project=${encodeURIComponent(p)}`, { host: H, ...headers });
+const idOf = (p) => path.basename(p).toLowerCase();
+const tokens = (p, headers = {}) => req('GET', `/report/tokens.json?p=${encodeURIComponent(idOf(p))}`, { host: H, ...headers });
 const current = async () => JSON.parse((await req('GET', '/history', { host: H })).text).current;
 const ev = (cwd) => JSON.stringify({ hook_event_name: 'UserPromptSubmit', session_id: 'sec-1', cwd, prompt: 'halo' });
 
@@ -50,7 +51,7 @@ test.after(() => { proc.kill(); });
 
 test('DNS rebinding: Host selain localhost:PORT/127.0.0.1:PORT -> 403 bad_host di laporan, riwayat, report.md, reset', async () => {
   for (const host of ['evil.com:' + PORT, 'evil.com', 'localhost:1', 'localhost.evil.com:' + PORT]) {
-    for (const [m, p] of [['GET', `/report/tokens.json?project=${encodeURIComponent(projReal)}`], ['GET', '/history?all=1'], ['GET', '/report.md'], ['GET', '/state'], ['POST', '/reset']]) {
+    for (const [m, p] of [['GET', `/report/tokens.json?p=${idOf(projReal)}`], ['GET', '/history?all=1'], ['GET', '/report.md'], ['GET', '/state'], ['POST', '/reset']]) {
       const r = await req(m, p, { host });
       assert.strictEqual(r.status, 403, `${host} ${m} ${p}`);
       assert.strictEqual(JSON.parse(r.text).error, 'bad_host');
@@ -91,7 +92,8 @@ test('POST /event: hook asli (tanpa Origin, application/json) tetap diterima', a
 test('Folder dikenal wajib punya docs/ atau .claude/ atau pernah berisi sesi nyata', async () => {
   for (const p of [projReal, projDocs, projClaude]) assert.strictEqual((await tokens(p)).status, 200, p);
   const r = await tokens(projBare);
-  assert.strictEqual(r.status, 400);
+  assert.strictEqual(r.status, 404);
+  assert.strictEqual(JSON.parse(r.text).error, 'project_not_found');
   assert.deepStrictEqual(fs.readdirSync(projBare), []);
 });
 

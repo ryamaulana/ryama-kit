@@ -1,0 +1,715 @@
+<!doctype html>
+<html lang="id" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pratinjau komponen dasar (t15b) · Flow Viewer</title>
+<script>(function(){try{var q=new URLSearchParams(location.search).get('theme');var s=null;try{s=localStorage.getItem('fv-theme')}catch(e){}var t=q||s||'light';document.documentElement.setAttribute('data-theme',t==='dark'?'dark':'light');}catch(e){}})();</script>
+<link rel="stylesheet" href="../../../server/public/css/fonts.css">
+<link rel="stylesheet" href="../../../server/public/css/tokens.css">
+<link rel="stylesheet" href="../../../server/public/css/app.css">
+</head>
+<body>
+<!-- Pratinjau t15b: markup dari docs/mockups/arah-a/live.html, gaya dari server/public/css/app.css. Data contoh buatan (proyek tryouthub). ?theme=dark untuk tema gelap. -->
+<div class="app has-notice">
+<header class="bar">
+  <div class="brand"><span class="logo"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 5h5v5H5z M14 14h5v5h-5z M10 7.5h4a2 2 0 0 1 2 2V14"/></svg></span><span class="brand-t">Flow Viewer</span></div>
+  <div class="proj"><span class="chip chip-running"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h6l2 2h10v11H3z"/></svg></span><div><h1>tryouthub</h1><small>D:\proyek\tryouthub</small></div></div>
+  <span class="flowchip">Flow: build</span>
+  <nav class="nav" aria-label="Tampilan">
+    <a href="live.html" aria-current="page">Live</a>
+    <span class="nav-i" aria-disabled="true" title="Layar Riwayat dirancang di Tahap B">Riwayat</span>
+  </nav>
+  <span class="conn" role="status"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9a14 14 0 0 1 18 0 M6 12.5a9.5 9.5 0 0 1 12 0 M9 16a5 5 0 0 1 6 0 M12 19.5h.01"/></svg><span>Tersambung</span></span>
+  <button class="ib" id="snd" type="button" aria-pressed="true" aria-label="Matikan bunyi"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5v5h3.5L12 18V6L7.5 9.5z M15.5 9a4 4 0 0 1 0 6 M18 6.5a8 8 0 0 1 0 11"/></svg></button>
+  <button class="ib" id="ntf" type="button" aria-pressed="false" aria-label="Aktifkan notifikasi desktop"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z M10 21h4"/></svg></button>
+  <button class="ib" id="theme" type="button" aria-pressed="false" aria-label="Ganti ke tema gelap"><span class="t-light"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg></span><span class="t-dark"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z M12 2v2 M12 20v2 M2 12h2 M20 12h2 M5 5l1.4 1.4 M17.6 17.6L19 19 M5 19l1.4-1.4 M17.6 6.4L19 5"/></svg></span></button>
+  <div class="menu-wrap"><button class="ib" id="more" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="menu" aria-label="Lainnya"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h.01 M12 12h.01 M19 12h.01"/></svg></button>
+    <div class="menu" id="menu" role="menu" aria-label="Lainnya" hidden><button type="button" role="menuitem" id="reset" class="m-bad"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12a8 8 0 1 0 3-6.2 M4 4v4h4"/></svg><span>Reset run</span></button><button type="button" role="menuitem" id="report"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h7l4 4v14H7z M14 3v4h4 M9.5 13h5 M9.5 17h5 M9.5 9h2"/></svg><span>Laporan teks</span></button></div></div>
+</header>
+<section class="ribbon" aria-label="Tiga indikator run">
+  <article class="kpi k-who"><header><span class="k-chip"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6z M3 20a6 6 0 0 1 12 0 M16 5.5a3 3 0 0 1 0 5.5 M17 14a6 6 0 0 1 4 6"/></svg></span><h2>Siapa kerja</h2><span class="pill st-running"><svg class="ic ic-running" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9"/></svg>2 berjalan</span><a class="btn-s" href="ringkasan.html">Ringkasan</a></header>
+    <p class="k-big">Menunggu kamu: jawab pertanyaan</p>
+    <ul class="who"><li><span class="who-n"><svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l1-4L16 5l3 3L8 19z M14 7l3 3"/></svg>ui-designer</span><span class="who-a">Menyusun kartu skor per bagian di hasil.html</span></li>
+       <li><span class="who-n"><svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 7l-5 5 5 5 M16 7l5 5-5 5 M13.5 5l-3 14"/></svg>fe</span><span class="who-a">Menyambungkan GET /api/hasil/:id ke halaman hasil</span></li></ul></article>
+  <article class="kpi k-prog"><header><span class="k-chip"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z M8 12.5l3 3 5-6"/></svg></span><h2>Progres</h2></header>
+    <div class="k-row"><p class="k-num">60%</p><div class="k-side"><div class="meter" role="img" aria-label="Progres 60 persen"><i style="width:60%"></i></div><p class="k-cap">Backlog 12 dari 20 item</p><p class="k-cap">Durasi 14 mnt 32 dtk</p></div></div></article>
+  <article class="kpi k-tok"><header><span class="k-chip"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 17a8 8 0 1 1 16 0 M12 17l4-5"/></svg></span><h2>Token</h2></header>
+    <div class="k-row"><div><p class="k-num">184,2K</p><p class="k-cap">setara input</p></div>
+    <svg class="spark" width="120" height="44" viewBox="0 0 120 44" role="img" aria-label="Token naik tiap menit sampai 184,2K"><path d="M3.0 41.0 C7.1 41.0 7.1 39.8 11.1 39.8 C15.2 39.8 15.2 38.1 19.3 38.1 C23.4 38.1 23.4 36.5 27.4 36.5 C31.5 36.5 31.5 34.6 35.6 34.6 C39.6 34.6 39.6 32.7 43.7 32.7 C47.8 32.7 47.8 30.3 51.9 30.3 C55.9 30.3 55.9 27.4 60.0 27.4 C64.1 27.4 64.1 24.1 68.1 24.1 C72.2 24.1 72.2 21.0 76.3 21.0 C80.4 21.0 80.4 17.5 84.4 17.5 C88.5 17.5 88.5 13.9 92.6 13.9 C96.6 13.9 96.6 10.0 100.7 10.0 C104.8 10.0 104.8 6.1 108.9 6.1 C112.9 6.1 112.9 3.0 117.0 3.0"/><circle cx="117" cy="3" r="4"/></svg></div>
+    <p class="delta"><svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5 M6 11l6-6 6 6"/></svg>+12% dari run sebelumnya <span>(164,5K)</span></p></article>
+</section>
+<section class="notice" aria-label="Pemberitahuan">
+  <header class="n-top"><span class="chip chip-input"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z M9.6 9.6a2.5 2.5 0 1 1 3.6 2.2c-.8.4-1.2 1-1.2 1.8 M12 17h.01"/></svg></span><h2><span class="t-in">Butuh input 2</span> · <span class="t-bad">Gagal 1</span></h2><span class="n-act2"><span class="n-hint">Jawab di aplikasi Claude.</span><button type="button" class="lnk" data-show="percakapan">Lihat percakapan</button></span></header>
+  <div class="n-q"><p class="n-meta">Pertanyaan · Sesi utama · 14.16</p>
+    <p class="n-title">Pembahasan soal tampil di mana?</p>
+    <p class="n-ctx">Pembahasan 40 soal membuat halaman hasil terlalu panjang. Mau ditaruh di mana?</p>
+    <ol class="choices"><li>Satu halaman, pembahasan dilipat per bagian (rekomendasi)</li><li>Halaman terpisah, dibuka dari tombol Lihat pembahasan</li><li>Tunda pembahasan ke versi berikut</li></ol></div>
+  <aside class="n-f" aria-label="Gagal"><header><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z M9 9l6 6 M15 9l-6 6"/></svg><h3>Gagal · be · 14.15</h3></header>
+    <p class="n-t">Migrasi 007 gagal</p><p class="n-text">Kolom skor_bagian sudah ada. be berhenti di putaran 2.</p>
+    <p><button type="button" class="lnk" data-select="be">Lihat detail</button></p></aside>
+  <p class="n-sub"><b>Keputusan backlog · B-09</b><span>Pembahasan soal: gratis atau khusus langganan?</span><button type="button" class="lnk" data-show="backlog">Lihat backlog</button></p>
+</section>
+<div class="main open" id="main">
+  <section class="graph" aria-label="Alur agent">
+    <header class="g-head"><div class="g-t"><h2>Alur build</h2><p>12 agent, 2 berjalan paralel</p></div><p class="legend" aria-label="Arti status"><span><svg class="ic ic-waiting" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z M12 7v5l3 2"/></svg>Menunggu</span><span><svg class="ic ic-running" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9"/></svg>Berjalan</span><span><svg class="ic ic-done" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z M8 12.5l3 3 5-6"/></svg>Selesai</span><span><svg class="ic ic-skipped" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l6 6-6 6 M13 6l6 6-6 6"/></svg>Dilewati</span><span><svg class="ic ic-input" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z M9.6 9.6a2.5 2.5 0 1 1 3.6 2.2c-.8.4-1.2 1-1.2 1.8 M12 17h.01"/></svg>Butuh input</span><span><svg class="ic ic-failed" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z M9 9l6 6 M15 9l-6 6"/></svg>Gagal</span></p></header>
+    <div class="stage-wrap"><div class="stage" id="stage"><div class="canvas" id="canvas"><svg class="edges" id="edges" aria-hidden="true"></svg>
+<article class="node n-done" data-id="__prompt" style="--c:0;--r:1">
+  <span class="port p-in"></span><span class="port p-out"></span>
+  <div class="n-head"><span class="chip chip-done"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h11 M11 7l5 5-5 5 M20 5v14"/></svg></span><span class="n-name">Prompt</span><span class="st st-done"><svg class="ic ic-done" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z M8 12.5l3 3 5-6"/></svg><span>Selesai</span></span></div>
+  <div class="n-meta2"><span>14.02</span><span>Pemilik</span></div>
+  <p class="n-act">Dikirim 14.02</p>
+  <p class="n-snip">Buat halaman hasil tryout: skor per bagian, waktu pengerjaan, dan pembahasan soal.</p>
+  <button type="button" class="hit" aria-label="Buka detail Prompt, Selesai"></button>
+</article><article class="node n-input" data-id="__main" style="--c:0;--r:2">
+  <span class="port p-in"></span><span class="port p-out"></span>
+  <div class="n-head"><span class="chip chip-input"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11h-9l-4 4v-4H4z"/></svg></span><span class="n-name">Sesi utama</span><span class="st st-input"><svg class="ic ic-input" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z M9.6 9.6a2.5 2.5 0 1 1 3.6 2.2c-.8.4-1.2 1-1.2 1.8 M12 17h.01"/></svg><span>Butuh input</span></span></div>
+  <div class="n-meta2"><span>14 mnt 32 dtk</span><span>16,7K</span><span>opus</span></div>
+  <p class="n-act"><span class="x-f">Butuh input: lihat pertanyaan di atas</span><span class="x-c">Lihat pertanyaan di atas</span></p>
+  <p class="n-snip">Alur build: 12 agent, 4 selesai atau dilewati, 2 berjalan.</p>
+  <button type="button" class="hit" aria-label="Buka detail Sesi utama, Butuh input"></button>
+</article><article class="node n-done" data-id="prd" style="--c:1;--r:0">
+  <span class="port p-in"></span><span class="port p-out"></span>
+  <div class="n-head"><span class="chip chip-done"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h7l4 4v14H7z M14 3v4h4 M9.5 12h5 M9.5 16h5"/></svg></span><span class="n-name">prd</span><span class="st st-done"><svg class="ic ic-done" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z M8 12.5l3 3 5-6"/></svg><span>Selesai</span></span></div>
+  <div class="n-meta2"><span>1x</span><span>1 mnt 48 dtk</span><span>12,4K</span><span>sonnet</span></div>
+  <p class="n-act">Menulis PRD v1.1, fitur F6 halaman hasil</p>
+  <p class="n-snip">F6 ditambah: skor per bagian, waktu per soal, pembahasan. 4 kriteria penerimaan.</p>
+  <button type="button" class="hit" aria-label="Buka detail prd, Selesai"></button>
+</article><article class="node n-skipped" data-id="ux" style="--c:1;--r:1">
+  <span class="port p-in"></span><span class="port p-out"></span>
+  <div class="n-head"><span class="chip chip-skipped"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h6a3 3 0 0 1 0 6h-4a3 3 0 0 0 0 6h6 M5 6h.01 M19 18h.01"/></svg></span><span class="n-name">ux</span><span class="st st-skipped"><svg class="ic ic-skipped" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l6 6-6 6 M13 6l6 6-6 6"/></svg><span>Dilewati</span></span></div>
+  <div class="n-meta2"><span>Tidak jalan</span><span>sonnet</span></div>
+  <p class="n-act">docs/UX.md sudah disetujui 26 Okt</p>
+  <p class="n-snip">Tidak dijalankan ulang. Alur layar hasil memakai peta layar yang ada.</p>
+  <button type="button" class="hit" aria-label="Buka detail ux, Dilewati"></button>
+</article><article class="node n-done" data-id="architect" style="--c:1;--r:2">
+  <span class="port p-in"></span><span class="port p-out"></span>
+  <div class="n-head"><span class="chip chip-done"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 3 8l9 5 9-5z M3 13l9 5 9-5"/></svg></span><span class="n-name">architect</span><span class="st st-done"><svg class="ic ic-done" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z M8 12.5l3 3 5-6"/></svg><span>Selesai</span></span></div>
+  <div class="n-meta2"><span>1x</span><span>2 mnt 31 dtk</span><span>18,9K</span><span>sonnet</span></div>
+  <p class="n-act">Merancang tabel hasil_bagian dan dua endpoint</p>
+  <p class="n-snip">GET /api/hasil/:id dan POST /api/hasil/:id/ulang. Tabel hasil_bagian: id, hasil_id, bagian, skor.</p>
+  <button type="button" class="hit" aria-label="Buka detail architect, Selesai"></button>
+</article><article class="node n-done" data-id="backlog" style="--c:1;--r:3">
+  <span class="port p-in"></span><span class="port p-out"></span>
+  <div class="n-head"><span class="chip chip-done"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h11 M9 12h11 M9 18h11 M3.5 6l1 1 2-2 M3.5 12l1 1 2-2 M3.5 18l1 1 2-2"/></svg></span><span class="n-name">backlog</span><span class="st st-done"><svg class="ic ic-done" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z M8 12.5l3 3 5-6"/></svg><span>Selesai</span></span></div>
+  <div class="n-meta2"><span>1x</span><span>52 dtk</span><span>6,1K</span><span>haiku</span></div>
+  <p class="n-act">Menyusun 6 item baru dari arsitektur</p>
+  <p class="n-snip">12 dari 20 item selesai. B-09 perlu keputusan: pembahasan gratis atau langganan.</p>
+  <button type="button" class="hit" aria-label="Buka detail backlog, Selesai"></button>
+</article><article class="node n-running sel" data-id="ui-designer" style="--c:2;--r:0">
+  <span class="port p-in"></span><span class="port p-out"></span>
+  <div class="n-head"><span class="chip chip-running"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l1-4L16 5l3 3L8 19z M14 7l3 3"/></svg></span><span class="n-name">ui-designer</span><span class="st st-running"><svg class="ic ic-running" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9"/></svg><span>Berjalan</span></span></div>
+  <div class="n-meta2"><span>3x</span><span>6 mnt 40 dtk</span><span>61,8K</span><span>opus</span></div>
+  <p class="n-act">Menyusun kartu skor per bagian di hasil.html</p>
+  <p class="n-snip">Skor 78 dari 100. Penalaran terendah (62%), ditandai batang amber.</p>
+  <button type="button" class="hit" aria-label="Buka detail ui-designer, Berjalan"></button>
+</article><article class="node n-running" data-id="fe" style="--c:2;--r:1">
+  <span class="port p-in"></span><span class="port p-out"></span>
+  <div class="n-head"><span class="chip chip-running"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 7l-5 5 5 5 M16 7l5 5-5 5 M13.5 5l-3 14"/></svg></span><span class="n-name">fe</span><span class="st st-running"><svg class="ic ic-running" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9"/></svg><span>Berjalan</span></span></div>
+  <div class="n-meta2"><span>1x</span><span>5 mnt 5 dtk</span><span>38,7K</span><span>sonnet</span></div>
+  <p class="n-act">Menyambungkan GET /api/hasil/:id ke halaman hasil</p>
+  <p class="n-snip">hasil.js memuat data. State memuat dan galat sudah ada, state kosong menyusul.</p>
+  <button type="button" class="hit" aria-label="Buka detail fe, Berjalan"></button>
+</article><article class="node n-failed" data-id="be" style="--c:2;--r:2">
+  <span class="port p-in"></span><span class="port p-out"></span>
+  <div class="n-head"><span class="chip chip-failed"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 6c0-1.7 3.1-3 7-3s7 1.3 7 3-3.1 3-7 3-7-1.3-7-3z M5 6v12c0 1.7 3.1 3 7 3s7-1.3 7-3V6 M5 12c0 1.7 3.1 3 7 3s7-1.3 7-3"/></svg></span><span class="n-name">be</span><span class="st st-failed"><svg class="ic ic-failed" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z M9 9l6 6 M15 9l-6 6"/></svg><span>Gagal</span></span></div>
+  <div class="n-meta2"><span>2x</span><span>4 mnt 22 dtk</span><span>29,6K</span><span>sonnet</span></div>
+  <p class="n-act">Tes migrasi 007 gagal</p>
+  <p class="n-snip">ALTER TABLE hasil: duplicate column. Putaran 2 menunggu perbaikan skema.</p>
+  <button type="button" class="hit" aria-label="Buka detail be, Gagal"></button>
+</article><article class="node n-waiting" data-id="devops" style="--c:2;--r:3">
+  <span class="port p-in"></span><span class="port p-out"></span>
+  <div class="n-head"><span class="chip chip-waiting"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v14H4z M8 10l3 2-3 2 M13 15h3"/></svg></span><span class="n-name">devops</span><span class="st st-waiting"><svg class="ic ic-waiting" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z M12 7v5l3 2"/></svg><span>Menunggu</span></span></div>
+  <div class="n-meta2"><span>Belum jalan</span><span>sonnet</span></div>
+  <p class="n-act">Menunggu be selesai</p>
+  <p class="n-snip">Menyiapkan skrip rilis dan pemeriksaan CI untuk halaman hasil.</p>
+  <button type="button" class="hit" aria-label="Buka detail devops, Menunggu"></button>
+</article><article class="node n-waiting" data-id="ui-critic" style="--c:3;--r:0">
+  <span class="port p-in"></span><span class="port p-out"></span>
+  <div class="n-head"><span class="chip chip-waiting"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z M12 9.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z"/></svg></span><span class="n-name">ui-critic</span><span class="st st-waiting"><svg class="ic ic-waiting" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z M12 7v5l3 2"/></svg><span>Menunggu</span></span></div>
+  <div class="n-meta2"><span>Belum jalan</span><span>sonnet</span></div>
+  <p class="n-act">Menunggu ui-designer selesai</p>
+  <p class="n-snip">Menilai screenshot hasil.html terhadap docs/DESIGN.md.</p>
+  <button type="button" class="hit" aria-label="Buka detail ui-critic, Menunggu"></button>
+</article><article class="node n-waiting" data-id="qa" style="--c:3;--r:1">
+  <span class="port p-in"></span><span class="port p-out"></span>
+  <div class="n-head"><span class="chip chip-waiting"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h6 M10 3v6l-5 10a1.5 1.5 0 0 0 1.3 2h11.4A1.5 1.5 0 0 0 19 19l-5-10V3 M7.5 15h9"/></svg></span><span class="n-name">qa</span><span class="bg" title="Agent latar belakang">BG</span><span class="st st-waiting"><svg class="ic ic-waiting" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z M12 7v5l3 2"/></svg><span>Menunggu</span></span></div>
+  <div class="n-meta2"><span>Belum jalan</span><span>sonnet</span></div>
+  <p class="n-act">Menunggu fe dan be selesai</p>
+  <p class="n-snip">Menulis tes Playwright dari 4 kriteria penerimaan F6.</p>
+  <button type="button" class="hit" aria-label="Buka detail qa, Menunggu"></button>
+</article><article class="node n-waiting" data-id="cyber" style="--c:3;--r:2">
+  <span class="port p-in"></span><span class="port p-out"></span>
+  <div class="n-head"><span class="chip chip-waiting"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z M9 12l2 2 4-4"/></svg></span><span class="n-name">cyber</span><span class="st st-waiting"><svg class="ic ic-waiting" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z M12 7v5l3 2"/></svg><span>Menunggu</span></span></div>
+  <div class="n-meta2"><span>Belum jalan</span><span>opus</span></div>
+  <p class="n-act">Menunggu be selesai</p>
+  <p class="n-snip">Memeriksa endpoint hasil: otorisasi per pengguna dan batas laju.</p>
+  <button type="button" class="hit" aria-label="Buka detail cyber, Menunggu"></button>
+</article><article class="node n-waiting" data-id="docs" style="--c:3;--r:3">
+  <span class="port p-in"></span><span class="port p-out"></span>
+  <div class="n-head"><span class="chip chip-waiting"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5h7a2 2 0 0 1 2 2v13a2 2 0 0 0-2-2H3z M21 5h-7a2 2 0 0 0-2 2v13a2 2 0 0 1 2-2h7z"/></svg></span><span class="n-name">docs</span><span class="st st-waiting"><svg class="ic ic-waiting" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z M12 7v5l3 2"/></svg><span>Menunggu</span></span></div>
+  <div class="n-meta2"><span>Belum jalan</span><span>haiku</span></div>
+  <p class="n-act">Menunggu qa selesai</p>
+  <p class="n-snip">Memperbarui README dan catatan rilis fitur halaman hasil.</p>
+  <button type="button" class="hit" aria-label="Buka detail docs, Menunggu"></button>
+</article></div></div>
+      <div class="zoom" role="group" aria-label="Zoom grafik"><button class="ib-s" id="zout" type="button" aria-label="Perkecil"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/></svg></button><span id="zlbl" class="zlbl">100%</span><button class="ib-s" id="zin" type="button" aria-label="Perbesar"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14 M5 12h14"/></svg></button><button class="fitbtn" id="zfit" type="button">Pas layar</button></div>
+    </div>
+  </section>
+  <div class="dock"><aside class="side" id="side" aria-label="Panel samping"><section class="dp" data-pane="agent:__prompt" hidden aria-label="Detail Prompt">
+  <header class="dp-head">
+    <span class="chip chip-done"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h11 M11 7l5 5-5 5 M20 5v14"/></svg></span>
+    <div class="dp-title"><h3>Prompt</h3><p>Masukan pemilik</p></div>
+    
+    <button class="ib" type="button" data-close aria-label="Tutup detail"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12 M18 6L6 18"/></svg></button>
+  </header>
+  <div class="tabs" role="tablist" aria-label="Isi detail Prompt"><button type="button" role="tab" data-t="ringkasan" aria-selected="true">Ringkasan</button><button type="button" role="tab" data-t="aktivitas" aria-selected="false">Aktivitas</button><button type="button" role="tab" data-t="file" aria-selected="false">File</button><button type="button" role="tab" data-t="hasil" aria-selected="false">Hasil</button></div>
+  <div class="dp-body">
+    <div data-tab="ringkasan">
+    <div class="tiles">
+    <div class="tile"><span class="tile-k">Status</span><span class="tile-v"><span class="st st-done"><svg class="ic ic-done" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z M8 12.5l3 3 5-6"/></svg><span>Selesai</span></span></span></div>
+    <div class="tile"><span class="tile-k">Putaran</span><span class="tile-v">-</span></div>
+    <div class="tile"><span class="tile-k">Durasi</span><span class="tile-v">2 dtk</span></div>
+    <div class="tile"><span class="tile-k">Tool</span><span class="tile-v">0</span></div>
+    <div class="tile"><span class="tile-k">File</span><span class="tile-v">0</span></div>
+    <div class="tile"><span class="tile-k">Token</span><span class="tile-v">-</span></div>
+  </div>
+    <section class="blk"><h4>Cuplikan hasil</h4><p class="snip">Buat halaman hasil tryout: skor per bagian, waktu pengerjaan, dan pembahasan soal.</p><button class="lnk" data-go="hasil" type="button">Lihat hasil penuh</button></section>
+    <section class="blk"><h4>Skill</h4><dl class="kv">
+    <div><dt>Dipanggil</dt><dd>-</dd></div>
+    <div><dt>Termuat</dt><dd>-</dd></div>
+    <div><dt>Belum terbukti</dt><dd>-</dd></div>
+  </dl></section>
+  </div>
+    <div data-tab="aktivitas" hidden><p class="empty">Agent ini belum jalan di run ini.</p></div>
+    <div data-tab="file" hidden><p class="empty">Belum ada file diubah.</p></div>
+    <div data-tab="hasil" hidden><section class="blk"><h4>Jawaban akhir</h4><p>Buat halaman hasil tryout: skor per bagian, waktu pengerjaan, dan pembahasan soal.</p></section></div>
+  </div>
+</section><section class="dp" data-pane="agent:__main" hidden aria-label="Detail Sesi utama">
+  <header class="dp-head">
+    <span class="chip chip-input"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11h-9l-4 4v-4H4z"/></svg></span>
+    <div class="dp-title"><h3>Sesi utama</h3><p>Claude, penerima prompt</p></div>
+    <span class="model">opus</span>
+    <button class="ib" type="button" data-close aria-label="Tutup detail"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12 M18 6L6 18"/></svg></button>
+  </header>
+  <div class="tabs" role="tablist" aria-label="Isi detail Sesi utama"><button type="button" role="tab" data-t="ringkasan" aria-selected="true">Ringkasan</button><button type="button" role="tab" data-t="aktivitas" aria-selected="false">Aktivitas (3)</button><button type="button" role="tab" data-t="file" aria-selected="false">File</button><button type="button" role="tab" data-t="hasil" aria-selected="false">Hasil</button></div>
+  <div class="dp-body">
+    <div data-tab="ringkasan">
+    <div class="callout co-input"><svg class="ic ic-input" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z M9.6 9.6a2.5 2.5 0 1 1 3.6 2.2c-.8.4-1.2 1-1.2 1.8 M12 17h.01"/></svg><div><strong>Butuh input</strong><p>Pembahasan soal tampil di mana? Jawab di aplikasi Claude.</p></div></div><div class="tiles">
+    <div class="tile"><span class="tile-k">Status</span><span class="tile-v"><span class="st st-input"><svg class="ic ic-input" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z M9.6 9.6a2.5 2.5 0 1 1 3.6 2.2c-.8.4-1.2 1-1.2 1.8 M12 17h.01"/></svg><span>Butuh input</span></span></span></div>
+    <div class="tile"><span class="tile-k">Putaran</span><span class="tile-v">-</span></div>
+    <div class="tile"><span class="tile-k">Durasi</span><span class="tile-v">14 mnt 32 dtk</span></div>
+    <div class="tile"><span class="tile-k">Tool</span><span class="tile-v">3</span></div>
+    <div class="tile"><span class="tile-k">File</span><span class="tile-v">0</span></div>
+    <div class="tile"><span class="tile-k">Token</span><span class="tile-v">16,7K</span></div>
+  </div>
+    <section class="blk"><h4>Cuplikan hasil</h4><p class="snip">Alur build: 10 agent, 4 selesai atau dilewati, 2 berjalan.</p><button class="lnk" data-go="hasil" type="button">Lihat hasil penuh</button></section>
+    <section class="blk"><h4>Skill</h4><dl class="kv">
+    <div><dt>Dipanggil</dt><dd>-</dd></div>
+    <div><dt>Termuat</dt><dd>-</dd></div>
+    <div><dt>Belum terbukti</dt><dd>-</dd></div>
+  </dl></section>
+  </div>
+    <div data-tab="aktivitas" hidden><ul class="acts"><li><span class="a-t">14.16:20</span><span class="a-k">Tanya</span><span class="a-n">Pembahasan soal tampil di mana?</span><span class="a-r">menunggu</span></li><li><span class="a-t">14.15:48</span><span class="a-k">Agent</span><span class="a-n">be berhenti: tes migrasi 007 gagal</span></li><li><span class="a-t">14.11:02</span><span class="a-k">Agent</span><span class="a-n">ui-designer dan fe dimulai paralel</span></li></ul></div>
+    <div data-tab="file" hidden><p class="empty">Belum ada file diubah.</p></div>
+    <div data-tab="hasil" hidden><section class="blk"><h4>Jawaban akhir</h4><p>Menunggu jawaban pemilik atas satu pertanyaan.</p></section></div>
+  </div>
+</section><section class="dp" data-pane="agent:prd" hidden aria-label="Detail prd">
+  <header class="dp-head">
+    <span class="chip chip-done"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h7l4 4v14H7z M14 3v4h4 M9.5 12h5 M9.5 16h5"/></svg></span>
+    <div class="dp-title"><h3>prd</h3><p>Kebutuhan produk</p></div>
+    <span class="model">sonnet</span>
+    <button class="ib" type="button" data-close aria-label="Tutup detail"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12 M18 6L6 18"/></svg></button>
+  </header>
+  <div class="tabs" role="tablist" aria-label="Isi detail prd"><button type="button" role="tab" data-t="ringkasan" aria-selected="true">Ringkasan</button><button type="button" role="tab" data-t="aktivitas" aria-selected="false">Aktivitas (3)</button><button type="button" role="tab" data-t="file" aria-selected="false">File (1)</button><button type="button" role="tab" data-t="hasil" aria-selected="false">Hasil</button></div>
+  <div class="dp-body">
+    <div data-tab="ringkasan">
+    <div class="tiles">
+    <div class="tile"><span class="tile-k">Status</span><span class="tile-v"><span class="st st-done"><svg class="ic ic-done" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z M8 12.5l3 3 5-6"/></svg><span>Selesai</span></span></span></div>
+    <div class="tile"><span class="tile-k">Putaran</span><span class="tile-v">1x</span></div>
+    <div class="tile"><span class="tile-k">Durasi</span><span class="tile-v">1 mnt 48 dtk</span></div>
+    <div class="tile"><span class="tile-k">Tool</span><span class="tile-v">3</span></div>
+    <div class="tile"><span class="tile-k">File</span><span class="tile-v">1</span></div>
+    <div class="tile"><span class="tile-k">Token</span><span class="tile-v">12,4K</span></div>
+  </div>
+    <section class="blk"><h4>Cuplikan hasil</h4><p class="snip">F6 ditambah: skor per bagian, waktu per soal, pembahasan. 4 kriteria penerimaan.</p><button class="lnk" data-go="hasil" type="button">Lihat hasil penuh</button></section>
+    <section class="blk"><h4>Bukti model</h4><dl class="kv">
+    <div><dt>Diminta</dt><dd>sonnet</dd></div>
+    <div><dt>Dipakai</dt><dd>sonnet</dd></div>
+    <div><dt>Sumber</dt><dd>-</dd></div>
+    <div><dt>Putusan</dt><dd><span class="verdict v-na">Belum terbukti</span></dd></div>
+  </dl></section><section class="blk"><h4>Skill</h4><dl class="kv">
+    <div><dt>Dipanggil</dt><dd><span class="tag">prd</span></dd></div>
+    <div><dt>Termuat</dt><dd>-</dd></div>
+    <div><dt>Belum terbukti</dt><dd><span class="tag tag-na">project-context</span></dd></div>
+  </dl></section>
+  </div>
+    <div data-tab="aktivitas" hidden><ul class="acts"><li><span class="a-t">14.04:40</span><span class="a-k">Edit</span><span class="a-n">docs/PRD.md</span><span class="a-r">+9 −3</span></li><li><span class="a-t">14.03:55</span><span class="a-k">Read</span><span class="a-n">docs/PRD.md</span></li><li><span class="a-t">14.03:12</span><span class="a-k">Read</span><span class="a-n">docs/PROJECT.md</span></li></ul></div>
+    <div data-tab="file" hidden><ul class="fl"><li><span class="f-n">docs/PRD.md</span><span class="f-p">+9</span><span class="f-m">−3</span></li></ul></div>
+    <div data-tab="hasil" hidden><section class="blk"><h4>Tugas</h4><p>Kerjakan bagian kebutuhan produk untuk halaman hasil tryout.</p></section><section class="blk"><h4>Jawaban akhir</h4><p>PRD v1.1: fitur F6 (halaman hasil) ditambah dengan 4 kriteria penerimaan. Tidak ada pertanyaan terbuka.</p></section></div>
+  </div>
+</section><section class="dp" data-pane="agent:ux" hidden aria-label="Detail ux">
+  <header class="dp-head">
+    <span class="chip chip-skipped"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h6a3 3 0 0 1 0 6h-4a3 3 0 0 0 0 6h6 M5 6h.01 M19 18h.01"/></svg></span>
+    <div class="dp-title"><h3>ux</h3><p>Alur dan layar</p></div>
+    <span class="model">sonnet</span>
+    <button class="ib" type="button" data-close aria-label="Tutup detail"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12 M18 6L6 18"/></svg></button>
+  </header>
+  <div class="tabs" role="tablist" aria-label="Isi detail ux"><button type="button" role="tab" data-t="ringkasan" aria-selected="true">Ringkasan</button><button type="button" role="tab" data-t="aktivitas" aria-selected="false">Aktivitas</button><button type="button" role="tab" data-t="file" aria-selected="false">File</button><button type="button" role="tab" data-t="hasil" aria-selected="false">Hasil</button></div>
+  <div class="dp-body">
+    <div data-tab="ringkasan">
+    <div class="callout co-skipped"><svg class="ic ic-skipped" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l6 6-6 6 M13 6l6 6-6 6"/></svg><div><strong>Dilewati</strong><p>docs/UX.md sudah disetujui 26 Okt.</p></div></div><div class="tiles">
+    <div class="tile"><span class="tile-k">Status</span><span class="tile-v"><span class="st st-skipped"><svg class="ic ic-skipped" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l6 6-6 6 M13 6l6 6-6 6"/></svg><span>Dilewati</span></span></span></div>
+    <div class="tile"><span class="tile-k">Putaran</span><span class="tile-v">0</span></div>
+    <div class="tile"><span class="tile-k">Durasi</span><span class="tile-v">-</span></div>
+    <div class="tile"><span class="tile-k">Tool</span><span class="tile-v">-</span></div>
+    <div class="tile"><span class="tile-k">File</span><span class="tile-v">0</span></div>
+    <div class="tile"><span class="tile-k">Token</span><span class="tile-v">-</span></div>
+  </div>
+    <section class="blk"><h4>Cuplikan hasil</h4><p class="snip">Tidak dijalankan ulang. Alur layar hasil memakai peta layar yang ada.</p><button class="lnk" data-go="hasil" type="button">Lihat hasil penuh</button></section>
+    <section class="blk"><h4>Bukti model</h4><dl class="kv">
+    <div><dt>Diminta</dt><dd>sonnet</dd></div>
+    <div><dt>Dipakai</dt><dd>belum terbukti</dd></div>
+    <div><dt>Sumber</dt><dd>-</dd></div>
+    <div><dt>Putusan</dt><dd><span class="verdict v-na">Belum terbukti</span></dd></div>
+  </dl></section><section class="blk"><h4>Skill</h4><dl class="kv">
+    <div><dt>Dipanggil</dt><dd>-</dd></div>
+    <div><dt>Termuat</dt><dd>-</dd></div>
+    <div><dt>Belum terbukti</dt><dd>-</dd></div>
+  </dl></section>
+  </div>
+    <div data-tab="aktivitas" hidden><p class="empty">Agent ini belum jalan di run ini.</p></div>
+    <div data-tab="file" hidden><p class="empty">Belum ada file diubah.</p></div>
+    <div data-tab="hasil" hidden><section class="blk"><h4>Tugas</h4><p>Kerjakan bagian alur dan layar untuk halaman hasil tryout.</p></section><section class="blk"><h4>Jawaban akhir</h4><p>Dilewati oleh flow: docs/UX.md sudah disetujui pemilik pada 26 Okt dan tidak berubah.</p></section></div>
+  </div>
+</section><section class="dp" data-pane="agent:architect" hidden aria-label="Detail architect">
+  <header class="dp-head">
+    <span class="chip chip-done"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 3 8l9 5 9-5z M3 13l9 5 9-5"/></svg></span>
+    <div class="dp-title"><h3>architect</h3><p>Struktur dan kontrak</p></div>
+    <span class="model">sonnet</span>
+    <button class="ib" type="button" data-close aria-label="Tutup detail"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12 M18 6L6 18"/></svg></button>
+  </header>
+  <div class="tabs" role="tablist" aria-label="Isi detail architect"><button type="button" role="tab" data-t="ringkasan" aria-selected="true">Ringkasan</button><button type="button" role="tab" data-t="aktivitas" aria-selected="false">Aktivitas (3)</button><button type="button" role="tab" data-t="file" aria-selected="false">File (2)</button><button type="button" role="tab" data-t="hasil" aria-selected="false">Hasil</button></div>
+  <div class="dp-body">
+    <div data-tab="ringkasan">
+    <div class="tiles">
+    <div class="tile"><span class="tile-k">Status</span><span class="tile-v"><span class="st st-done"><svg class="ic ic-done" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z M8 12.5l3 3 5-6"/></svg><span>Selesai</span></span></span></div>
+    <div class="tile"><span class="tile-k">Putaran</span><span class="tile-v">1x</span></div>
+    <div class="tile"><span class="tile-k">Durasi</span><span class="tile-v">2 mnt 31 dtk</span></div>
+    <div class="tile"><span class="tile-k">Tool</span><span class="tile-v">3</span></div>
+    <div class="tile"><span class="tile-k">File</span><span class="tile-v">2</span></div>
+    <div class="tile"><span class="tile-k">Token</span><span class="tile-v">18,9K</span></div>
+  </div>
+    <section class="blk"><h4>Cuplikan hasil</h4><p class="snip">GET /api/hasil/:id dan POST /api/hasil/:id/ulang. Tabel hasil_bagian: id, hasil_id, bagian, skor.</p><button class="lnk" data-go="hasil" type="button">Lihat hasil penuh</button></section>
+    <section class="blk"><h4>Bukti model</h4><dl class="kv">
+    <div><dt>Diminta</dt><dd>sonnet</dd></div>
+    <div><dt>Dipakai</dt><dd>sonnet</dd></div>
+    <div><dt>Sumber</dt><dd>-</dd></div>
+    <div><dt>Putusan</dt><dd><span class="verdict v-na">Belum terbukti</span></dd></div>
+  </dl></section><section class="blk"><h4>Skill</h4><dl class="kv">
+    <div><dt>Dipanggil</dt><dd><span class="tag">codebase-design</span></dd></div>
+    <div><dt>Termuat</dt><dd>-</dd></div>
+    <div><dt>Belum terbukti</dt><dd>-</dd></div>
+  </dl></section>
+  </div>
+    <div data-tab="aktivitas" hidden><ul class="acts"><li><span class="a-t">14.07:10</span><span class="a-k">Edit</span><span class="a-n">docs/ARCHITECTURE.md</span><span class="a-r">+31 −2</span></li><li><span class="a-t">14.06:31</span><span class="a-k">Edit</span><span class="a-n">docs/TASKS.md</span><span class="a-r">+12 −0</span></li><li><span class="a-t">14.05:02</span><span class="a-k">Read</span><span class="a-n">docs/PRD.md</span></li></ul></div>
+    <div data-tab="file" hidden><ul class="fl"><li><span class="f-n">docs/ARCHITECTURE.md</span><span class="f-p">+31</span><span class="f-m">−2</span></li><li><span class="f-n">docs/TASKS.md</span><span class="f-p">+12</span><span class="f-m">−0</span></li></ul></div>
+    <div data-tab="hasil" hidden><section class="blk"><h4>Tugas</h4><p>Kerjakan bagian struktur dan kontrak untuk halaman hasil tryout.</p></section><section class="blk"><h4>Jawaban akhir</h4><p>Dua endpoint baru dan satu tabel. Skor disimpan per bagian agar grafik waktu tidak menghitung ulang.</p></section></div>
+  </div>
+</section><section class="dp" data-pane="agent:backlog" hidden aria-label="Detail backlog">
+  <header class="dp-head">
+    <span class="chip chip-done"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h11 M9 12h11 M9 18h11 M3.5 6l1 1 2-2 M3.5 12l1 1 2-2 M3.5 18l1 1 2-2"/></svg></span>
+    <div class="dp-title"><h3>backlog</h3><p>Urutan kerja</p></div>
+    <span class="model">haiku</span>
+    <button class="ib" type="button" data-close aria-label="Tutup detail"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12 M18 6L6 18"/></svg></button>
+  </header>
+  <div class="tabs" role="tablist" aria-label="Isi detail backlog"><button type="button" role="tab" data-t="ringkasan" aria-selected="true">Ringkasan</button><button type="button" role="tab" data-t="aktivitas" aria-selected="false">Aktivitas (2)</button><button type="button" role="tab" data-t="file" aria-selected="false">File (1)</button><button type="button" role="tab" data-t="hasil" aria-selected="false">Hasil</button></div>
+  <div class="dp-body">
+    <div data-tab="ringkasan">
+    <div class="tiles">
+    <div class="tile"><span class="tile-k">Status</span><span class="tile-v"><span class="st st-done"><svg class="ic ic-done" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z M8 12.5l3 3 5-6"/></svg><span>Selesai</span></span></span></div>
+    <div class="tile"><span class="tile-k">Putaran</span><span class="tile-v">1x</span></div>
+    <div class="tile"><span class="tile-k">Durasi</span><span class="tile-v">52 dtk</span></div>
+    <div class="tile"><span class="tile-k">Tool</span><span class="tile-v">2</span></div>
+    <div class="tile"><span class="tile-k">File</span><span class="tile-v">1</span></div>
+    <div class="tile"><span class="tile-k">Token</span><span class="tile-v">6,1K</span></div>
+  </div>
+    <section class="blk"><h4>Cuplikan hasil</h4><p class="snip">12 dari 20 item selesai. B-09 perlu keputusan: pembahasan gratis atau langganan.</p><button class="lnk" data-go="hasil" type="button">Lihat hasil penuh</button></section>
+    <section class="blk"><h4>Bukti model</h4><dl class="kv">
+    <div><dt>Diminta</dt><dd>haiku</dd></div>
+    <div><dt>Dipakai</dt><dd>haiku</dd></div>
+    <div><dt>Sumber</dt><dd>-</dd></div>
+    <div><dt>Putusan</dt><dd><span class="verdict v-na">Belum terbukti</span></dd></div>
+  </dl></section><section class="blk"><h4>Skill</h4><dl class="kv">
+    <div><dt>Dipanggil</dt><dd><span class="tag">backlog</span></dd></div>
+    <div><dt>Termuat</dt><dd>-</dd></div>
+    <div><dt>Belum terbukti</dt><dd>-</dd></div>
+  </dl></section>
+  </div>
+    <div data-tab="aktivitas" hidden><ul class="acts"><li><span class="a-t">14.08:05</span><span class="a-k">Bash</span><span class="a-n">node backlog.js next</span><span class="a-r">3 item siap</span></li><li><span class="a-t">14.07:51</span><span class="a-k">Edit</span><span class="a-n">docs/backlog.json</span><span class="a-r">+14 −6</span></li></ul></div>
+    <div data-tab="file" hidden><ul class="fl"><li><span class="f-n">docs/backlog.json</span><span class="f-p">+14</span><span class="f-m">−6</span></li></ul></div>
+    <div data-tab="hasil" hidden><section class="blk"><h4>Tugas</h4><p>Kerjakan bagian urutan kerja untuk halaman hasil tryout.</p></section><section class="blk"><h4>Jawaban akhir</h4><p>6 item baru ditambahkan. Satu item (B-09) menunggu keputusan pemilik.</p></section></div>
+  </div>
+</section><section class="dp" data-pane="agent:ui-designer" aria-label="Detail ui-designer">
+  <header class="dp-head">
+    <span class="chip chip-running"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l1-4L16 5l3 3L8 19z M14 7l3 3"/></svg></span>
+    <div class="dp-title"><h3>ui-designer</h3><p>Tampilan</p></div>
+    <span class="model">opus</span>
+    <button class="ib" type="button" data-close aria-label="Tutup detail"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12 M18 6L6 18"/></svg></button>
+  </header>
+  <div class="tabs" role="tablist" aria-label="Isi detail ui-designer"><button type="button" role="tab" data-t="ringkasan" aria-selected="true">Ringkasan</button><button type="button" role="tab" data-t="aktivitas" aria-selected="false">Aktivitas (5)</button><button type="button" role="tab" data-t="file" aria-selected="false">File (3)</button><button type="button" role="tab" data-t="hasil" aria-selected="false">Hasil</button></div>
+  <div class="dp-body">
+    <div data-tab="ringkasan">
+    <div class="tiles">
+    <div class="tile"><span class="tile-k">Status</span><span class="tile-v"><span class="st st-running"><svg class="ic ic-running" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9"/></svg><span>Berjalan</span></span></span></div>
+    <div class="tile"><span class="tile-k">Putaran</span><span class="tile-v">3x</span></div>
+    <div class="tile"><span class="tile-k">Durasi</span><span class="tile-v">6 mnt 40 dtk</span></div>
+    <div class="tile"><span class="tile-k">Tool</span><span class="tile-v">27</span></div>
+    <div class="tile"><span class="tile-k">File</span><span class="tile-v">3</span></div>
+    <div class="tile"><span class="tile-k">Token</span><span class="tile-v">61,8K</span></div>
+  </div>
+    <section class="blk"><h4>Cuplikan hasil</h4><p class="snip">Skor 78 dari 100. Penalaran terendah (62%), ditandai batang amber.</p><button class="lnk" data-go="hasil" type="button">Lihat hasil penuh</button></section>
+    <section class="blk"><h4>Bukti model</h4><dl class="kv">
+    <div><dt>Diminta</dt><dd>opus</dd></div>
+    <div><dt>Dipakai</dt><dd>opus</dd></div>
+    <div><dt>Sumber</dt><dd>transkrip</dd></div>
+    <div><dt>Putusan</dt><dd><span class="verdict v-ok">Sesuai</span></dd></div>
+  </dl></section><section class="blk"><h4>Token</h4>
+    <dl class="kv"><div><dt>Setara input</dt><dd>61,8K</dd></div><div><dt>Mentah</dt><dd>196,6K</dd></div><div><dt>Konteks terakhir</dt><dd>48K</dd></div><div><dt>Giliran</dt><dd>14</dd></div></dl>
+    <div class="bar3" role="img" aria-label="Porsi token: masuk 9%, keluar 5%, cache baca 76%, cache tulis 10%"><i class="b-in" style="width:9%"></i><i class="b-out" style="width:5%"></i><i class="b-cr" style="width:76%"></i><i class="b-cw" style="width:10%"></i></div>
+    <p class="legend3"><span><i class="b-in"></i>Masuk 18,2K</span><span><i class="b-out"></i>Keluar 9,4K</span><span><i class="b-cr"></i>Cache baca 148K</span><span><i class="b-cw"></i>Cache tulis 21,0K</span></p>
+  </section><section class="blk"><h4>Skill</h4><dl class="kv">
+    <div><dt>Dipanggil</dt><dd><span class="tag">design-principles</span><span class="tag">ui-craft</span></dd></div>
+    <div><dt>Termuat</dt><dd><span class="tag">ux-writing-id</span></dd></div>
+    <div><dt>Belum terbukti</dt><dd><span class="tag tag-na">antislop</span></dd></div>
+  </dl></section><section class="blk"><h4>Tool dipakai</h4><p class="tools"><span class="tag">Read <b>9</b></span><span class="tag">Edit <b>8</b></span><span class="tag">Bash <b>5</b></span><span class="tag">Write <b>3</b></span><span class="tag">playwright <b>2</b></span></p></section>
+  </div>
+    <div data-tab="aktivitas" hidden><ul class="acts"><li><span class="a-t">14.17:02</span><span class="a-k">Edit</span><span class="a-n">hasil.css</span><span class="a-r">+12 −2</span></li><li><span class="a-t">14.16:41</span><span class="a-k">Bash</span><span class="a-n">node run-audit.js hasil.html</span><span class="a-r">0 tinggi, 2 sedang</span></li><li><span class="a-t">14.16:10</span><span class="a-k">Read</span><span class="a-n">docs/DESIGN.md</span></li><li><span class="a-t">14.15:36</span><span class="a-k">Write</span><span class="a-n">hasil.html</span><span class="a-r">+184</span></li><li><span class="a-t">14.15:02</span><span class="a-k">Read</span><span class="a-n">docs/UX.md</span></li></ul></div>
+    <div data-tab="file" hidden><ul class="fl"><li><span class="f-n">hasil.html</span><span class="f-p">+184</span><span class="f-m">−12</span></li><li><span class="f-n">hasil.css</span><span class="f-p">+96</span><span class="f-m">−0</span></li><li><span class="f-n">docs/DESIGN.md</span><span class="f-p">+22</span><span class="f-m">−4</span></li></ul></div>
+    <div data-tab="hasil" hidden><section class="blk"><h4>Tugas</h4><p>Kerjakan bagian tampilan untuk halaman hasil tryout.</p></section><section class="blk"><h4>Jawaban akhir</h4><p>Kartu skor per bagian dan grafik waktu selesai di hasil.html. Audit: 0 temuan tinggi, 2 sedang (spasi di kartu Penalaran) sedang diperbaiki.</p></section></div>
+  </div>
+</section><section class="dp" data-pane="agent:fe" hidden aria-label="Detail fe">
+  <header class="dp-head">
+    <span class="chip chip-running"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 7l-5 5 5 5 M16 7l5 5-5 5 M13.5 5l-3 14"/></svg></span>
+    <div class="dp-title"><h3>fe</h3><p>Sambungan halaman</p></div>
+    <span class="model">sonnet</span>
+    <button class="ib" type="button" data-close aria-label="Tutup detail"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12 M18 6L6 18"/></svg></button>
+  </header>
+  <div class="tabs" role="tablist" aria-label="Isi detail fe"><button type="button" role="tab" data-t="ringkasan" aria-selected="true">Ringkasan</button><button type="button" role="tab" data-t="aktivitas" aria-selected="false">Aktivitas (3)</button><button type="button" role="tab" data-t="file" aria-selected="false">File (3)</button><button type="button" role="tab" data-t="hasil" aria-selected="false">Hasil</button></div>
+  <div class="dp-body">
+    <div data-tab="ringkasan">
+    <div class="tiles">
+    <div class="tile"><span class="tile-k">Status</span><span class="tile-v"><span class="st st-running"><svg class="ic ic-running" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9"/></svg><span>Berjalan</span></span></span></div>
+    <div class="tile"><span class="tile-k">Putaran</span><span class="tile-v">1x</span></div>
+    <div class="tile"><span class="tile-k">Durasi</span><span class="tile-v">5 mnt 5 dtk</span></div>
+    <div class="tile"><span class="tile-k">Tool</span><span class="tile-v">3</span></div>
+    <div class="tile"><span class="tile-k">File</span><span class="tile-v">3</span></div>
+    <div class="tile"><span class="tile-k">Token</span><span class="tile-v">38,7K</span></div>
+  </div>
+    <section class="blk"><h4>Cuplikan hasil</h4><p class="snip">hasil.js memuat data. State memuat dan galat sudah ada, state kosong menyusul.</p><button class="lnk" data-go="hasil" type="button">Lihat hasil penuh</button></section>
+    <section class="blk"><h4>Bukti model</h4><dl class="kv">
+    <div><dt>Diminta</dt><dd>sonnet</dd></div>
+    <div><dt>Dipakai</dt><dd>sonnet</dd></div>
+    <div><dt>Sumber</dt><dd>-</dd></div>
+    <div><dt>Putusan</dt><dd><span class="verdict v-na">Belum terbukti</span></dd></div>
+  </dl></section><section class="blk"><h4>Skill</h4><dl class="kv">
+    <div><dt>Dipanggil</dt><dd>-</dd></div>
+    <div><dt>Termuat</dt><dd>-</dd></div>
+    <div><dt>Belum terbukti</dt><dd><span class="tag tag-na">project-context</span></dd></div>
+  </dl></section>
+  </div>
+    <div data-tab="aktivitas" hidden><ul class="acts"><li><span class="a-t">14.17:11</span><span class="a-k">Edit</span><span class="a-n">src/halaman/hasil.js</span><span class="a-r">+14 −1</span></li><li><span class="a-t">14.16:30</span><span class="a-k">Edit</span><span class="a-n">src/api/klien.js</span><span class="a-r">+18 −2</span></li><li><span class="a-t">14.15:20</span><span class="a-k">Edit</span><span class="a-n">src/rute.js</span><span class="a-r">+3 −0</span></li></ul></div>
+    <div data-tab="file" hidden><ul class="fl"><li><span class="f-n">src/halaman/hasil.js</span><span class="f-p">+121</span><span class="f-m">−9</span></li><li><span class="f-n">src/api/klien.js</span><span class="f-p">+18</span><span class="f-m">−2</span></li><li><span class="f-n">src/rute.js</span><span class="f-p">+3</span><span class="f-m">−0</span></li></ul></div>
+    <div data-tab="hasil" hidden><section class="blk"><h4>Tugas</h4><p>Kerjakan bagian sambungan halaman untuk halaman hasil tryout.</p></section><section class="blk"><h4>Jawaban akhir</h4><p>Halaman hasil memanggil GET /api/hasil/:id. State kosong belum ditulis.</p></section></div>
+  </div>
+</section><section class="dp" data-pane="agent:be" hidden aria-label="Detail be">
+  <header class="dp-head">
+    <span class="chip chip-failed"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 6c0-1.7 3.1-3 7-3s7 1.3 7 3-3.1 3-7 3-7-1.3-7-3z M5 6v12c0 1.7 3.1 3 7 3s7-1.3 7-3V6 M5 12c0 1.7 3.1 3 7 3s7-1.3 7-3"/></svg></span>
+    <div class="dp-title"><h3>be</h3><p>API dan data</p></div>
+    <span class="model">sonnet</span>
+    <button class="ib" type="button" data-close aria-label="Tutup detail"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12 M18 6L6 18"/></svg></button>
+  </header>
+  <div class="tabs" role="tablist" aria-label="Isi detail be"><button type="button" role="tab" data-t="ringkasan" aria-selected="true">Ringkasan</button><button type="button" role="tab" data-t="aktivitas" aria-selected="false">Aktivitas (3)</button><button type="button" role="tab" data-t="file" aria-selected="false">File (2)</button><button type="button" role="tab" data-t="hasil" aria-selected="false">Hasil</button></div>
+  <div class="dp-body">
+    <div data-tab="ringkasan">
+    <div class="callout co-failed"><svg class="ic ic-failed" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z M9 9l6 6 M15 9l-6 6"/></svg><div><strong>Gagal</strong><p>Migrasi gagal: kolom skor_bagian sudah ada.</p></div></div><div class="tiles">
+    <div class="tile"><span class="tile-k">Status</span><span class="tile-v"><span class="st st-failed"><svg class="ic ic-failed" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z M9 9l6 6 M15 9l-6 6"/></svg><span>Gagal</span></span></span></div>
+    <div class="tile"><span class="tile-k">Putaran</span><span class="tile-v">2x</span></div>
+    <div class="tile"><span class="tile-k">Durasi</span><span class="tile-v">4 mnt 22 dtk</span></div>
+    <div class="tile"><span class="tile-k">Tool</span><span class="tile-v">3</span></div>
+    <div class="tile"><span class="tile-k">File</span><span class="tile-v">2</span></div>
+    <div class="tile"><span class="tile-k">Token</span><span class="tile-v">29,6K</span></div>
+  </div>
+    <section class="blk"><h4>Cuplikan hasil</h4><p class="snip">ALTER TABLE hasil: duplicate column. Putaran 2 menunggu perbaikan skema.</p><button class="lnk" data-go="hasil" type="button">Lihat hasil penuh</button></section>
+    <section class="blk"><h4>Bukti model</h4><dl class="kv">
+    <div><dt>Diminta</dt><dd>sonnet</dd></div>
+    <div><dt>Dipakai</dt><dd>sonnet</dd></div>
+    <div><dt>Sumber</dt><dd>-</dd></div>
+    <div><dt>Putusan</dt><dd><span class="verdict v-na">Belum terbukti</span></dd></div>
+  </dl></section><section class="blk"><h4>Skill</h4><dl class="kv">
+    <div><dt>Dipanggil</dt><dd>-</dd></div>
+    <div><dt>Termuat</dt><dd>-</dd></div>
+    <div><dt>Belum terbukti</dt><dd><span class="tag tag-na">security-checklists</span></dd></div>
+  </dl></section>
+  </div>
+    <div data-tab="aktivitas" hidden><ul class="acts"><li><span class="a-t">14.15:48</span><span class="a-k">Bash</span><span class="a-n">npm run migrasi</span><span class="a-r">gagal: duplicate column</span></li><li><span class="a-t">14.14:30</span><span class="a-k">Write</span><span class="a-n">db/migrasi/007_skor_bagian.sql</span><span class="a-r">+18</span></li><li><span class="a-t">14.13:05</span><span class="a-k">Edit</span><span class="a-n">src/api/hasil.js</span><span class="a-r">+62 −4</span></li></ul></div>
+    <div data-tab="file" hidden><ul class="fl"><li><span class="f-n">src/api/hasil.js</span><span class="f-p">+62</span><span class="f-m">−4</span></li><li><span class="f-n">db/migrasi/007_skor_bagian.sql</span><span class="f-p">+18</span><span class="f-m">−0</span></li></ul></div>
+    <div data-tab="hasil" hidden><section class="blk"><h4>Tugas</h4><p>Kerjakan bagian api dan data untuk halaman hasil tryout.</p></section><section class="blk"><h4>Jawaban akhir</h4><p>Endpoint GET /api/hasil/:id selesai. Migrasi 007 gagal karena kolom skor_bagian sudah ada dari percobaan sebelumnya.</p></section></div>
+  </div>
+</section><section class="dp" data-pane="agent:devops" hidden aria-label="Detail devops">
+  <header class="dp-head">
+    <span class="chip chip-waiting"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v14H4z M8 10l3 2-3 2 M13 15h3"/></svg></span>
+    <div class="dp-title"><h3>devops</h3><p>Rilis dan CI</p></div>
+    <span class="model">sonnet</span>
+    <button class="ib" type="button" data-close aria-label="Tutup detail"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12 M18 6L6 18"/></svg></button>
+  </header>
+  <div class="tabs" role="tablist" aria-label="Isi detail devops"><button type="button" role="tab" data-t="ringkasan" aria-selected="true">Ringkasan</button><button type="button" role="tab" data-t="aktivitas" aria-selected="false">Aktivitas</button><button type="button" role="tab" data-t="file" aria-selected="false">File</button><button type="button" role="tab" data-t="hasil" aria-selected="false">Hasil</button></div>
+  <div class="dp-body">
+    <div data-tab="ringkasan">
+    <div class="tiles">
+    <div class="tile"><span class="tile-k">Status</span><span class="tile-v"><span class="st st-waiting"><svg class="ic ic-waiting" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z M12 7v5l3 2"/></svg><span>Menunggu</span></span></span></div>
+    <div class="tile"><span class="tile-k">Putaran</span><span class="tile-v">0</span></div>
+    <div class="tile"><span class="tile-k">Durasi</span><span class="tile-v">-</span></div>
+    <div class="tile"><span class="tile-k">Tool</span><span class="tile-v">-</span></div>
+    <div class="tile"><span class="tile-k">File</span><span class="tile-v">0</span></div>
+    <div class="tile"><span class="tile-k">Token</span><span class="tile-v">-</span></div>
+  </div>
+    <section class="blk"><h4>Cuplikan hasil</h4><p class="snip">Menyiapkan skrip rilis dan pemeriksaan CI untuk halaman hasil.</p><button class="lnk" data-go="hasil" type="button">Lihat hasil penuh</button></section>
+    <section class="blk"><h4>Bukti model</h4><dl class="kv">
+    <div><dt>Diminta</dt><dd>sonnet</dd></div>
+    <div><dt>Dipakai</dt><dd>belum terbukti</dd></div>
+    <div><dt>Sumber</dt><dd>-</dd></div>
+    <div><dt>Putusan</dt><dd><span class="verdict v-na">Belum terbukti</span></dd></div>
+  </dl></section><section class="blk"><h4>Skill</h4><dl class="kv">
+    <div><dt>Dipanggil</dt><dd>-</dd></div>
+    <div><dt>Termuat</dt><dd>-</dd></div>
+    <div><dt>Belum terbukti</dt><dd>-</dd></div>
+  </dl></section>
+  </div>
+    <div data-tab="aktivitas" hidden><p class="empty">Agent ini belum jalan di run ini.</p></div>
+    <div data-tab="file" hidden><p class="empty">Belum ada file diubah.</p></div>
+    <div data-tab="hasil" hidden><section class="blk"><h4>Tugas</h4><p>Kerjakan bagian rilis dan CI untuk halaman hasil tryout.</p></section><section class="blk"><h4>Jawaban akhir</h4><p>Agent ini belum jalan di run ini.</p></section></div>
+  </div>
+</section><section class="dp" data-pane="agent:ui-critic" hidden aria-label="Detail ui-critic">
+  <header class="dp-head">
+    <span class="chip chip-waiting"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z M12 9.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z"/></svg></span>
+    <div class="dp-title"><h3>ui-critic</h3><p>Penilai visual</p></div>
+    <span class="model">sonnet</span>
+    <button class="ib" type="button" data-close aria-label="Tutup detail"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12 M18 6L6 18"/></svg></button>
+  </header>
+  <div class="tabs" role="tablist" aria-label="Isi detail ui-critic"><button type="button" role="tab" data-t="ringkasan" aria-selected="true">Ringkasan</button><button type="button" role="tab" data-t="aktivitas" aria-selected="false">Aktivitas</button><button type="button" role="tab" data-t="file" aria-selected="false">File</button><button type="button" role="tab" data-t="hasil" aria-selected="false">Hasil</button></div>
+  <div class="dp-body">
+    <div data-tab="ringkasan">
+    <div class="tiles">
+    <div class="tile"><span class="tile-k">Status</span><span class="tile-v"><span class="st st-waiting"><svg class="ic ic-waiting" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z M12 7v5l3 2"/></svg><span>Menunggu</span></span></span></div>
+    <div class="tile"><span class="tile-k">Putaran</span><span class="tile-v">0</span></div>
+    <div class="tile"><span class="tile-k">Durasi</span><span class="tile-v">-</span></div>
+    <div class="tile"><span class="tile-k">Tool</span><span class="tile-v">-</span></div>
+    <div class="tile"><span class="tile-k">File</span><span class="tile-v">0</span></div>
+    <div class="tile"><span class="tile-k">Token</span><span class="tile-v">-</span></div>
+  </div>
+    <section class="blk"><h4>Cuplikan hasil</h4><p class="snip">Menilai screenshot hasil.html terhadap docs/DESIGN.md.</p><button class="lnk" data-go="hasil" type="button">Lihat hasil penuh</button></section>
+    <section class="blk"><h4>Bukti model</h4><dl class="kv">
+    <div><dt>Diminta</dt><dd>sonnet</dd></div>
+    <div><dt>Dipakai</dt><dd>belum terbukti</dd></div>
+    <div><dt>Sumber</dt><dd>-</dd></div>
+    <div><dt>Putusan</dt><dd><span class="verdict v-na">Belum terbukti</span></dd></div>
+  </dl></section><section class="blk"><h4>Skill</h4><dl class="kv">
+    <div><dt>Dipanggil</dt><dd>-</dd></div>
+    <div><dt>Termuat</dt><dd>-</dd></div>
+    <div><dt>Belum terbukti</dt><dd>-</dd></div>
+  </dl></section>
+  </div>
+    <div data-tab="aktivitas" hidden><p class="empty">Agent ini belum jalan di run ini.</p></div>
+    <div data-tab="file" hidden><p class="empty">Belum ada file diubah.</p></div>
+    <div data-tab="hasil" hidden><section class="blk"><h4>Tugas</h4><p>Kerjakan bagian penilai visual untuk halaman hasil tryout.</p></section><section class="blk"><h4>Jawaban akhir</h4><p>Agent ini belum jalan di run ini.</p></section></div>
+  </div>
+</section><section class="dp" data-pane="agent:qa" hidden aria-label="Detail qa">
+  <header class="dp-head">
+    <span class="chip chip-waiting"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h6 M10 3v6l-5 10a1.5 1.5 0 0 0 1.3 2h11.4A1.5 1.5 0 0 0 19 19l-5-10V3 M7.5 15h9"/></svg></span>
+    <div class="dp-title"><h3>qa</h3><p>Tes penerimaan</p></div>
+    <span class="model">sonnet</span>
+    <button class="ib" type="button" data-close aria-label="Tutup detail"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12 M18 6L6 18"/></svg></button>
+  </header>
+  <div class="tabs" role="tablist" aria-label="Isi detail qa"><button type="button" role="tab" data-t="ringkasan" aria-selected="true">Ringkasan</button><button type="button" role="tab" data-t="aktivitas" aria-selected="false">Aktivitas</button><button type="button" role="tab" data-t="file" aria-selected="false">File</button><button type="button" role="tab" data-t="hasil" aria-selected="false">Hasil</button></div>
+  <div class="dp-body">
+    <div data-tab="ringkasan">
+    <div class="tiles">
+    <div class="tile"><span class="tile-k">Status</span><span class="tile-v"><span class="st st-waiting"><svg class="ic ic-waiting" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z M12 7v5l3 2"/></svg><span>Menunggu</span></span></span></div>
+    <div class="tile"><span class="tile-k">Putaran</span><span class="tile-v">0</span></div>
+    <div class="tile"><span class="tile-k">Durasi</span><span class="tile-v">-</span></div>
+    <div class="tile"><span class="tile-k">Tool</span><span class="tile-v">-</span></div>
+    <div class="tile"><span class="tile-k">File</span><span class="tile-v">0</span></div>
+    <div class="tile"><span class="tile-k">Token</span><span class="tile-v">-</span></div>
+  </div>
+    <section class="blk"><h4>Cuplikan hasil</h4><p class="snip">Menulis tes Playwright dari 4 kriteria penerimaan F6.</p><button class="lnk" data-go="hasil" type="button">Lihat hasil penuh</button></section>
+    <section class="blk"><h4>Bukti model</h4><dl class="kv">
+    <div><dt>Diminta</dt><dd>sonnet</dd></div>
+    <div><dt>Dipakai</dt><dd>belum terbukti</dd></div>
+    <div><dt>Sumber</dt><dd>-</dd></div>
+    <div><dt>Putusan</dt><dd><span class="verdict v-na">Belum terbukti</span></dd></div>
+  </dl></section><section class="blk"><h4>Skill</h4><dl class="kv">
+    <div><dt>Dipanggil</dt><dd>-</dd></div>
+    <div><dt>Termuat</dt><dd>-</dd></div>
+    <div><dt>Belum terbukti</dt><dd>-</dd></div>
+  </dl></section>
+  </div>
+    <div data-tab="aktivitas" hidden><p class="empty">Agent ini belum jalan di run ini.</p></div>
+    <div data-tab="file" hidden><p class="empty">Belum ada file diubah.</p></div>
+    <div data-tab="hasil" hidden><section class="blk"><h4>Tugas</h4><p>Kerjakan bagian tes penerimaan untuk halaman hasil tryout.</p></section><section class="blk"><h4>Jawaban akhir</h4><p>Agent ini belum jalan di run ini.</p></section></div>
+  </div>
+</section><section class="dp" data-pane="agent:cyber" hidden aria-label="Detail cyber">
+  <header class="dp-head">
+    <span class="chip chip-waiting"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z M9 12l2 2 4-4"/></svg></span>
+    <div class="dp-title"><h3>cyber</h3><p>Tinjauan keamanan</p></div>
+    <span class="model">opus</span>
+    <button class="ib" type="button" data-close aria-label="Tutup detail"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12 M18 6L6 18"/></svg></button>
+  </header>
+  <div class="tabs" role="tablist" aria-label="Isi detail cyber"><button type="button" role="tab" data-t="ringkasan" aria-selected="true">Ringkasan</button><button type="button" role="tab" data-t="aktivitas" aria-selected="false">Aktivitas</button><button type="button" role="tab" data-t="file" aria-selected="false">File</button><button type="button" role="tab" data-t="hasil" aria-selected="false">Hasil</button></div>
+  <div class="dp-body">
+    <div data-tab="ringkasan">
+    <div class="tiles">
+    <div class="tile"><span class="tile-k">Status</span><span class="tile-v"><span class="st st-waiting"><svg class="ic ic-waiting" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z M12 7v5l3 2"/></svg><span>Menunggu</span></span></span></div>
+    <div class="tile"><span class="tile-k">Putaran</span><span class="tile-v">0</span></div>
+    <div class="tile"><span class="tile-k">Durasi</span><span class="tile-v">-</span></div>
+    <div class="tile"><span class="tile-k">Tool</span><span class="tile-v">-</span></div>
+    <div class="tile"><span class="tile-k">File</span><span class="tile-v">0</span></div>
+    <div class="tile"><span class="tile-k">Token</span><span class="tile-v">-</span></div>
+  </div>
+    <section class="blk"><h4>Cuplikan hasil</h4><p class="snip">Memeriksa endpoint hasil: otorisasi per pengguna dan batas laju.</p><button class="lnk" data-go="hasil" type="button">Lihat hasil penuh</button></section>
+    <section class="blk"><h4>Bukti model</h4><dl class="kv">
+    <div><dt>Diminta</dt><dd>opus</dd></div>
+    <div><dt>Dipakai</dt><dd>belum terbukti</dd></div>
+    <div><dt>Sumber</dt><dd>-</dd></div>
+    <div><dt>Putusan</dt><dd><span class="verdict v-na">Belum terbukti</span></dd></div>
+  </dl></section><section class="blk"><h4>Skill</h4><dl class="kv">
+    <div><dt>Dipanggil</dt><dd>-</dd></div>
+    <div><dt>Termuat</dt><dd>-</dd></div>
+    <div><dt>Belum terbukti</dt><dd>-</dd></div>
+  </dl></section>
+  </div>
+    <div data-tab="aktivitas" hidden><p class="empty">Agent ini belum jalan di run ini.</p></div>
+    <div data-tab="file" hidden><p class="empty">Belum ada file diubah.</p></div>
+    <div data-tab="hasil" hidden><section class="blk"><h4>Tugas</h4><p>Kerjakan bagian tinjauan keamanan untuk halaman hasil tryout.</p></section><section class="blk"><h4>Jawaban akhir</h4><p>Agent ini belum jalan di run ini.</p></section></div>
+  </div>
+</section><section class="dp" data-pane="agent:docs" hidden aria-label="Detail docs">
+  <header class="dp-head">
+    <span class="chip chip-waiting"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5h7a2 2 0 0 1 2 2v13a2 2 0 0 0-2-2H3z M21 5h-7a2 2 0 0 0-2 2v13a2 2 0 0 1 2-2h7z"/></svg></span>
+    <div class="dp-title"><h3>docs</h3><p>Dokumentasi</p></div>
+    <span class="model">haiku</span>
+    <button class="ib" type="button" data-close aria-label="Tutup detail"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12 M18 6L6 18"/></svg></button>
+  </header>
+  <div class="tabs" role="tablist" aria-label="Isi detail docs"><button type="button" role="tab" data-t="ringkasan" aria-selected="true">Ringkasan</button><button type="button" role="tab" data-t="aktivitas" aria-selected="false">Aktivitas</button><button type="button" role="tab" data-t="file" aria-selected="false">File</button><button type="button" role="tab" data-t="hasil" aria-selected="false">Hasil</button></div>
+  <div class="dp-body">
+    <div data-tab="ringkasan">
+    <div class="tiles">
+    <div class="tile"><span class="tile-k">Status</span><span class="tile-v"><span class="st st-waiting"><svg class="ic ic-waiting" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z M12 7v5l3 2"/></svg><span>Menunggu</span></span></span></div>
+    <div class="tile"><span class="tile-k">Putaran</span><span class="tile-v">0</span></div>
+    <div class="tile"><span class="tile-k">Durasi</span><span class="tile-v">-</span></div>
+    <div class="tile"><span class="tile-k">Tool</span><span class="tile-v">-</span></div>
+    <div class="tile"><span class="tile-k">File</span><span class="tile-v">0</span></div>
+    <div class="tile"><span class="tile-k">Token</span><span class="tile-v">-</span></div>
+  </div>
+    <section class="blk"><h4>Cuplikan hasil</h4><p class="snip">Memperbarui README dan catatan rilis fitur halaman hasil.</p><button class="lnk" data-go="hasil" type="button">Lihat hasil penuh</button></section>
+    <section class="blk"><h4>Bukti model</h4><dl class="kv">
+    <div><dt>Diminta</dt><dd>haiku</dd></div>
+    <div><dt>Dipakai</dt><dd>belum terbukti</dd></div>
+    <div><dt>Sumber</dt><dd>-</dd></div>
+    <div><dt>Putusan</dt><dd><span class="verdict v-na">Belum terbukti</span></dd></div>
+  </dl></section><section class="blk"><h4>Skill</h4><dl class="kv">
+    <div><dt>Dipanggil</dt><dd>-</dd></div>
+    <div><dt>Termuat</dt><dd>-</dd></div>
+    <div><dt>Belum terbukti</dt><dd>-</dd></div>
+  </dl></section>
+  </div>
+    <div data-tab="aktivitas" hidden><p class="empty">Agent ini belum jalan di run ini.</p></div>
+    <div data-tab="file" hidden><p class="empty">Belum ada file diubah.</p></div>
+    <div data-tab="hasil" hidden><section class="blk"><h4>Tugas</h4><p>Kerjakan bagian dokumentasi untuk halaman hasil tryout.</p></section><section class="blk"><h4>Jawaban akhir</h4><p>Agent ini belum jalan di run ini.</p></section></div>
+  </div>
+</section><section class="dp dp-data" data-pane="percakapan" hidden aria-label="Percakapan">
+  <header class="dp-head"><span class="chip chip-running"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11h-9l-4 4v-4H4z"/></svg></span><div class="dp-title"><h3>Percakapan</h3><p>Cermin sesi utama</p></div><button class="ib" type="button" data-close aria-label="Tutup panel"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12 M18 6L6 18"/></svg></button></header>
+  <div class="dp-body">
+    <ul class="msgs">
+      <li class="m m-you"><span class="m-w">Kamu · 14.02</span><p>Buat halaman hasil tryout: skor per bagian, waktu pengerjaan, dan pembahasan soal.</p></li>
+      <li class="m m-ai"><span class="m-w">Claude · 14.03</span><p>Saya jalankan flow build: prd, architect, backlog, lalu ui-designer, fe, dan be paralel.</p></li>
+      <li class="m m-ai"><span class="m-w">be · 14.15</span><p>Tes migrasi 007 gagal: kolom skor_bagian sudah ada.</p></li>
+      <li class="m m-ask"><span class="m-w">Claude · 14.16 · Butuh input</span><p><strong>Pembahasan soal tampil di mana?</strong> Pembahasan 40 soal membuat halaman hasil terlalu panjang. Mau ditaruh di mana?</p>
+        <ol class="opts"><li>Satu halaman, pembahasan dilipat per bagian (rekomendasi)</li><li>Halaman terpisah, dibuka dari tombol Lihat pembahasan</li><li>Tunda pembahasan ke versi berikut</li></ol></li>
+    </ul>
+  </div>
+</section><section class="dp dp-data" data-pane="backlog" hidden aria-label="Backlog">
+  <header class="dp-head"><span class="chip chip-done"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h11 M9 12h11 M9 18h11 M3.5 6l1 1 2-2 M3.5 12l1 1 2-2 M3.5 18l1 1 2-2"/></svg></span><div class="dp-title"><h3>Backlog</h3><p>12 dari 20 item selesai</p></div><button class="ib" type="button" data-close aria-label="Tutup panel"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12 M18 6L6 18"/></svg></button></header>
+  <div class="dp-body">
+    <div class="bar-seg" role="img" aria-label="12 selesai, 2 berjalan, 1 perlu keputusan, 5 menunggu"><i class="s-done"></i><i class="s-done"></i><i class="s-done"></i><i class="s-done"></i><i class="s-done"></i><i class="s-done"></i><i class="s-done"></i><i class="s-done"></i><i class="s-done"></i><i class="s-done"></i><i class="s-done"></i><i class="s-done"></i><i class="s-running"></i><i class="s-running"></i><i class="s-input"></i><i class="s-waiting"></i><i class="s-waiting"></i><i class="s-waiting"></i><i class="s-waiting"></i><i class="s-waiting"></i></div>
+    <section class="blk"><h4>Perlu keputusanmu (1)</h4><ul class="bl"><li><span class="bl-id">B-09</span><span>Pembahasan soal: gratis atau khusus langganan?</span></li></ul></section>
+    <section class="blk"><h4>Berjalan (2)</h4><ul class="bl"><li><span class="bl-id">B-11</span><span>Kartu skor per bagian</span></li><li><span class="bl-id">B-12</span><span>Sambungan GET /api/hasil/:id</span></li></ul></section>
+    <section class="blk"><h4>Selesai (12)</h4><ul class="bl"><li><span class="bl-id">B-10</span><span>Skema tabel hasil_bagian</span></li><li><span class="bl-id">B-08</span><span>Kontrak endpoint hasil</span></li><li><span class="bl-id">B-07</span><span>Peta layar hasil disetujui</span></li></ul><p class="more">+9 lainnya</p></section>
+  </div>
+</section><section class="dp dp-data" data-pane="file" hidden aria-label="File"><header class="dp-head"><div class="dp-title"><h3>File</h3></div><button class="ib" type="button" data-close aria-label="Tutup panel"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12 M18 6L6 18"/></svg></button></header><div class="dp-body"><p class="empty">Tab File dirancang di Tahap B.</p></div></section><section class="dp dp-data" data-pane="skill" hidden aria-label="Skill"><header class="dp-head"><div class="dp-title"><h3>Skill</h3></div><button class="ib" type="button" data-close aria-label="Tutup panel"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12 M18 6L6 18"/></svg></button></header><div class="dp-body"><p class="empty">Tab Skill dirancang di Tahap B.</p></div></section><section class="dp dp-data" data-pane="token" hidden aria-label="Token"><header class="dp-head"><div class="dp-title"><h3>Token</h3></div><button class="ib" type="button" data-close aria-label="Tutup panel"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12 M18 6L6 18"/></svg></button></header><div class="dp-body"><p class="empty">Tab Token dirancang di Tahap B.</p></div></section><section class="dp dp-data" data-pane="log" hidden aria-label="Log"><header class="dp-head"><div class="dp-title"><h3>Log</h3></div><button class="ib" type="button" data-close aria-label="Tutup panel"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12 M18 6L6 18"/></svg></button></header><div class="dp-body"><p class="empty">Tab Log dirancang di Tahap B.</p></div></section></aside>
+  <nav class="rail" aria-label="Data proyek"><button type="button" class="rb" data-open="percakapan" aria-pressed="false" aria-label="Percakapan, 1 pertanyaan"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11h-9l-4 4v-4H4z"/></svg><span class="badge badge-warn">1</span></button><button type="button" class="rb" data-open="backlog" aria-pressed="false" aria-label="Backlog, 1 perlu keputusan"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h11 M9 12h11 M9 18h11 M3.5 6l1 1 2-2 M3.5 12l1 1 2-2 M3.5 18l1 1 2-2"/></svg><span class="badge badge-warn">1</span></button><button type="button" class="rb" data-open="file" aria-pressed="false" aria-label="File, 9 diubah"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h6l2 2h10v11H3z"/></svg><span class="badge">9</span></button><button type="button" class="rb" data-open="skill" aria-pressed="false" aria-label="Skill, 3 belum terbukti"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z M5 17a3 3 0 0 1 3-3h11"/></svg><span class="badge">3</span></button><button type="button" class="rb" data-open="token" aria-pressed="false" aria-label="Token"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 17a8 8 0 1 1 16 0 M12 17l4-5"/></svg></button><button type="button" class="rb" data-open="log" aria-pressed="false" aria-label="Log"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16 M4 12h16 M4 18h10"/></svg></button></nav></div>
+</div>
+</div>
+<script>
+(function(){
+  var $=function(s,r){return (r||document).querySelector(s)},$$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+  var root=document.documentElement;
+  var th=$('#theme');
+  function setTheme(t){root.setAttribute('data-theme',t);try{localStorage.setItem('fv-theme',t)}catch(e){}if(th){th.setAttribute('aria-pressed',String(t==='dark'));th.setAttribute('aria-label',t==='dark'?'Ganti ke tema terang':'Ganti ke tema gelap')}}
+  if(th){th.setAttribute('aria-pressed',String(root.getAttribute('data-theme')==='dark'));th.addEventListener('click',function(){setTheme(root.getAttribute('data-theme')==='dark'?'light':'dark')})}
+  var snd=$('#snd');if(snd)snd.addEventListener('click',function(){var on=snd.getAttribute('aria-pressed')!=='true';snd.setAttribute('aria-pressed',String(on));snd.setAttribute('aria-label',on?'Matikan bunyi':'Nyalakan bunyi')});
+  var ntf=$('#ntf');if(ntf)ntf.addEventListener('click',function(){var on=ntf.getAttribute('aria-pressed')!=='true';ntf.setAttribute('aria-pressed',String(on))});
+  var more=$('#more'),menu=$('#menu');
+  function closeMenu(){if(menu&&!menu.hidden){menu.hidden=true;more.setAttribute('aria-expanded','false');return true}return false}
+  if(more)more.addEventListener('click',function(e){e.stopPropagation();var o=menu.hidden;menu.hidden=!o;more.setAttribute('aria-expanded',String(o));if(o){var f=$('button',menu);if(f)f.focus()}});
+  document.addEventListener('click',function(e){if(menu&&!menu.hidden&&!menu.contains(e.target))closeMenu()});
+  var rp=$('#report');if(rp)rp.addEventListener('click',closeMenu);
+  var rs=$('#reset'),rt;if(rs)rs.addEventListener('click',function(){var l=$('span',rs);if(rs.getAttribute('data-arm')){rs.removeAttribute('data-arm');l.textContent='Reset run';closeMenu();return}rs.setAttribute('data-arm','1');l.textContent='Yakin? Klik lagi';clearTimeout(rt);rt=setTimeout(function(){rs.removeAttribute('data-arm');l.textContent='Reset run'},3000)});
+
+  var EDGES=[["__prompt","__main","ok"],["__main","prd","ok"],["prd","ux","ok"],["ux","architect","ok"],["architect","backlog","ok"],["backlog","ui-designer","run"],["backlog","fe","run"],["backlog","be","bad"],["backlog","devops","idle"],["ui-designer","ui-critic","idle"],["fe","qa","idle"],["be","qa","idle"],["be","cyber","idle"],["devops","docs","idle"]];
+  var stage=$('#stage'),canvas=$('#canvas'),zl=$('#zlbl'),svg=$('#edges'),main=$('#main'),side=$('#side');
+  var zd=1,manual=false,Kc=0.84;
+  function nd(id){return $('.node[data-id="'+id+'"]',canvas)}
+  function layoutEdges(){
+    var NS='http://www.w3.org/2000/svg';while(svg.firstChild)svg.removeChild(svg.firstChild);
+    EDGES.forEach(function(e){var a=nd(e[0]),b=nd(e[1]);if(!a||!b)return;
+      var d;
+      if(a.offsetLeft===b.offsetLeft){var cx=a.offsetLeft+a.offsetWidth/2;d='M'+cx+' '+(a.offsetTop+a.offsetHeight)+' L'+cx+' '+b.offsetTop}
+      else{var x1=a.offsetLeft+a.offsetWidth,y1=a.offsetTop+a.offsetHeight/2,x2=b.offsetLeft,y2=b.offsetTop+b.offsetHeight/2,xm=(x1+x2)/2;d='M'+x1+' '+y1+' C'+xm+' '+y1+' '+xm+' '+y2+' '+x2+' '+y2}
+      var p=document.createElementNS(NS,'path');p.setAttribute('class','e e-'+e[2]);p.setAttribute('d',d);svg.appendChild(p);
+      if(e[2]==='run'){var c=document.createElementNS(NS,'circle');c.setAttribute('class','dot');c.setAttribute('r','5');c.setAttribute('cx','0');c.setAttribute('cy','0');c.style.offsetPath="path('"+d+"')";svg.appendChild(c)}
+    });
+  }
+  function apply(){
+    var compact=zd<1;if(canvas.classList.contains('compact')!==compact)canvas.classList.toggle('compact',compact);
+    var s=compact?zd/Kc:zd;canvas.style.transform='scale('+s+')';layoutEdges();
+    var w=canvas.offsetWidth*s,h=canvas.offsetHeight*s;
+    canvas.style.left=Math.max(8,(stage.clientWidth-w)/2)+'px';canvas.style.top=Math.max(8,(stage.clientHeight-h)/2)+'px';
+    zl.textContent=Math.round(zd*100)+'%';
+  }
+  function fit(){
+    canvas.classList.remove('compact');var Wf=canvas.offsetWidth,Hf=canvas.offsetHeight;
+    canvas.classList.add('compact');var Wc=canvas.offsetWidth,Hc=canvas.offsetHeight;Kc=Wc/Wf;
+    var aw=stage.clientWidth-16,ah=stage.clientHeight-16,zf=Math.min(aw/Wf,ah/Hf);
+    if(zf>=1){zd=Math.min(zf,1.1)}else{var zc=Math.min(aw/Wc,ah/Hc);zd=Math.max(.74,Math.min(zc*Kc,.999))}
+    apply();
+  }
+  $('#zin').addEventListener('click',function(){manual=true;zd=Math.min(1.6,zd+.1);apply()});
+  $('#zout').addEventListener('click',function(){manual=true;zd=Math.max(.6,zd-.1);apply()});
+  $('#zfit').addEventListener('click',function(){manual=false;fit()});
+  function openPanel(o){main.classList.toggle('open',o);if(!o)$$('.node.sel').forEach(function(n){n.classList.remove('sel')})}
+  function showPane(id){$$('[data-pane]',side).forEach(function(p){p.hidden=p.getAttribute('data-pane')!==id});$$('[data-open]').forEach(function(b){b.setAttribute('aria-pressed',String(b.getAttribute('data-open')===id))});if(id.indexOf('agent:')!==0)$$('.node.sel').forEach(function(n){n.classList.remove('sel')})}
+  function selectAgent(id){$$('.node').forEach(function(n){n.classList.toggle('sel',n.getAttribute('data-id')===id)});showPane('agent:'+id);openPanel(true)}
+  if(window.innerWidth<1200){main.classList.remove('open');$$('.node.sel').forEach(function(n){n.classList.remove('sel')})}
+  $$('.node .hit').forEach(function(b){b.addEventListener('click',function(){selectAgent(b.parentNode.getAttribute('data-id'))})});
+  $$('[data-open]').forEach(function(b){b.addEventListener('click',function(){var id=b.getAttribute('data-open');if(main.classList.contains('open')&&b.getAttribute('aria-pressed')==='true'){openPanel(false);b.setAttribute('aria-pressed','false');return}showPane(id);openPanel(true)})});
+  $$('[data-show]').forEach(function(b){b.addEventListener('click',function(){showPane(b.getAttribute('data-show'));openPanel(true)})});
+  $$('[data-select]').forEach(function(b){b.addEventListener('click',function(){selectAgent(b.getAttribute('data-select'))})});
+  $$('[data-close]').forEach(function(b){b.addEventListener('click',function(){openPanel(false);$$('[data-open]').forEach(function(x){x.setAttribute('aria-pressed','false')})})});
+  $$('[role=tab][data-t]').forEach(function(t){t.addEventListener('click',function(){var sec=t.closest('[data-pane]');$$('[role=tab]',sec).forEach(function(x){x.setAttribute('aria-selected',String(x===t))});$$('[data-tab]',sec).forEach(function(p){p.hidden=p.getAttribute('data-tab')!==t.getAttribute('data-t')})})});
+  $$('[data-go]').forEach(function(b){b.addEventListener('click',function(){var sec=b.closest('[data-pane]');var t=$('[role=tab][data-t="'+b.getAttribute('data-go')+'"]',sec);if(t)t.click()})});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'){if(closeMenu()){more.focus();return}var c=$('[data-close]');if(c&&main.classList.contains('open'))c.click()}});
+  window.addEventListener('resize',function(){if(manual)apply();else fit()});
+  if(window.ResizeObserver)new ResizeObserver(function(){if(!manual)fit()}).observe(stage);
+  fit();if(document.fonts&&document.fonts.ready)document.fonts.ready.then(function(){if(!manual)fit()});
+})();</script>
+</body></html>

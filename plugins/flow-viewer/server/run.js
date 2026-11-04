@@ -2,6 +2,7 @@
 // Satu Run = satu pabrik createRun(). Seluruh mesin status 1.7.1 (handle, start/stop, detail, convo, laporan)
 // hidup di sini; tidak ada variabel modul. Jam, katalog agent, dan pembaca token diinjeksi.
 const path = require('path');
+const { attention } = require('./attention');
 
 const FLOW_CMD = /\/(?:fullstack-dev:)?(build|start|run|backlog|boilerplate|ui-only|fe-only|prd-check|ui-direction)\b[ \t]*([\w-]*)/;
 const MAIN = '__main';
@@ -11,6 +12,18 @@ const eqOf = (u) => u ? Math.round((u.in || 0) + (u.cc || 0) * 1.25 + (u.cr || 0
 const rawOf = (u) => u ? (u.in || 0) + (u.out || 0) + (u.cr || 0) + (u.cc || 0) : 0;
 const cap = (s, n) => { s = String(s == null ? '' : s); return s.length > n ? s.slice(0, n) + `\n… (+${s.length - n} karakter lagi)` : s; };
 const nlines = (s) => (s ? String(s).replace(/\n$/, '').split('\n').length : 0);
+const QUIET_MS = 10 * 60 * 1000; // 5.3: Agent diam (konstanta server, A13)
+const BOROS = 1.5;               // 5.3: eq > 150% pembanding
+// 5.1 (T12): Stop berisi permintaan jawaban dari pemilik? Buang catatan kaki "Subagent/Agent yang dipanggil: ..." lebih dulu
+// (kebiasaan pemilik, menyembunyikan tanda tanya di ujung), lalu cari tanda tanya pada 3 kalimat terakhir atau frasa menunggu.
+const FOOTER = /\s*\**(?:Sub)?[Aa]gents?(?: yang)?(?: sudah| sejauh ini)?(?: dipanggil| dipakai| invoked)[^.]*(?:\.|$)/;
+const WAITING = /(?:setelah (?:jawaban|(?:kamu|anda|lu|lo) (?:menjawab|setuju|approve))|(?:menunggu|tunggu) (?:jawaban|persetujuan|keputusan|approve)|jawab di tombol|\bkabari\b|belum approve|balas dengan)/i;
+function asksOwner(text) {
+  const t = String(text || '').replace(FOOTER, '').replace(/\s+/g, ' ').trim();
+  if (!t) return false;
+  const tail = t.split(/(?<=[.!?])\s+/).slice(-3).join(' ');
+  return /\?(?=\s|$|[)\]*_`"'])/.test(tail) || WAITING.test(t.slice(-400));
+}
 const aliasOf = (m) => /opus/i.test(m) ? 'opus' : /sonnet/i.test(m) ? 'sonnet' : /haiku/i.test(m) ? 'haiku' : '';
 
 // Flow yang diminta prompt ini ('' bila bukan perintah flow). Pemanggil membuat run baru lebih dulu.
@@ -30,7 +43,7 @@ function catalogFromFlows(flows, defs, refresh) {
   return { defs, crew: ov.nodes.map((n) => n.id), crewMeta: ov.nodes.map((n) => ({ id: n.id, col: n.col, row: n.row })), edges: ov.edges, flow: (name) => flows[name] || null, refresh: refresh || (() => false) };
 }
 
-function createRun({ key = '', flow = 'free', catalog, usage = null, now = Date.now, prev = null, fresh = false, onChange = () => {}, backlog = () => null, compare = null } = {}) {
+function createRun({ key = '', flow = 'free', catalog, usage = null, now = Date.now, prev = null, fresh = false, onChange = () => {}, backlog = () => null, compare = null, project = null } = {}) {
   const defs = catalog.defs;
   const k = catalog.flow(flow) ? flow : 'free';
   const f = catalog.flow(k);
@@ -53,6 +66,9 @@ function createRun({ key = '', flow = 'free', catalog, usage = null, now = Date.
   let lastEventAt = t0;
   let lastClaude = '';
   let paused = false;
+  let finishedAt = 0;     // kapan fase menjadi finished (untuk `at` item Selesai)
+  let stopN = 0, seqQ = 0, seqPerm = 0; // nomor urut Stop / pertanyaan / izin di run ini (kunci 5.3)
+  const droppedCmp = new Set(), cmpMemo = new Map();
 
   function applyDef(n) {
     const d = defs[n.id];
@@ -63,7 +79,7 @@ function createRun({ key = '', flow = 'free', catalog, usage = null, now = Date.
   function mkNode(nid, def = {}, extra = false) {
     const n = {
       id: nid, role: def.role || '', optional: !!def.optional, extra,
-      status: 'idle', count: 0, tools: 0, files: 0, skills: [], last: '', recent: [],
+      status: 'idle', lastEventAt: 0, quiet: false, count: 0, tools: 0, files: 0, skills: [], last: '', recent: [],
       background: false, offscope: false, segments: [], startedAt: null, endedAt: null, ms: 0,
       model: '', desc: '', toolsAllowed: '', skillsDef: [], usage: null,
     };
@@ -115,7 +131,7 @@ function createRun({ key = '', flow = 'free', catalog, usage = null, now = Date.
     if (opts.background) n.background = true;
     if (n.status === 'running') return; // dedupe SubagentStart + PreToolUse(Agent)
     const t = now();
-    n.status = 'running'; n.count += 1; n.startedAt = t; n.last = 'mulai'; n.failReason = '';
+    n.status = 'running'; n.lastEventAt = t; n.count += 1; n.startedAt = t; n.last = 'mulai'; n.failReason = '';
     openSegment(n, t);
     resume();
     addLog('start', `${nid} mulai${n.background ? ' (background)' : ''}${n.count > 1 ? ` (putaran ${n.count})` : ''}`);
@@ -134,7 +150,7 @@ function createRun({ key = '', flow = 'free', catalog, usage = null, now = Date.
     if (!nid) return;
     const n = getNode(nid);
     if (n.status === 'running') { const t = now(); n.endedAt = t; n.ms += t - n.startedAt; closeSegment(n, t); }
-    n.status = 'failed'; n.failReason = cap(String(reason || 'agent gagal').replace(/\s+/g, ' ').trim(), 160);
+    n.status = 'failed'; n.lastEventAt = now(); n.failReason = cap(String(reason || 'agent gagal').replace(/\s+/g, ' ').trim(), 160);
     addLog('fail', `${nid} gagal: ${n.failReason}`);
   }
   // Agent yang mengirim event tool itu hidup, apa pun dugaan sebelumnya (self-heal).
@@ -196,9 +212,15 @@ function createRun({ key = '', flow = 'free', catalog, usage = null, now = Date.
   // Pending = daftar per pengirim (`session:agent_id|main`); hilang saat event non-Notification berikutnya dari pengirim itu.
   const senderOf = (ev) => `${ev.session_id || ''}:${ev.agent_id || 'main'}`;
   let curSender = senderOf({});
-  const setPending = (kind, text, options) => {
+  // Kunci 5.3: q:<pengirim>:<tool_use_id|runId.n>, perm:..., idle_prompt = q:<pengirim>:<runId>.w<Stop ke-n>.
+  // `soft` (dari Notification): pengirim yang sudah punya pending tidak membuat item kedua.
+  const setPending = (kind, text, options, tuid, soft) => {
+    const had = pend.find((p) => p.sender === curSender);
+    if (soft && had && (kind === 'waiting' || had.kind === kind)) return;
     pend = pend.filter((p) => p.sender !== curSender);
-    pend.push({ key: `${kind}:${curSender}:${pend.length + 1}.${now()}`, kind, sender: curSender, text: cap(text, 500), options: options || [], at: now() });
+    const pre = kind === 'permission' ? 'perm' : 'q';
+    const ev = tuid || (kind === 'waiting' ? `${id}.w${stopN}` : `${id}.${kind === 'permission' ? ++seqPerm : ++seqQ}`);
+    pend.push({ key: `${pre}:${curSender}:${ev}`, kind, sender: curSender, text: cap(text, 500), options: options || [], at: now() });
   };
   const clearPending = (sender) => { pend = sender ? pend.filter((p) => p.sender !== sender) : []; };
 
@@ -240,7 +262,7 @@ function createRun({ key = '', flow = 'free', catalog, usage = null, now = Date.
       input: sanitize(ev.tool_name, input), status: 'pending', ms: null, out: '',
     };
     d.events.push(rec);
-    if (d.events.length > 400) d.events.shift();
+    if (d.events.length > 400) delete evIndex[d.events.shift().id];
     evIndex[rec.id] = { key: rk, rec };
     trackFile(d, ev.tool_name, input, rec);
   }
@@ -288,18 +310,47 @@ function createRun({ key = '', flow = 'free', catalog, usage = null, now = Date.
     if (S.finished || paused || !stopSeen || S.main.status === 'running' || bgRunning || anyNodeRunning()) return false;
     if (now() - lastEventAt < SETTLE_MS) return false;
     const ns = Object.values(S.nodes);
-    if (ns.some((n) => n.status === 'failed') || backlogFailed().length) { S.finished = true; S.outcome = 'failed'; S.summary = buildSummary(); return true; }
-    const missing = S.expected.some((i) => { const n = S.nodes[i]; return n && !n.optional && n.count === 0; });
-    if (missing || /\?\s*$/.test(lastClaude)) { paused = true; return true; }
+    if (ns.some((n) => n.status === 'failed') || backlogFailed().length) { S.finished = true; finishedAt = now(); S.outcome = 'failed'; S.summary = buildSummary(); return true; }
+    // 5.1 (T12): flow dengan "batch": true (flows.json) berputar per batch; tiap batch sah berhenti tanpa semua langkahnya, jadi langkah wajib tidak menjeda.
+    const missing = !(f && f.batch) && S.expected.some((i) => { const n = S.nodes[i]; return n && !n.optional && n.count === 0; });
+    if (missing || asksOwner(lastClaude)) { paused = true; return true; }
     let skipped = false;
     for (const n of ns) {
       if (S.expected.length && n.status === 'idle' && !n.extra && !n.offscope) { n.status = n.optional ? 'optional' : 'skipped'; if (!n.optional) skipped = true; }
     }
-    S.finished = true; S.outcome = skipped ? 'skipped' : 'ok'; S.summary = buildSummary();
+    S.finished = true; finishedAt = now(); S.outcome = skipped ? 'skipped' : 'ok'; S.summary = buildSummary();
     return true;
   }
 
   const backlogFailed = () => { const b = backlog(); return b && Array.isArray(b.items) ? b.items.filter((i) => i.status === 'failed') : []; };
+  // 5.5: pembanding dicari saat dibutuhkan (flow free: tergantung ada-tidaknya agent) dan dipakai ulang; `compare` boleh objek, atau fungsi({flow, beforeId, withAgents}) -> baris riwayat.
+  const asCmp = (x) => (x ? { id: x.id || 0, eq: x.eq ?? x.tokens_eq ?? 0, durMs: x.durMs ?? Math.max(0, (x.updated_at || 0) - (x.started_at || 0)) } : null);
+  function cmp() {
+    let c = compare;
+    if (typeof compare === 'function') {
+      const wa = Object.values(S.nodes).some((n) => n.count > 0);
+      if (!cmpMemo.has(wa)) { let r = null; try { r = compare({ flow: k, beforeId: id, withAgents: wa }); } catch (_) { /* tanpa pembanding */ } cmpMemo.set(wa, asCmp(r)); }
+      c = cmpMemo.get(wa);
+    } else c = asCmp(c);
+    return c && !droppedCmp.has(c.id) ? c : null;
+  }
+  function tokens() {
+    const eq = totalEq(), c = cmp(), pe = c && c.eq > 0 ? c.eq : null;
+    return { eq, prevEq: pe, deltaPct: pe && eq != null ? Math.round((eq - pe) / pe * 100) : null, boros: pe != null && eq != null && eq > BOROS * pe };
+  }
+  // 5.4: backlog berbobot > langkah wajib > kosong.
+  function progress() {
+    const b = backlog();
+    if (b && typeof b.pct === 'number') return { pct: b.pct, label: `Backlog ${b.done} dari ${b.total} item` };
+    const req = S.expected.map((i) => S.nodes[i]).filter((n) => n && !n.optional);
+    if (!req.length) return { pct: null, label: '' };
+    const ran = req.filter((n) => n.count > 0).length;
+    return { pct: Math.round(ran / req.length * 100), label: `Langkah wajib ${ran} dari ${req.length}` };
+  }
+  const projectOf = () => {
+    const parts = String(key).split(/[\\/]+/).filter(Boolean);
+    return { id: '', name: base(key) || key, shortPath: parts.slice(-2).join('/') || key, path: key, ...(typeof project === 'function' ? project() : project) };
+  };
   const totalEq = () => { const us = Object.values(S.nodes).map((n) => n.usage).concat(S.main.usage); return us.some(Boolean) ? us.reduce((a, u) => a + eqOf(u), 0) : null; };
   // 5.6: dibuat sekali saat finished; ikut tersimpan lewat state.
   function buildSummary() {
@@ -313,7 +364,7 @@ function createRun({ key = '', flow = 'free', catalog, usage = null, now = Date.
     const files = [];
     Object.entries(details).forEach(([dk, d]) => Object.values(d.files || {}).forEach((x) => files.push({ agent: dk === MAIN ? '' : dk, path: x.path, add: x.add, del: x.del, created: !!x.created })));
     const eq = totalEq(), durMs = Math.max(0, lastEventAt - S.startedAt);
-    const pe = compare && compare.eq > 0 ? compare.eq : null;
+    const { prevEq: pe, deltaPct } = tokens(), c = cmp();
     const b = backlog();
     const decisions = ((b && b.decisions) || []).map((d) => ({ kind: 'decision', id: d.id, title: d.title, text: d.question }))
       .concat(pend.filter((p) => p.kind === 'question').map((p) => ({ kind: 'question', text: p.text })));
@@ -321,8 +372,8 @@ function createRun({ key = '', flow = 'free', catalog, usage = null, now = Date.
     return {
       auto: ranIds.length > 0 || files.length > 0, result: S.outcome,
       failedAgent: failedNode ? failedNode.id : '', steps,
-      tokens: { eq, prevEq: pe, deltaPct: pe && eq != null ? Math.round((eq - pe) / pe * 100) : null },
-      durMs, prev: compare ? { eq: compare.eq || 0, durMs: compare.durMs || 0, durDeltaPct: compare.durMs > 0 ? Math.round((durMs - compare.durMs) / compare.durMs * 100) : null } : null,
+      tokens: { eq, prevEq: pe, deltaPct },
+      durMs, prev: c ? { eq: c.eq || 0, durMs: c.durMs || 0, durDeltaPct: c.durMs > 0 ? Math.round((durMs - c.durMs) / c.durMs * 100) : null } : null,
       files, decisions,
     };
   }
@@ -339,6 +390,7 @@ function createRun({ key = '', flow = 'free', catalog, usage = null, now = Date.
     const rk = agent || MAIN;
     curSender = senderOf(ev);
     lastEventAt = now();
+    if (agent && S.nodes[agent]) S.nodes[agent].lastEventAt = lastEventAt;
     if (!session && ev.session_id) session = ev.session_id;
     if (!ev.agent_id && (e === 'PreToolUse' || e === 'PostToolUse') && S.main.status === 'idle') { S.main.status = 'running'; resume(); mainOpen(); }
     if (e !== 'Notification' && e !== 'PermissionRequest' && !(e === 'PreToolUse' && tool === 'AskUserQuestion')) clearPending(curSender);
@@ -381,7 +433,7 @@ function createRun({ key = '', flow = 'free', catalog, usage = null, now = Date.
         if (tool === 'AskUserQuestion') {
           const qs = (input.questions || []).slice(0, 4).map((q) => ({ question: cap(q.question, 400), header: q.header, multi: !!q.multiSelect, options: (q.options || []).slice(0, 6).map((o) => ({ label: cap(o.label, 120), description: cap(o.description, 200) })) }));
           say('question', qs.map((q) => q.question).join('\n'), { agent: agent || '', questions: qs });
-          setPending('question', qs.length ? qs[0].question : 'Claude bertanya', qs.length ? qs[0].options.map((o) => o.label) : []);
+          setPending('question', qs.length ? qs[0].question : 'Claude bertanya', qs.length ? qs[0].options.map((o) => o.label) : [], ev.tool_use_id);
         }
         if (tool === 'Agent' || tool === 'Task') {
           const aid = norm(input.subagent_type);
@@ -400,23 +452,31 @@ function createRun({ key = '', flow = 'free', catalog, usage = null, now = Date.
         break;
       case 'Stop':
         S.main.status = 'idle'; mainClose(); addLog('stop', 'sesi utama selesai giliran');
-        stopSeen = true; lastClaude = String(ev.last_assistant_message || '');
-        bgRunning = (Array.isArray(ev.background_tasks) ? ev.background_tasks : []).some((x) => x && (x.status || 'running') === 'running');
+        stopSeen = true; stopN += 1; lastClaude = String(ev.last_assistant_message || '');
+        // 5.1 (T12): tugas shell tidak dihitung; daftar Claude Code memuat shell basi (ls, sed, rm) dan server dev yang tak berakhir. Hanya agent latar.
+        bgRunning = (Array.isArray(ev.background_tasks) ? ev.background_tasks : []).some((x) => x && x.type !== 'shell' && (x.status || 'running') === 'running');
+        // 5.1 (T12): daftar background_tasks di Stop adalah sumber paling benar; node berstatus running yang agent-id-nya tidak
+        // ada di daftar itu basi (SubagentStop hilang) dan tidak boleh menahan Selesai/Jeda.
+        if (Array.isArray(ev.background_tasks)) {
+          const live = new Set(ev.background_tasks.filter((x) => x && x.type !== 'shell' && (x.status || 'running') === 'running').map((x) => x.id));
+          Object.values(S.nodes).forEach((n) => { if (n.status === 'running') { const ids = det(n.id).agentIds; if (ids.length && !ids.some((i) => live.has(i))) stop(n.id); } });
+        }
         if (ev.last_assistant_message) say('claude', ev.last_assistant_message);
         refresh(MAIN, ev, true);
         break;
       case 'PermissionRequest': {
         const txt = `${tool || 'tool'}: ${describe(tool || '', input).replace(/^\w+ ?/, '')}`;
         say('permission', txt, { agent: agent || '' });
-        setPending('permission', `Izin dibutuhkan: ${txt}`);
+        setPending('permission', `Izin dibutuhkan: ${txt}`, [], ev.tool_use_id);
         addLog('perm', `menunggu izin: ${txt.slice(0, 60)}`);
         break;
       }
       case 'Notification': {
         const msg = String(ev.message || ''), nt = String(ev.notification_type || '');
         say('notify', msg);
-        if (/permission/i.test(nt + msg)) setPending('permission', msg);
-        else if (/idle|waiting/i.test(nt + msg)) setPending('idle', msg);
+        if (phase() === 'finished') break; // 5.3: Notification saat finished bukan pemicu (Selesai tidak berbunyi dua kali)
+        if (/permission/i.test(nt + msg)) setPending('permission', msg, [], '', true);
+        else if (/idle|waiting/i.test(nt + msg)) setPending('waiting', msg, [], '', true);
         break;
       }
       case 'SessionStart': addLog('session', 'sesi dimulai'); refresh(MAIN, ev, true); break;
@@ -470,8 +530,15 @@ function createRun({ key = '', flow = 'free', catalog, usage = null, now = Date.
     const fl = [];
     Object.entries(details).forEach(([dk, d]) => Object.values(d.files || {}).forEach((x) => fl.push({ agent: dk, path: x.path, add: x.add, del: x.del, created: !!x.created })));
     S.fileList = fl.slice(-40);
-    Object.values(S.nodes).forEach((n) => { const d = details[n.id]; n.modelCheck = modelCheck(n); n.snippet = d && d.result ? cap(d.result.replace(/\s+/g, ' '), 240) : ''; });
-    return S;
+    Object.values(S.nodes).forEach((n) => {
+      const d = details[n.id]; n.modelCheck = modelCheck(n); n.snippet = d && d.result ? cap(d.result.replace(/\s+/g, ' '), 240) : '';
+      n.quiet = n.status === 'running' && now() - (n.lastEventAt || n.startedAt || 0) > QUIET_MS;
+    });
+    // Salinan dangkal: field baru tidak ikut tersimpan ke Riwayat (live:true tidak boleh terbawa).
+    return {
+      ...S, project: projectOf(), live: true, progress: progress(), tokens: tokens(),
+      attention: attention({ runId: id, phase: S.phase, session, finishedAt, pendings: pend, nodes: S.nodes, backlog: S.backlog && S.backlog.items }),
+    };
   }
 
   // Baris untuk store.save, atau null bila run masih kosong.
@@ -518,7 +585,7 @@ function createRun({ key = '', flow = 'free', catalog, usage = null, now = Date.
     const L = [];
     L.push(`# Laporan Flow Viewer (diperbarui ${hm(now())})`);
     let st;
-    if (paused) st = `JEDA: ${cap(lastClaude.replace(/s+/g, ' '), 160) || 'menunggu input'}`;
+    if (paused) st = `JEDA: ${cap(lastClaude.replace(/\s+/g, ' '), 160) || 'menunggu input'}`;
     else if (pending) st = `MENUNGGU KAMU (${pending.kind}): ${pending.text}`;
     else if (running.length) st = `BEKERJA: agent berjalan: ${running.map((n) => n.id).join(', ')}`;
     else if (S.main.status === 'running') st = 'BEKERJA: sesi utama';
@@ -559,7 +626,7 @@ function createRun({ key = '', flow = 'free', catalog, usage = null, now = Date.
   }
 
   Object.defineProperties(run, Object.getOwnPropertyDescriptors({
-    key, id, apply, applyForeign, tick, rollover, snapshot, detail, report, row,
+    key, id, apply, applyForeign, tick, dropCompare: (did) => { droppedCmp.add(did); }, rollover, snapshot, detail, report, row,
     touch: () => onChange(run), usageAt,
     get phase() { return phase(); },
     get state() { return S; },
@@ -571,4 +638,4 @@ function createRun({ key = '', flow = 'free', catalog, usage = null, now = Date.
   return run;
 }
 
-module.exports = { createRun, flowCommand, catalogFromFlows, eqOf, rawOf, cap, norm, MAIN };
+module.exports = { createRun, flowCommand, asksOwner, catalogFromFlows, eqOf, rawOf, cap, norm, MAIN, BOROS };

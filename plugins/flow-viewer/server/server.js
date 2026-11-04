@@ -1,86 +1,61 @@
 #!/usr/bin/env node
-// flow-viewer server: receives Claude Code hook events, keeps run state, streams it to the browser.
-// No dependencies. Binds to 127.0.0.1 only.
+// flow-viewer server: menerima event hook Claude Code, menyimpan run per proyek (projects.js), menyiarkannya ke browser.
+// Tanpa dependensi. Hanya bind 127.0.0.1. Kontrak: docs/ARCHITECTURE.md bagian 6 dan 7.
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const readline = require('readline');
 
 const PORT = Number(process.env.FLOW_VIEWER_PORT) || 4777;
 const DIR = process.env.FLOW_VIEWER_DIR || path.join(os.homedir(), '.claude', 'flow-viewer');
-const FLOWS = JSON.parse(fs.readFileSync(path.join(__dirname, 'flows.json'), 'utf8'));
-const PUBLIC = path.join(__dirname, 'public');
 fs.mkdirSync(DIR, { recursive: true });
 const LOG_FILE = path.join(DIR, 'events.jsonl');
+const LOG_OLD = path.join(DIR, 'events.1.jsonl');
+const LOG_MAX = Number(process.env.FLOW_VIEWER_LOG_MAX) || 20 * 1024 * 1024; // 8.2: rotasi 20 MB
+const MAX_SSE = 50;      // 8.2
+const THROTTLE_MS = 250; // 6: siaran per proyek
 const store = require('./store').open(DIR); // riwayat run (SQLite, atau JSON kalau node:sqlite tidak ada)
-const readline = require('readline');
 const { analyze } = require('./tokens'); // token per pemanggilan, cache ditulis ulang, output tool, limit
 const tokenReport = require('./token-report');
 const guard = require('./guard');
+const { createRun, eqOf, rawOf, BOROS } = require('./run');
+const { createRegistry } = require('./projects');
+const agents = require('./agents');
+const { summarize: backlogOf } = require('./backlog-summary');
+const { summarize: attnSummary } = require('./attention');
+const { safePath } = require('./usage');
 
+let VERSION = '0.0.0';
+try { VERSION = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '.claude-plugin', 'plugin.json'), 'utf8')).version; } catch (_) { /* tanpa versi */ }
 const norm = (n) => String(n || '').split(':').pop().trim();
 const MAIN = '__main';
 
+// Penonton SSE: { res, mode: 'p' | 'legacy' | 'list', p: id dari ?p=, key: kunci proyek bila sudah ketemu }.
 const clients = new Set();
 
-// ---------- agent definitions (model, tools, skills) read from agents/*.md ----------
-let agentDefs = {};
-const scannedDirs = new Set();
-function parseAgentFile(file) {
-  let txt;
-  try { txt = fs.readFileSync(file, 'utf8'); } catch (_) { return null; }
-  const m = /^---\r?\n([\s\S]*?)\r?\n---/.exec(txt);
-  if (!m) return null;
-  const get = (k) => { const r = new RegExp(`^${k}:[ \\t]*(.*)$`, 'm').exec(m[1]); return r ? r[1].trim().replace(/^["']|["']$/g, '') : ''; };
-  // Daftar YAML bertingkat (`skills:` lalu baris `  - a`): dulu terbaca kosong.
-  const block = (k) => { const r = new RegExp(`^${k}:[ \\t]*\\r?\\n((?:[ \\t]+-[^\\n]*(?:\\n|$))+)`, 'm').exec(m[1]); return r ? r[1].split(/\r?\n/).map((l) => l.replace(/^[ \t]+-[ \t]*/, '').trim().replace(/^["']|["']$/g, '')).filter(Boolean) : []; };
-  const name = get('name') || path.basename(file, '.md');
-  const sk = get('skills');
-  const skills = sk ? sk.replace(/^\[|\]$/g, '').split(',').map((s) => s.trim()).filter(Boolean) : block('skills');
-  return { name, model: get('model'), effort: get('effort'), tools: get('tools') || block('tools').join(', '), skills, description: get('description').slice(0, 220) };
-}
-function scanAgentDir(dir) {
-  if (scannedDirs.has(dir)) return;
-  scannedDirs.add(dir);
-  let files = [];
-  try { files = fs.readdirSync(dir).filter((f) => f.endsWith('.md')); } catch (_) { return; }
-  files.forEach((f) => { const d = parseAgentFile(path.join(dir, f)); if (d) agentDefs[d.name] = d; });
-}
-function loadAgentDefs(cwd) {
-  const plugins = path.resolve(__dirname, '..', '..');
-  try { fs.readdirSync(plugins).forEach((p) => scanAgentDir(path.join(plugins, p, 'agents'))); } catch (_) {}
-  scanAgentDir(path.join(os.homedir(), '.claude', 'agents'));
-  if (cwd) scanAgentDir(path.join(cwd, '.claude', 'agents'));
-}
-loadAgentDefs();
-
-const { createRun, flowCommand, catalogFromFlows, eqOf, rawOf, cap } = require('./run');
-const catalog = catalogFromFlows(FLOWS, agentDefs, (cwd) => { // true bila folder agent proyek ini baru dipindai
-  if (scannedDirs.has(path.join(cwd, '.claude', 'agents'))) return false;
-  loadAgentDefs(cwd); return true;
+// 5.7: SessionStart memaksa katalog agent dipindai ulang; selain itu cache 30 dtk. refresh() dikembalikan false: definisi baru dipakai run berikutnya.
+let freshAgents = false;
+const catalog = { catalogFor: (key) => ({ ...(freshAgents ? agents.refresh(key) : agents.catalogFor(key)), refresh: () => false }) };
+const reg = createRegistry({
+  store, catalog,
+  watched: (p) => [...clients].some((c) => c.p === p.id), // proyek yang sedang dilihat tidak dibuang dari memori
+  runOpts: (p) => ({ usage: { refresh: refreshUsage }, backlog: () => backlogOf(p.key), onChange: (r) => { if (r === p.run) dirty(p); } }),
 });
-let run = null;      // run aktif (satu proyek dulu; registri proyek menyusul)
-let cwdNow = '';
-let persistT = null;
-function flushRun() {
-  clearTimeout(persistT); persistT = null;
-  try { const r = store && run && run.row(cwdNow); if (r) { store.save(r); noteSaved(r); } } catch (_) { /* riwayat tidak boleh mengganggu viewer */ }
-}
-function persistSoon() { if (!store || persistT) return; persistT = setTimeout(flushRun, 1500); }
-process.on('exit', () => { try { flushRun(); } catch (_) {} });
+
+const rows = (project, n) => { try { return store ? store.list(project, n) : []; } catch (_) { return []; } };
+function saveProject(p) { try { const r = store && p.run && p.run.row(p.key); if (r) store.save(r); } catch (_) { /* riwayat tidak boleh mengganggu viewer */ } }
+process.on('exit', () => { try { reg.all().forEach(saveProject); } catch (_) {} });
 ['SIGINT', 'SIGTERM'].forEach((sg) => process.on(sg, () => process.exit(0)));
 
-function startRun(flowKey, opts = {}) {
-  flushRun();
-  run = createRun({ key: cwdNow, flow: flowKey, catalog, usage: { refresh: refreshUsage }, prev: run, backlog: backlogSummary, onChange: (r) => { if (r === run) broadcast(); }, ...opts });
-}
-function ingest(ev) {
-  if (typeof ev.cwd === 'string' && path.isAbsolute(ev.cwd)) cwdNow = ev.cwd;
-  const fk = flowCommand(ev, FLOWS);
-  if (fk || (run && run.rollover(ev))) startRun(fk || 'free'); // perintah flow, sesi baru, atau prompt setelah selesai = run baru
-  const ok = run.apply(ev);
-  if (ok && (ev.hook_event_name || ev.event) === 'Stop') writeTokenFileSoon();
-  return ok;
+// ---------- events.jsonl dengan rotasi ----------
+let logSize = 0;
+try { logSize = fs.statSync(LOG_FILE).size; } catch (_) { /* belum ada */ }
+function logEvent(ev) {
+  const line = JSON.stringify({ ts: Date.now(), ...ev }) + '\n', n = Buffer.byteLength(line);
+  if (logSize + n > LOG_MAX) { try { fs.renameSync(LOG_FILE, LOG_OLD); } catch (_) { /* tetap lanjut menulis */ } logSize = 0; }
+  logSize += n;
+  fs.appendFile(LOG_FILE, line, () => {});
 }
 
 // ---------- token usage / actual model from the Claude Code transcript ----------
@@ -132,7 +107,8 @@ function parseUsage(text, filter, names) {
   if (last) u.ctx = (last.input_tokens || 0) + (last.cache_read_input_tokens || 0) + (last.cache_creation_input_tokens || 0);
   return u;
 }
-const readText = (f) => fs.promises.readFile(f, 'utf8').catch(() => null);
+// [SEC] Semua pembacaan transkrip (refreshUsage, agentUsage, rescanRun) lewat safePath: hanya .jsonl di bawah ~/.claude.
+const readText = async (f) => { const p = await safePath(f); return p ? fs.promises.readFile(p, 'utf8').catch(() => null) : null; };
 
 async function agentUsage(ev, agentId, names) {
   const tp = ev.transcript_path;
@@ -221,14 +197,14 @@ const sameDir = (a, b) => { const f = (x) => path.resolve(String(x || '')).toLow
 async function rescanRun(id) {
   const row = store && store.get(id);
   if (!row) throw Object.assign(new Error('run tidak ada'), { status: 404, code: 'not_found' });
-  if (id === run.id) throw Object.assign(new Error('run live'), { status: 409, code: 'run_live' });
+  if (liveIds().includes(id)) throw Object.assign(new Error('run live'), { status: 409, code: 'run_live' });
   const st = typeof row.state === 'string' ? JSON.parse(row.state) : row.state;
   // Batas atas = akhir run itu (tanpa kelonggaran): agent yang mulai beberapa detik setelahnya milik run berikutnya.
   const from = row.started_at - 1000, to = row.updated_at || Date.now();
   const mains = new Map(), agents = new Map(), segs = [];
   let open = null;
-  if (fs.existsSync(LOG_FILE)) {
-    const rl = readline.createInterface({ input: fs.createReadStream(LOG_FILE, { encoding: 'utf8' }), crlfDelay: Infinity });
+  for (const lf of [LOG_OLD, LOG_FILE]) if (fs.existsSync(lf)) { // log lama (hasil rotasi) lebih dulu
+    const rl = readline.createInterface({ input: fs.createReadStream(lf, { encoding: 'utf8' }), crlfDelay: Infinity });
     for await (const line of rl) {
       const mt = /^\{"ts":(\d+)/.exec(line);
       if (!mt) continue;
@@ -275,174 +251,294 @@ async function rescanRun(id) {
   row.tokens_eq = us.reduce((a, u) => a + eqOf(u), 0); row.tokens_raw = us.reduce((a, u) => a + rawOf(u), 0);
   st.tokensScan = { at: Date.now(), agents: agents.size, analysed: Object.values(byNode).reduce((a, x) => a + x.length, 0), sessions: mains.size };
   store.save({ ...row, state: JSON.stringify(st) });
-  noteSaved(row);
-  writeTokenFile(row.project);
+  writeTokenFile({ key: row.project });
   return st.tokensScan;
 }
 
 const parseJ = (x, d) => { if (x && typeof x === 'object') return x; try { return JSON.parse(x); } catch (_) { return d; } };
-function tokenBuild(project, n = tokenReport.MAX_RUNS) {
-  flushRun();
-  const rows = store ? store.list(project, n) : [];
-  const runs = rows.map((r) => { const full = store.get(r.id) || {}; return { ...r, state: parseJ(full.state, {}), convo: parseJ(full.convo, []) }; });
-  return { rows: rows.length, R: tokenReport.build(runs, project) };
-}
-// Salinan markdown untuk dibaca AI di folder proyek: <proyek>/.flow-viewer/laporan-token.md (folder itu meng-ignore dirinya sendiri).
-// Hanya proyek yang tercatat di riwayat run; nilai dari luar (?project=) tidak pernah dipakai mentah sebagai folder.
-// Peta proyek -> pernah berisi sesi nyata (token > 0); dibangun sekali, diperbarui saat simpan/hapus run.
-let projCache = null;
-function projectMap() {
-  if (!projCache) { projCache = new Map(); for (const r of store.list('', 1000)) if (r.project) projCache.set(r.project, projCache.get(r.project) || r.tokens_raw > 0); }
-  return projCache;
-}
-function noteSaved(r) { if (projCache && r && r.project) projCache.set(r.project, projCache.get(r.project) || r.tokens_raw > 0); }
 const isDir = (p) => { try { return fs.statSync(p).isDirectory(); } catch (_) { return false; } };
+
+// ---------- laporan token (8.1: key hanya dari registry/riwayat hasil resolve(p), tidak pernah dari URL) ----------
+function tokenBuild(p, n = tokenReport.MAX_RUNS) {
+  if (p.run) saveProject(p); // run live ikut terhitung
+  const rs = rows(p.key, n);
+  const runs = rs.map((r) => { const full = store.get(r.id) || {}; return { ...r, state: parseJ(full.state, {}), convo: parseJ(full.convo, []) }; });
+  return { rows: rs.length, R: tokenReport.build(runs, p.key) };
+}
 // Folder sembarang dari event palsu tidak dianggap proyek: wajib docs/ atau .claude/, atau pernah ada sesi bertoken.
 function knownProject(p) {
-  if (typeof p !== 'string' || p === '' || !projectMap().has(p)) return false;
-  return projectMap().get(p) || isDir(path.join(p, 'docs')) || isDir(path.join(p, '.claude'));
+  if (!p || typeof p.key !== 'string' || p.key === '') return false;
+  return isDir(path.join(p.key, 'docs')) || isDir(path.join(p.key, '.claude')) || rows(p.key, 200).some((r) => r.tokens_raw > 0);
 }
-function writeTokenFile(project) {
+// Salinan markdown untuk dibaca AI: <proyek>/.flow-viewer/laporan-token.md. Dilewati diam-diam bila gagal.
+function writeTokenFile(p) {
   try {
-    if (!knownProject(project)) return;
-    const { rows, R } = tokenBuild(project);
-    if (rows) tokenReport.writeCopy(project, tokenReport.markdown(R)); // dilewati tanpa galat bila folder hilang/tak bisa ditulis
+    if (!knownProject(p)) return;
+    const { rows: n, R } = tokenBuild(p);
+    if (n) tokenReport.writeCopy(p.key, tokenReport.markdown(R));
   } catch (_) { /* laporan tidak boleh mengganggu viewer */ }
 }
-let tokenFileAt = 0;
-function writeTokenFileSoon() { const now = Date.now(); if (now - tokenFileAt < 60000) return; tokenFileAt = now; setTimeout(() => writeTokenFile(cwdNow), 3000); }
+const tokenFileAt = new Map();
+function writeTokenFileSoon(p) { const t = Date.now(); if (t - (tokenFileAt.get(p.key) || 0) < 60000) return; tokenFileAt.set(p.key, t); setTimeout(() => writeTokenFile(p), 3000); }
 
-let blCache = { key: '', val: null };
-function backlogSummary() {
-  if (!cwdNow) return null;
-  const f = path.join(cwdNow, 'docs', 'backlog.json');
-  try {
-    const st = fs.statSync(f), key = f + ':' + st.mtimeMs;
-    if (blCache.key === key) return blCache.val;
-    const db = JSON.parse(fs.readFileSync(f, 'utf8')), by = Object.fromEntries(db.items.map((i) => [i.id, i]));
-    const items = db.items.map((i) => {
-      const ready = i.status === 'todo' && (i.needs || []).every((n) => by[n] && by[n].status === 'done');
-      return { id: i.id, title: i.title, type: i.type || '', agent: i.agent || '', status: i.status === 'todo' ? (ready ? 'ready' : 'waiting') : i.status, needs: (i.needs || []).filter((n) => by[n] && by[n].status !== 'done'), owner: !!i.checkpoint, evidence: i.evidence || '', size: i.size || 'm', fase: i.type || 'lain', checkpointQ: i.checkpoint || '' };
-    });
-    const c = (s) => items.filter((i) => i.status === s).length;
-    const parked = items.filter((i) => i.status === 'parked'), live = items.filter((i) => i.status !== 'rejected' && i.status !== 'parked'), W = { s: 1, m: 2, l: 4 }, w = (i) => W[i.size] || 2, wTot = live.reduce((a, i) => a + w(i), 0), wDone = live.filter((i) => i.status === 'done').reduce((a, i) => a + w(i), 0), fase = {};
-    live.forEach((i) => { const f = fase[i.fase] || (fase[i.fase] = { nama: i.fase, total: 0, done: 0 }); f.total++; if (i.status === 'done') f.done++; });
-    const val = { pct: wTot ? Math.round(wDone / wTot * 100) : 0, fase: Object.values(fase), project: db.project || '', total: live.length, parked: parked.map((i) => ({ id: i.id, title: i.title })), done: c('done'), running: c('running'), ready: c('ready'), waiting: c('waiting'), failed: c('failed'), items };
-    blCache = { key, val }; return val;
-  } catch (_) { blCache = { key: '', val: null }; return null; }
+// ---------- snapshot per proyek ----------
+// Blank: proyek tanpa run tersimpan, atau belum ada proyek sama sekali (kompatibel 1.7.1: /state selalu 200).
+function blank(p) {
+  const key = p ? p.key : '';
+  const r = createRun({ key, catalog: catalog.catalogFor(key), project: { id: p ? p.id : '', name: p ? p.name : '(belum ada proyek)', shortPath: p ? p.shortPath : '' } });
+  return { ...r.snapshot(), live: false, attention: [], lastEventAt: p ? p.lastEventAt : 0 };
 }
-function broadcast() {
-  const data = `data: ${JSON.stringify(run.snapshot())}
-
-`;
-  for (const c of clients) c.write(data);
-  persistSoon();
+// Proyek tidak aktif: run tersimpan terakhir, hanya baca, tanpa pemberitahuan (7.2 langkah 3).
+function storedSnapshot(p) {
+  const r = rows(p.key, 1)[0], full = r && store.get(r.id);
+  if (!full) return blank(p);
+  const { details, ...s } = parseJ(full.state, {});
+  return {
+    ...s, project: { id: p.id, name: p.name, shortPath: p.shortPath, path: p.key }, live: false, lastEventAt: p.lastEventAt || r.updated_at,
+    phase: s.finished ? 'finished' : 'idle', attention: [], pending: null, pendings: [],
+    progress: s.progress || { pct: null, label: '' }, tokens: s.tokens || { eq: null, prevEq: null, deltaPct: null, boros: false },
+  };
+}
+function snapshotOf(p) {
+  if (!p.run) return storedSnapshot(p);
+  const s = { ...p.run.snapshot(), lastEventAt: p.lastEventAt };
+  return reg.isActive(p) ? s : { ...s, live: false, attention: [] };
 }
 
-const BUILD = require('./build-id')();
-const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css' };
+// ---------- /projects ----------
+function overview() {
+  const projects = reg.list().filter((p) => p.run).map((p) => {
+    const s = p.run.snapshot(), a = attnSummary(s.attention);
+    return {
+      id: p.id, name: p.name, shortPath: p.shortPath, path: p.key, lastEventAt: p.lastEventAt, active: true, phase: s.phase,
+      running: Object.values(s.nodes).filter((n) => n.status === 'running').map((n) => n.label || n.id),
+      progress: s.progress, tokensEq: s.tokens.eq, attention: a,
+    };
+  });
+  const needs = (x) => x.attention.input + x.attention.failed > 0;
+  projects.sort((a, b) => (needs(b) - needs(a)) || b.lastEventAt - a.lastEventAt);
+  const l = reg.latest();
+  return { latest: l ? l.id : null, projects, inactive: reg.inactive() };
+}
 
+// ---------- siaran ----------
+const write = (c, s) => { try { c.res.write(s); } catch (_) { clients.delete(c); } };
+const timers = new Map(), lastPhase = new Map(), saveTimers = new Map();
+// Tandai proyek berubah: satu siaran trailing per 250 ms per proyek, hanya ke penonton proyek itu (6).
+function dirty(p) {
+  scheduleProjects();
+  if (timers.has(p.key)) return;
+  timers.set(p.key, setTimeout(() => { timers.delete(p.key); fanout(p); }, THROTTLE_MS));
+}
+function fanout(p) {
+  const to = [...clients].filter((c) => {
+    if (c.mode === 'legacy') return reg.latest() === p; // /stream tanpa p: ikut proyek terbaru
+    if (c.mode !== 'p') return false;
+    if (!c.key) { const q = reg.resolve(c.p); if (q && q.key === p.key) c.key = p.key; } // p yang belum ada: kirim begitu muncul
+    return c.key === p.key;
+  });
+  if (to.length) { const data = `data: ${JSON.stringify(snapshotOf(p))}\n\n`; to.forEach((c) => write(c, data)); }
+  persist(p);
+}
+// 4.1: simpan tiap 3 dtk saat berubah, langsung saat fase berubah.
+function persist(p) {
+  const ph = p.run && p.run.phase;
+  if (lastPhase.get(p.key) !== ph) { lastPhase.set(p.key, ph); clearTimeout(saveTimers.get(p.key)); saveTimers.delete(p.key); saveProject(p); return; }
+  if (!saveTimers.has(p.key)) saveTimers.set(p.key, setTimeout(() => { saveTimers.delete(p.key); saveProject(p); }, 3000));
+}
+// event: projects ke semua penonton, maks 1/dtk, hanya bila isinya berubah.
+let projTimer = null, projAt = 0, projLast = '';
+function scheduleProjects() {
+  if (projTimer || !clients.size) return;
+  projTimer = setTimeout(() => {
+    projTimer = null; projAt = Date.now();
+    const s = JSON.stringify(overview());
+    if (s === projLast) return;
+    projLast = s;
+    for (const c of clients) write(c, `event: projects\ndata: ${s}\n\n`);
+  }, Math.max(0, projAt + 1000 - Date.now()));
+}
+
+// ---------- HTTP ----------
 const sendErr = (res, e) => { res.writeHead(e.status, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: e.code, message: e.message })); };
-const server = http.createServer((req, res) => {
-  const url = req.url.split('?')[0];
+const sendJson = (res, status, obj) => { res.writeHead(status, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(obj)); };
+const E = {
+  badP: { status: 400, code: 'bad_project', message: 'Parameter p tidak sah.' },
+  noP: { status: 404, code: 'project_not_found', message: 'Proyek tidak dikenal.' },
+  notLive: { status: 404, code: 'not_live', message: 'Proyek tidak aktif.' },
+  badId: { status: 400, code: 'bad_id', message: 'Parameter id tidak sah.' },
+};
+// ?p= -> { p } (p bisa null: belum ada proyek aktif, tanpa ?p=) atau { err }.
+function pick(q) {
+  const raw = guard.parseP(q.get('p'));
+  if (raw === false) return { err: E.badP };
+  if (raw === null) return { p: reg.latest() };
+  const p = reg.resolve(raw);
+  return p ? { p } : { err: E.noP };
+}
+const runId = (q) => { const n = Number(q.get('id')); return Number.isSafeInteger(n) && n > 0 ? n : 0; };
+const liveIds = () => reg.all().filter((p) => p.run).map((p) => p.run.id);
+
+function handle(req, res) {
+  const [url, qs = ''] = req.url.split('?');
+  const q = new URLSearchParams(qs);
+  for (const [k, v] of Object.entries(guard.SECURITY_HEADERS)) res.setHeader(k, v);
+  res.setHeader('Cache-Control', 'no-store');
   // [SEC] DNS rebinding (Host) dan CSRF (Origin/Sec-Fetch-Site pada POST) untuk semua path.
   const bad = guard.checkRequest(req, PORT);
   if (bad) { req.resume(); return sendErr(res, bad); }
-  if (req.method === 'POST' && url === '/event') {
+  const post = req.method === 'POST';
+
+  if (post && url === '/event') {
     // Form/sendBeacon lintas situs hanya bisa mengirim text/plain tanpa preflight; hook selalu application/json.
     if (!/^application\/json(\s*;|$)/i.test(req.headers['content-type'] || '')) { req.resume(); return sendErr(res, { status: 415, code: 'bad_content_type', message: 'Content-Type wajib application/json.' }); }
-    let body = '';
-    req.on('data', (c) => { body += c; if (body.length > 4e6) req.destroy(); });
-    req.on('end', () => {
+    guard.readBody(req).then((body) => {
+      let ev = null;
+      try { ev = JSON.parse(body); } catch (_) { /* bad_json di bawah */ }
+      if (!ev || typeof ev !== 'object' || Array.isArray(ev)) return sendErr(res, { status: 400, code: 'bad_json', message: 'Isi harus objek JSON.' });
+      logEvent(ev);
       try {
-        const ev = JSON.parse(body);
-        fs.appendFile(LOG_FILE, JSON.stringify({ ts: Date.now(), ...ev }) + '\n', () => {});
-        if (ingest(ev)) broadcast();
-      } catch (_) { /* ignore malformed */ }
-      res.writeHead(204); res.end();
-    });
+        freshAgents = (ev.hook_event_name || ev.event) === 'SessionStart';
+        const p = reg.ingest(ev);
+        if (p) { dirty(p); if ((ev.hook_event_name || ev.event) === 'Stop') writeTokenFileSoon(p); } else scheduleProjects();
+      } catch (e) { console.error('flow-viewer: event gagal diproses:', e && e.message); } finally { freshAgents = false; }
+      res.writeHead(204); res.end(); // hook tidak boleh terblokir oleh galat di sini
+    }).catch((e) => sendErr(res, e && e.status ? e : { status: 400, code: 'bad_json', message: 'Body tidak terbaca.' }));
     return;
   }
-  if (req.method === 'POST' && url === '/reset') {
-    startRun(run.state.flow, { fresh: true }); broadcast(); res.writeHead(204); res.end(); return;
+  if (post && url === '/reset') {
+    const x = pick(q); if (x.err) return sendErr(res, x.err);
+    if (!x.p) return sendErr(res, E.noP);
+    const p = reg.reset(x.p.key); if (!p) return sendErr(res, E.notLive);
+    dirty(p); res.writeHead(204); res.end(); return;
   }
-  if (url === '/report.md') { res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' }); res.end(run.report()); return; }
-  if (url === '/report') {
-    const esc = (t) => t.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+  if (post && url === '/quit') { res.writeHead(200); res.end('bye'); setTimeout(() => process.exit(0), 100); return; }
+  if (post && url === '/history/rescan') {
+    const id = runId(q);
+    if (!id) return sendJson(res, 400, { ok: false, error: 'rescan_failed' });
+    rescanRun(id).then((r) => sendJson(res, 200, { ok: true, ...r }))
+      .catch((err) => sendJson(res, err.status || 400, { ok: false, error: err.code || 'rescan_failed' }));
+    return;
+  }
+  if (post && url === '/history/delete') {
+    const id = runId(q); if (!id) return sendErr(res, E.badId);
+    if (liveIds().includes(id)) return sendErr(res, { status: 409, code: 'run_live', message: 'Run sedang berjalan.' });
+    let found = null;
+    try { found = store && store.get(id); } catch (_) { /* dianggap tidak ada */ }
+    if (!found) return sendErr(res, { status: 404, code: 'not_found', message: 'Run tidak ada.' });
+    try { store.remove(id); } catch (_) { return sendErr(res, { status: 500, code: 'internal', message: 'Gagal menghapus.' }); }
+    for (const p of reg.all()) if (p.run) { p.run.dropCompare(id); dirty(p); } // 7.5 butir 6: pembanding hilang -> siaran ulang
+    res.writeHead(204); res.end(); return;
+  }
+  if (req.method !== 'GET') return sendErr(res, { status: 404, code: 'not_found', message: 'Tidak ada.' });
+
+  if (url === '/health') return sendJson(res, 200, { ok: true, build: BUILD, version: VERSION });
+  if (url === '/projects') return sendJson(res, 200, overview());
+  if (url === '/state') {
+    const x = pick(q); if (x.err) return sendErr(res, x.err);
+    return sendJson(res, 200, x.p ? snapshotOf(x.p) : blank(null));
+  }
+  if (url === '/stream') {
+    const raw = guard.parseP(q.get('p'));
+    if (raw === false) return sendErr(res, E.badP);
+    if (clients.size >= MAX_SSE) return sendErr(res, { status: 503, code: 'too_many_streams', message: 'Terlalu banyak tab terbuka.' });
+    const c = { res, mode: q.get('list') === '1' ? 'list' : raw ? 'p' : 'legacy', p: raw, key: '' };
+    res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', Connection: 'keep-alive' });
+    clients.add(c);
+    res.on('close', () => clients.delete(c));
+    const p = c.mode === 'p' ? reg.resolve(raw) : c.mode === 'legacy' ? reg.latest() : null;
+    if (c.mode === 'p' && p) c.key = p.key;
+    if (p || c.mode === 'legacy') write(c, `data: ${JSON.stringify(p ? snapshotOf(p) : blank(null))}\n\n`);
+    write(c, `event: projects\ndata: ${JSON.stringify(overview())}\n\n`);
+    return;
+  }
+  if (url === '/detail') {
+    const x = pick(q); if (x.err) return sendErr(res, x.err);
+    const raw = q.get('id'), id = raw === null ? MAIN : guard.parseNodeId(raw);
+    if (!id) return sendErr(res, E.badId);
+    if (!x.p) return sendErr(res, E.noP);
+    if (!x.p.run) return sendErr(res, E.notLive);
+    return sendJson(res, 200, x.p.run.detail(id));
+  }
+  if (url === '/report.md' || url === '/report') {
+    const x = pick(q); if (x.err) return sendErr(res, x.err);
+    if (!x.p) return sendErr(res, E.noP);
+    if (!x.p.run) return sendErr(res, E.notLive);
+    const text = x.p.run.report();
+    if (url === '/report.md') { res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' }); res.end(text); return; }
+    const esc = (t) => t.replace(/[&<>]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[ch]));
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-    res.end(`<!doctype html><meta charset="utf-8"><meta http-equiv="refresh" content="4"><title>Laporan Flow Viewer</title><body style="font:14px/1.5 ui-monospace,Consolas,monospace;background:#fff;color:#111;padding:16px"><pre style="white-space:pre-wrap;margin:0">${esc(run.report())}</pre></body>`);
+    res.end(`<!doctype html><meta charset="utf-8"><meta http-equiv="refresh" content="4"><title>Laporan Flow Viewer</title><body style="font:14px/1.5 ui-monospace,Consolas,monospace;background:#fff;color:#111;padding:16px"><pre style="white-space:pre-wrap;margin:0">${esc(text)}</pre></body>`);
     return;
   }
   if (url === '/report/tokens.md' || url === '/report/tokens.json') {
-    const q = new URLSearchParams(req.url.split('?')[1] || '');
-    const project = q.get('project');
-    if (!knownProject(project)) { res.writeHead(400, { 'Content-Type': 'text/plain; charset=utf-8' }); res.end('Proyek tidak dikenal. Pilih proyek dari riwayat run.'); return; }
+    // [SEC] p wajib (tanpa p tidak pernah jatuh ke proyek lain); folder dari registry, bukan dari URL.
+    const raw = guard.parseP(q.get('p'));
+    if (!raw) return sendErr(res, E.badP);
+    const p = reg.resolve(raw);
+    if (p && p.run) saveProject(p);
+    if (!p || !knownProject(p)) return sendErr(res, E.noP);
     try {
-      const { rows, R } = tokenBuild(project, Math.min(tokenReport.MAX_RUNS, Number(q.get('n')) || tokenReport.MAX_RUNS));
-      if (rows && q.get('write') !== '0') writeTokenFile(project);
-      if (url.endsWith('.json')) { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(R)); }
-      else { res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' }); res.end(tokenReport.markdown(R)); }
-    } catch (_) { res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' }); res.end('Laporan gagal dibuat.'); } // err.message bisa memuat path lokal
-    return;
-  }
-  if (req.method === 'POST' && url === '/history/rescan') {
-    const id = Number(new URLSearchParams(req.url.split('?')[1] || '').get('id'));
-    rescanRun(id).then((r) => { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: true, ...r })); })
-      .catch((err) => { const status = err.status || 400; res.writeHead(status, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: false, error: err.code || 'rescan_failed' })); });
+      const { rows: n, R } = tokenBuild(p, Math.min(tokenReport.MAX_RUNS, Number(q.get('n')) || tokenReport.MAX_RUNS));
+      if (!n) return sendErr(res, { status: 404, code: 'no_runs', message: 'Belum ada run untuk dilaporkan.' });
+      if (q.get('write') !== '0' && !q.get('n')) tokenReport.writeCopy(p.key, tokenReport.markdown(R));
+      if (url.endsWith('.json')) return sendJson(res, 200, { ...R, project: { id: p.id, name: p.name }, unanalyzed: R.missing });
+      res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' }); res.end(tokenReport.markdown(R));
+    } catch (_) { sendErr(res, { status: 500, code: 'report_failed', message: 'Laporan gagal dibuat.' }); } // err.message bisa memuat path lokal
     return;
   }
   if (url === '/history') {
-    const q = new URLSearchParams(req.url.split('?')[1] || '');
-    let rows = [];
-    try { if (store) rows = store.list(q.get('all') === '1' ? '' : cwdNow, 60); } catch (_) {}
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ kind: store ? store.kind : 'none', current: cwdNow || '', liveId: run.id, rows }));
-    return;
+    const x = pick(q); if (x.err) return sendErr(res, x.err);
+    const p = x.p, all = q.get('all') === '1';
+    const list = rows(all || !p ? '' : p.key, 60).map((r) => {
+      let prev = null;
+      try { prev = store.previous(r.project, r.flow, r.id, r.agents_ran > 0); } catch (_) { /* tanpa pembanding */ }
+      const pe = prev && prev.tokens_eq > 0 ? prev.tokens_eq : null;
+      return { ...r, projectId: reg.idFor(r.project), deltaPct: pe && r.tokens_eq > 0 ? Math.round((r.tokens_eq - pe) / pe * 100) : null, boros: !!pe && r.tokens_eq > BOROS * pe };
+    });
+    let groups = [];
+    try { groups = (store ? store.projects() : []).slice(0, 50).map((g) => ({ projectId: reg.idFor(g.project), name: path.basename(g.project) || g.project, count: g.count })); } catch (_) { /* tanpa grup */ }
+    return sendJson(res, 200, { kind: store ? store.kind : 'none', current: p ? p.key : '', liveIds: liveIds(), liveId: p && p.run ? p.run.id : null, groups, rows: list });
   }
   if (url === '/history/get') {
-    const id = Number(new URLSearchParams(req.url.split('?')[1] || '').get('id'));
+    const id = runId(q); if (!id) return sendErr(res, E.badId);
+    const live = reg.all().find((p) => p.run && p.run.id === id);
+    if (live) saveProject(live);
     let r = null;
-    try { if (store && id === run.id) flushRun(); r = store && id ? store.get(id) : null; } catch (_) {}
-    if (!r) { res.writeHead(404); res.end('{}'); return; }
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ id: r.id, project: r.project, state: JSON.parse(r.state), convo: JSON.parse(r.convo || '[]') }));
-    return;
+    try { r = store && store.get(id); } catch (_) { /* dianggap tidak ada */ }
+    if (!r) return sendErr(res, { status: 404, code: 'not_found', message: 'Run tidak ada.' });
+    return sendJson(res, 200, { id: r.id, project: r.project, state: parseJ(r.state, {}), convo: parseJ(r.convo, []) });
   }
-  if (req.method === 'POST' && url === '/history/delete') {
-    const id = Number(new URLSearchParams(req.url.split('?')[1] || '').get('id'));
-    try { if (store && id && id !== run.id) { store.remove(id); projCache = null; } } catch (_) {}
-    res.writeHead(204); res.end(); return;
+  const sp = guard.staticPath(url === '/' ? '/index.html' : url);
+  if (sp) {
+    let ok = false;
+    try { ok = fs.statSync(sp.file).isFile(); } catch (_) { /* 404 di bawah */ }
+    if (ok) { res.writeHead(200, { 'Content-Type': sp.type }); fs.createReadStream(sp.file).on('error', () => res.destroy()).pipe(res); return; }
   }
-  if (url === '/detail') {
-    const id = new URLSearchParams(req.url.split('?')[1] || '').get('id') || MAIN;
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify(run.detail(id)));
-    return;
+  sendErr(res, { status: 404, code: 'not_found', message: 'Tidak ada.' });
+}
+
+const BUILD = require('./build-id')();
+const server = http.createServer((req, res) => {
+  try { handle(req, res); } catch (e) {
+    console.error('flow-viewer:', e && e.stack); // detail hanya di log, tidak ke klien
+    if (!res.headersSent) sendErr(res, { status: 500, code: 'internal', message: 'Galat server.' }); else res.end();
   }
-  if (url === '/stream') {
-    res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', Connection: 'keep-alive' });
-    res.write(`data: ${JSON.stringify(run.snapshot())}\n\n`);
-    clients.add(res);
-    req.on('close', () => clients.delete(res));
-    return;
-  }
-  if (url === '/state') { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(run.snapshot())); return; }
-  if (url === '/health') { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: true, build: BUILD })); return; }
-  if (req.method === 'POST' && url === '/quit') { res.writeHead(200); res.end('bye'); setTimeout(() => process.exit(0), 100); return; }
-  if (req.method === 'GET') {
-    const file = url === '/' ? 'index.html' : path.normalize(url).replace(/^([/\\]|\.\.)+/g, '');
-    const full = path.join(PUBLIC, file);
-    if (full.startsWith(PUBLIC) && fs.existsSync(full) && fs.statSync(full).isFile()) {
-      res.writeHead(200, { 'Content-Type': MIME[path.extname(full)] || 'application/octet-stream', 'Cache-Control': 'no-store' });
-      fs.createReadStream(full).pipe(res); return;
-    }
-  }
-  res.writeHead(404); res.end('not found');
 });
 
-startRun('free');
-setInterval(() => { for (const c of clients) c.write(': ping\n\n'); }, 20000);
-setInterval(() => { if (run && run.tick()) { persistSoon(); broadcast(); } }, 500).unref();
+setInterval(() => { for (const c of clients) write(c, ': ping\n\n'); }, 20000);
+// Fase run ditentukan jam (2 dtk sepi, 5.1): periksa tiap 0,5 dtk.
+setInterval(() => { for (const p of reg.list()) if (p.run && p.run.tick()) dirty(p); }, 500).unref();
+// Sapuan 30 dtk: tandai proyek kotor bila ada agent baru melewati batas diam (5.3), buang proyek lama dari memori.
+const quietSig = new Map();
+setInterval(() => {
+  for (const p of reg.list()) {
+    if (!p.run) continue;
+    const sig = Object.values(p.run.snapshot().nodes).filter((n) => n.quiet).map((n) => n.id).join(',');
+    if (sig !== (quietSig.get(p.key) || '')) { quietSig.set(p.key, sig); dirty(p); }
+  }
+  reg.sweep(); scheduleProjects();
+}, 30000).unref();
 server.on('error', (err) => {
   if (err.code === 'EADDRINUSE') { console.error(`flow-viewer: port ${PORT} sudah dipakai (mungkin sudah jalan)`); process.exit(0); }
   throw err;

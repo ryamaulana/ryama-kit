@@ -58,3 +58,15 @@ test('input kosong atau rusak tidak melempar', () => {
   assert.deepStrictEqual(attention(), []);
   assert.deepStrictEqual(attention({ pendings: [null, {}], backlog: [null, {}], nodes: { x: null } }), []);
 });
+
+const { summarize } = require('../../server/attention');
+test('summarize: hitung Butuh input, Gagal, Selesai; items hanya input dan gagal, maks 5', () => {
+  const it = (kind, n) => ({ key: `${kind}:${n}`, kind, agent: 'a', text: `t${n}`, options: ['x'], at: n });
+  const items = [it('question', 1), it('permission', 2), it('decision', 3), it('failed', 4), it('done', 5), it('question', 6), it('question', 7), it('question', 8)];
+  const s = summarize(items);
+  assert.deepStrictEqual({ input: s.input, failed: s.failed, done: s.done }, { input: 6, failed: 1, done: 1 });
+  assert.strictEqual(s.items.length, 5);
+  assert.ok(s.items.every((x) => ['question', 'permission', 'decision', 'failed'].includes(x.kind)));
+  assert.deepStrictEqual(Object.keys(s.items[0]).sort(), ['key', 'kind', 'text']);
+  assert.deepStrictEqual(summarize(undefined), { input: 0, failed: 0, done: 0, items: [] });
+});
