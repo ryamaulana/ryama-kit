@@ -75,8 +75,8 @@ svg#ed{position:absolute;left:0;top:0;pointer-events:none;overflow:visible}
 .ch{font-size:11.5px;padding:2px 9px;border-radius:99px;background:var(--waitbg);color:var(--ink2);white-space:nowrap}
 .ch.w{background:var(--warnbg);color:var(--warn)}.ch.ok{background:var(--okbg);color:var(--ok)}.ch.acc,.ch.m{background:var(--accbg);color:var(--acc)}.ch.bad{background:var(--badbg);color:var(--bad)}
 path.live{stroke-dasharray:5 5;animation:dash 1s linear infinite;stroke:var(--acc)!important}
-.sm{position:absolute;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px;box-shadow:var(--shadow);cursor:pointer}
-.sm:hover{border-color:var(--ink3)}
+.sm:not(.btn){position:absolute;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px;box-shadow:var(--shadow);cursor:pointer}
+.sm:not(.btn):hover{border-color:var(--ink3)}
 .smh{font-size:10.5px;text-transform:uppercase;color:var(--ink3);font-weight:600;margin-bottom:6px}
 .smr{display:flex;gap:10px;align-items:flex-start;padding:6px 0}.smr+.smr{border-top:1px solid var(--line)}
 .smr .oc{width:30px;height:30px;border-radius:9px;background:var(--waitbg);display:grid;place-items:center;color:var(--ink2);flex:none}

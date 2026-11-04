@@ -161,3 +161,34 @@ test('R1c Laporan token di kepala Riwayat membuka laporan berjudul proyek Riwaya
   assert.ok(t.includes(proj), 'laporan memuat nama proyek Riwayat "' + proj + '", dapat: ' + t.slice(0, 120));
   await p.close();
 });
+
+// R1 dengan klik pointer nyata: tombol Buka tidak boleh tertutup elemen lain di tiap lebar.
+for (const w of [1440, 1200, 900]) {
+  test('R1-klik-nyata @' + w + ': tombol Buka di Riwayat terjangkau pointer dan membuka run', async () => {
+    s.set('done');
+    const p = await b.newPage({ viewport: { width: w, height: 900 } });
+    // hentikan mock SSE setelah muat: simpan EventSource lalu tutup agar panel tidak dirender ulang
+    await p.addInitScript(() => {
+      const E = window.EventSource; window.__es = [];
+      window.EventSource = class extends E { constructor(...a) { super(...a); window.__es.push(this); } };
+    });
+    await p.goto('http://127.0.0.1:' + s.port + '/');
+    await p.waitForSelector('.node');
+    await p.click('#rail button[data-v=history]');
+    await p.waitForSelector('.ck[data-run="1"] [data-act=hopen]');
+    await p.evaluate(() => window.__es.forEach((e) => e.close()));
+    const btn = p.locator('.ck[data-run="1"] [data-act=hopen]');
+    await btn.scrollIntoViewIfNeeded();
+    const hit = await btn.evaluate((el) => {
+      const r = el.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2;
+      const top = document.elementFromPoint(x, y);
+      return { ok: top === el || el.contains(top), top: top ? top.tagName + '[' + (top.dataset.act || top.className) + ']' : null };
+    });
+    assert.equal(hit.ok, true, 'Buka tertutup elemen lain di titik klik: ' + hit.top);
+    const bx = await btn.boundingBox();
+    await p.mouse.click(bx.x + bx.width / 2, bx.y + bx.height / 2);
+    await p.locator('#histbar b', { hasText: 'Melihat riwayat' }).waitFor({ state: 'visible', timeout: 3000 });
+    assert.equal(await p.locator('#modal.on').count(), 0, 'Buka tidak boleh membuka laporan');
+    await p.close();
+  });
+}

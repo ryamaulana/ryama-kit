@@ -319,7 +319,7 @@
       "finishedAt": "2026-11-04T00:38:59.509Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "t01-fondasi",
         "k-riwayat-200"
@@ -344,7 +344,11 @@
       "value": "high",
       "size": "m",
       "done": "store.js: previous(), projects(), prune 200 run per proyek (run proyek lain tidak tersentuh; tanpa batas total lintas proyek), indeks (project, flow, started_at), runId monoton. Uji unit SQLite dan JSON (FLOW_VIEWER_STORE=json): proyek A 201 run -> A tinggal 200, B utuh. Hapus run berjalan ditolak.",
-      "notes": "Selaras KEPUTUSAN butir 2 dan PRD F8: batas 1.000 total dihapus dari definisi selesai."
+      "notes": "Selaras KEPUTUSAN butir 2 dan PRD F8: batas 1.000 total dihapus dari definisi selesai.",
+      "attempts": 1,
+      "startedAt": "2026-11-04T01:20:45.448Z",
+      "evidence": "store.test.js pass, SQLite dan JSON: A 201->200, B utuh, hapus run berjalan ditolak; 16/16 lulus di 3 file tes",
+      "finishedAt": "2026-11-04T01:22:09.057Z"
     },
     {
       "status": "todo",
@@ -2702,7 +2706,76 @@
       "startedAt": "2026-11-04T00:47:59.182Z",
       "evidence": "node --test test/unit + test/http: 78 tes, 78 lulus, 0 gagal; tes baru test/http/security.http.test.js (7 tes, 5 gagal sebelum perbaikan). Terbuka: 415 belum di ARCHITECTURE.md, /history/rescan masih kirim err.message, symlink file tidak diuji di Windows",
       "finishedAt": "2026-11-04T00:51:14.040Z"
+    },
+    {
+      "id": "qa-r1-klik-nyata",
+      "title": "Uji ulang R1 dengan klik nyata: tombol Buka di Riwayat tidak tertutup elemen lain di semua lebar",
+      "type": "qa",
+      "agent": "qa",
+      "status": "done",
+      "needs": [
+        "fix-riwayat-laporan-baris",
+        "fix-sm-selektor-tombol"
+      ],
+      "criteria": [],
+      "context": [
+        "docs/UX.md#8. Alur utama"
+      ],
+      "value": "urgent",
+      "size": "s",
+      "done": "Tes R1 memakai klik pointer nyata + elementFromPoint di 1440/1200/900; mock SSE dihentikan saat tes; uji balik dengan mengembalikan commit perbaikan 3716beb (bagian Riwayat) membuat tes gagal",
+      "slice": "bug-laporan",
+      "notes": "Asal: qa-kunci-riwayat-buka-r1 memakai dispatchEvent, tidak bisa menangkap tumpang tindih",
+      "attempts": 2,
+      "startedAt": "2026-11-04T01:14:24.082Z",
+      "lastFailure": "Tes R1-klik-nyata ditulis dan gagal 3/3 di kode sekarang: .sm{position:absolute} (app.css:78) mengenai button.btn.sm hscan sehingga menimpa Buka. Perlu perbaikan fe lalu jalankan ulang.",
+      "evidence": "ui.test.mjs 29/29 lulus, R1-klik-nyata 3/3 (1440/1200/900). Uji balik: sebelum fix app.css .sm tes gagal 3/3 (BUTTON[hscan] menutup Buka); balik 3716beb history.js menggagalkan R1 dan R1c",
+      "finishedAt": "2026-11-04T01:20:34.314Z"
+    },
+    {
+      "id": "sec-sisa-host-origin",
+      "title": "Sisa pengetatan server: kode 415 di ARCHITECTURE, /history/rescan tanpa pesan galat mentah, uji symlink di Windows",
+      "type": "be",
+      "agent": "be",
+      "status": "done",
+      "needs": [
+        "fix-sec-laporan-host-origin"
+      ],
+      "criteria": [],
+      "context": [
+        "docs/ARCHITECTURE.md#5"
+      ],
+      "value": "high",
+      "size": "s",
+      "done": "ARCHITECTURE mencatat 415; rescan mengirim kode galat tanpa err.message; tes symlink jalan atau dicatat tidak didukung di Windows",
+      "slice": "server",
+      "notes": "Asal: catatan Terbuka fix-sec-laporan-host-origin",
+      "attempts": 1,
+      "startedAt": "2026-11-04T01:22:23.855Z",
+      "evidence": "security.http.test.js 8/8 lulus; ARCHITECTURE catat 415; rescan kode galat tanpa err.message; tes junction lulus",
+      "finishedAt": "2026-11-04T01:23:08.177Z"
+    },
+    {
+      "id": "fix-sm-selektor-tombol",
+      "title": "Tombol Analisis di Riwayat tidak lagi menimpa tombol Buka (perbaiki selektor CSS .sm)",
+      "type": "fe",
+      "agent": "fe",
+      "status": "done",
+      "needs": [],
+      "criteria": [],
+      "context": [
+        "server/public/css/app.css"
+      ],
+      "value": "urgent",
+      "size": "s",
+      "done": "Selektor .sm (app.css:78) tidak lagi mengenai button.btn.sm; node --test --test-name-pattern=\"R1-klik\" test/ui/ui.test.mjs lulus di 1440/1200/900 (playwright via junction node_modules ke skills/ui-craft/node_modules)",
+      "slice": "bug-laporan",
+      "notes": "Asal: qa-r1-klik-nyata gagal. Hanya CSS selektor (persempit .sm ke kartu minimap atau ganti nama kelas ukuran tombol); bukan keputusan visual",
+      "attempts": 1,
+      "startedAt": "2026-11-04T01:13:45.997Z",
+      "evidence": "app.css:78-79 .sm:not(.btn); node --test R1-klik 3/3 lulus (1440/1200/900)",
+      "finishedAt": "2026-11-04T01:14:09.632Z"
     }
   ],
-  "updatedAt": "2026-11-04T00:51:14.042Z"
+  "updatedAt": "2026-11-04T01:23:08.179Z"
 }

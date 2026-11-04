@@ -220,8 +220,8 @@ const sameDir = (a, b) => { const f = (x) => path.resolve(String(x || '')).toLow
 // Analisis ulang run dari riwayat: path transkrip dan id agent diambil dari events.jsonl dalam rentang waktu run itu.
 async function rescanRun(id) {
   const row = store && store.get(id);
-  if (!row) throw new Error('run tidak ada');
-  if (id === run.id) throw new Error('run yang sedang berjalan dihitung langsung dari hook');
+  if (!row) throw Object.assign(new Error('run tidak ada'), { status: 404, code: 'not_found' });
+  if (id === run.id) throw Object.assign(new Error('run live'), { status: 409, code: 'run_live' });
   const st = typeof row.state === 'string' ? JSON.parse(row.state) : row.state;
   // Batas atas = akhir run itu (tanpa kelonggaran): agent yang mulai beberapa detik setelahnya milik run berikutnya.
   const from = row.started_at - 1000, to = row.updated_at || Date.now();
@@ -398,7 +398,7 @@ const server = http.createServer((req, res) => {
   if (req.method === 'POST' && url === '/history/rescan') {
     const id = Number(new URLSearchParams(req.url.split('?')[1] || '').get('id'));
     rescanRun(id).then((r) => { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: true, ...r })); })
-      .catch((err) => { res.writeHead(400, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: false, error: err.message })); });
+      .catch((err) => { const status = err.status || 400; res.writeHead(status, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: false, error: err.code || 'rescan_failed' })); });
     return;
   }
   if (url === '/history') {

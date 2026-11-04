@@ -106,3 +106,9 @@ test('Junction: .flow-viewer yang menunjuk ke luar folder proyek tidak ditulisi'
   assert.deepStrictEqual(fs.readdirSync(outside), []);
   assert.ok(fs.existsSync(path.join(projDocs, '.flow-viewer', 'laporan-token.md')), 'folder biasa tetap ditulisi');
 });
+
+test('POST /history/rescan: galat hanya berupa kode, tanpa pesan mentah', async () => {
+  const r = await req('POST', '/history/rescan?id=99999', { host: H, 'content-type': 'application/json' });
+  assert.strictEqual(r.status, 404);
+  assert.deepStrictEqual(JSON.parse(r.text), { ok: false, error: 'not_found' });
+});
