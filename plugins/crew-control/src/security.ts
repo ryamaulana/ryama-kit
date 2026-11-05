@@ -55,13 +55,17 @@ export const CSP =
   "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; frame-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'self'";
 
 /**
- * Bila daftar diisi dan Host *.ts.net: Tailscale-User-Login harus ada di daftar dan permintaan datang dari loopback
- * (tailscale serve memproksi dari localhost; peer tailnet yang langsung ke IP Tailscale bisa memalsukan header).
+ * Bila daftar diisi: peer non-loopback ditolak (header bisa dipalsukan, termasuk Host 127.0.0.1 dari peer tailnet);
+ * peer loopback dengan Host loopback diterima (laptop sendiri); Host lain (*.ts.net, IP Tailscale, dll.)
+ * wajib Tailscale-User-Login yang terdaftar (tailscale serve memproksi dari localhost).
  */
 export function isAllowedTailscaleUser(hostHeader: string | undefined, login: string | undefined, peer: string | undefined, users: string[]): boolean {
-  if (!users.length || !hostHeader || !hostnameOf(hostHeader).endsWith('.ts.net')) return true;
+  if (!users.length) return true;
+  if (!isLoopback(peer)) return false;
+  const h = hostHeader ? hostnameOf(hostHeader) : '';
+  if (h === 'localhost' || h === '127.0.0.1' || h === '::1') return true;
   const l = (login ?? '').trim().toLowerCase();
-  return !!l && isLoopback(peer) && users.some((u) => u.trim().toLowerCase() === l);
+  return !!l && users.some((u) => u.trim().toLowerCase() === l);
 }
 
 /** Jendela bergeser per kunci. Mengembalikan false bila kunci sudah mencapai `max` dalam `windowMs` terakhir. */

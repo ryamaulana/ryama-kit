@@ -918,7 +918,7 @@
       "finishedAt": "2026-11-05T02:27:41.101Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "lp07-ui-chat",
         "ch01-pesan-jawab",
@@ -942,10 +942,14 @@
       "value": "high",
       "size": "m",
       "done": "ChatContainer: pertanyaan tunggal ketuk-langsung-kirim (T3 = 2 langkah), multi/Lainnya + Kirim jawaban, Enter kirim dan Shift+Enter baris baru, pesan queued, 409 already_answered tampil \"sudah dijawab\", banner Baca saja dengan tautan ke run terakhir, teks yang ditolak tidak hilang; fokus keyboard; tes lib answers.",
-      "notes": "[Fase 1]"
+      "notes": "[Fase 1]",
+      "attempts": 1,
+      "startedAt": "2026-11-05T02:39:44.876Z",
+      "evidence": "typecheck bersih; test/answers.test.ts 4 lulus; npm test 212 lulus; build berhasil; file answers.ts, ChatContainer.tsx ada. Belum dicek browser.",
+      "finishedAt": "2026-11-05T02:42:09.149Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "ch04-fe-chat",
         "ch02-izin-aturan",
@@ -971,7 +975,11 @@
       "value": "high",
       "size": "m",
       "done": "Setujui = 2 langkah (T4), Tolak membuka kotak alasan fokus otomatis dan Enter mengirim (T4b = 4 langkah), Selalu setujui + pesan sistem dengan Batalkan (DELETE aturan), rule_not_allowed tampil sebagai pesan jelas; tes. | Bar atas dan pesan sistem menampilkan alasan + Lanjutkan untuk failed/disconnected, jam reset untuk limit_paused (info, bukan masalah); tes lib dan screenshot.",
-      "notes": "[Fase 1] Digabung dari: ll05-fe-lanjutkan."
+      "notes": "[Fase 1] Digabung dari: ll05-fe-lanjutkan.",
+      "attempts": 1,
+      "startedAt": "2026-11-05T02:43:44.171Z",
+      "evidence": "typecheck bersih; npm test 213 lulus 0 gagal; build berhasil. Screenshot BELUM diambil (kriteria screenshot belum terpenuhi), diparkir.",
+      "finishedAt": "2026-11-05T02:45:43.934Z"
     },
     {
       "status": "done",
@@ -1116,7 +1124,7 @@
       "finishedAt": "2026-11-05T02:29:00.302Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "rb06-fe-run-baru",
         "pb03-fe-daftar",
@@ -1134,10 +1142,14 @@
       "value": "high",
       "size": "s",
       "done": "web/index.html, app.js, lib.js dihapus; server hanya melayani web/dist; tes yang merujuk web lama dipindah; npm test, typecheck, build bersih.",
-      "notes": "[Fase 1]"
+      "notes": "[Fase 1]",
+      "attempts": 1,
+      "startedAt": "2026-11-05T02:42:09.320Z",
+      "evidence": "web/app.js, lib.js dihapus; typecheck bersih; npm test 207 lulus 0 gagal; build berhasil (web/dist/index.html)",
+      "finishedAt": "2026-11-05T02:43:40.637Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "ch05-fe-izin",
         "pb03-fe-daftar",
@@ -1159,7 +1171,11 @@
       "size": "m",
       "done": "Judul tab menampilkan jumlah \"butuh kamu\" dan nama proyek; bunyi berbunyi sekali per pemicu (tidak diulang, berhenti setelah dijawab); tombol bunyi mati/hidup diingat; tes unit logika pemicu lulus; push dan notifikasi desktop tidak dibuat (Fase 2).",
       "notes": "[Fase 1] Item baru Fase 1 (F6).",
-      "id": "nt01-fe-judul-bunyi"
+      "id": "nt01-fe-judul-bunyi",
+      "attempts": 1,
+      "startedAt": "2026-11-05T02:49:23.244Z",
+      "evidence": "npm test 217 lulus 0 gagal (3 tes baru notify); typecheck bersih; lib notify.ts + hook useNotify.ts. Tombol bunyi belum ada UI-nya (diparkir); belum dicoba di browser",
+      "finishedAt": "2026-11-05T02:50:45.576Z"
     },
     {
       "status": "todo",
@@ -1202,7 +1218,7 @@
       "id": "qa-fase1"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "rb04-api-mulai-run",
         "rb02-folder-proyek",
@@ -1227,7 +1243,11 @@
       "size": "m",
       "done": "Laporan temuan per keparahan untuk kode Fase 1 (batas folder kerja, hanya 127.0.0.1, izin dan aturan Selalu setujui, teks agent ditampilkan aman, rahasia tidak tersimpan) termasuk jaringan (pengguna Tailscale, CSP, batas laju; sc01-jaringan) dan langkah tailscale serve di panduan; temuan medium ke atas jadi item urgent.",
       "notes": "[Fase 1] Pengganti sc02 (satu cyber per fase). Mencakup review-kode, sc01-jaringan, dan panduan tailscale serve (ditarik dari Fase 2 oleh pemilik 2026-11-05). Tampilan HP khusus tetap Fase 2.",
-      "id": "cyber-fase1"
+      "id": "cyber-fase1",
+      "attempts": 1,
+      "startedAt": "2026-11-05T02:45:44.017Z",
+      "evidence": "docs/bukti/cyber-fase1.md: PASS, 0 critical/high, 2 medium (M1 security.ts:61 daftar Tailscale lolos via IP; M2 policy.ts izin otomatis), 5 low; npm audit 0 vuln; panduan tailscale serve ada di README bagian 4",
+      "finishedAt": "2026-11-05T02:46:50.100Z"
     },
     {
       "id": "f08-kit-backlog-milestone",
@@ -2771,7 +2791,129 @@
       "value": "mid",
       "size": "m",
       "notes": "asal: ll03-limit-jadwal; limitResetAt disimpan lewat cast; resume manual melanjutkan lebih awal"
+    },
+    {
+      "id": "ch04-readonly-link",
+      "title": "Banner Baca saja: tautan ke run terakhir di dalam banner",
+      "type": "ui",
+      "agent": "ui-designer",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: ch04-fe-chat; prop readOnly hanya string, Link dirender di bawah ChatPanel"
+    },
+    {
+      "id": "chat-teks-agent-markdown",
+      "title": "Chat: teks agent markdown dengan tombol Salin, pesan sistem batch/limit/bad/rule",
+      "type": "fe",
+      "agent": "fe",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: ch04-fe-chat; terbuka di laporan agent"
+    },
+    {
+      "id": "preview-url-docs",
+      "title": "Betulkan URL pratinjau komponen di KOMPONEN.md dan DESIGN.md (web/preview.html)",
+      "type": "ui",
+      "agent": "ui-designer",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: hapus-web-lama"
+    },
+    {
+      "id": "ch05-screenshot",
+      "title": "Screenshot kartu izin dan tampilan Gagal/Terputus/Jeda limit di browser (T4 2 langkah, T4b 4 langkah)",
+      "type": "qa",
+      "agent": "qa",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: ch05-fe-izin; juga alwaysRule belum diisi (kontrak Message tanpa pola), alasan panjang di TopBar terpotong 80 karakter"
+    },
+    {
+      "id": "sec-m1-tailscale-host",
+      "title": "Daftar pengguna Tailscale dicek untuk semua Host non-loopback (temuan M1)",
+      "type": "be",
+      "agent": "be",
+      "status": "done",
+      "needs": [],
+      "criteria": [],
+      "context": [
+        "docs/bukti/cyber-fase1.md#M1",
+        "docs/ARCHITECTURE.md#[SEC]",
+        "src/security.ts"
+      ],
+      "value": "urgent",
+      "size": "s",
+      "notes": "asal: cyber-fase1 M1 medium, src/security.ts:61. Tambah catatan M1 di README bagian 4.",
+      "done": "Tes di tests untuk isAllowedTailscaleUser: Host IP Tailscale (100.x) dari pengguna di luar CREW_TAILSCALE_USERS ditolak; tanpa header Tailscale-User-Login hanya diterima dari peer loopback; semua tes lulus.",
+      "attempts": 1,
+      "startedAt": "2026-11-05T02:47:14.701Z",
+      "evidence": "npm test 214 lulus 0 gagal (8 asersi baru isAllowedTailscaleUser); typecheck bersih; catatan M1 di README bagian 4",
+      "finishedAt": "2026-11-05T02:48:29.815Z"
+    },
+    {
+      "id": "sec-m2-izin-otomatis",
+      "title": "Catat risiko izin otomatis A3 di README (temuan M2, terima risiko laptop sendiri)",
+      "type": "be",
+      "agent": "be",
+      "status": "done",
+      "needs": [],
+      "criteria": [],
+      "context": [
+        "docs/bukti/cyber-fase1.md#M2",
+        "README.md",
+        "src/policy.ts"
+      ],
+      "value": "urgent",
+      "size": "s",
+      "notes": "asal: cyber-fase1 M2 medium; jalur terkecil sesuai rekomendasi laporan, tanpa ubah kode.",
+      "done": "README memuat bagian risiko A3 (path POSIX absolut, git -C push, node -e, symlink tidak ditahan; hanya untuk laptop sendiri); grep README menemukan bagian itu; tes yang ada tetap lulus.",
+      "attempts": 1,
+      "startedAt": "2026-11-05T02:48:29.861Z",
+      "evidence": "README.md baris 57 bagian Risiko izin otomatis A3; npm test 214 lulus 0 gagal; kode policy.ts tidak diubah",
+      "finishedAt": "2026-11-05T02:49:18.611Z"
+    },
+    {
+      "id": "sec-low-fase1",
+      "title": "Perbaikan low cyber: L1 batas laju serve, L3 host .ts.net, L4 replaceAll, L5 ignore agent-log",
+      "type": "be",
+      "agent": "be",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: cyber-fase1 L1-L5"
+    },
+    {
+      "id": "nt01-tombol-bunyi",
+      "title": "Tombol bunyi mati/hidup di Pengaturan atau NavRail, tersambung ke useNotify",
+      "type": "ui",
+      "agent": "ui-designer",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: nt01-fe-judul-bunyi; kriteria tombol bunyi baru terpenuhi di logika"
     }
   ],
-  "updatedAt": "2026-11-05T02:35:17.994Z"
+  "updatedAt": "2026-11-05T02:50:45.625Z"
 }

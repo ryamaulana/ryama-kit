@@ -252,3 +252,32 @@ test('toDetailData: agent belum jalan menampilkan definisi, tanpa token dan dura
   const ran = toDetailData(row, any({ ...base, modelUsed: 'opus', durationMs: 65000, tokens: { input: 10, output: 5, cacheRead: 999, cacheWrite: 5 }, files: ['a.ts'] }));
   assert.equal(ran.modelUsed, 'opus'); assert.equal(ran.tokens, '20'); assert.equal(ran.duration, '1 mnt 5 dtk'); assert.deepEqual(ran.files, [{ path: 'a.ts', change: 'ubah' }]);
 });
+
+import { newTriggers, snapshot, tabTitle, parseSound } from '../web/src/app/lib/notify.js';
+const proj = (o: object) => any({ id: 'p1', name: 'Alfa', pending: 0, oldestPendingAt: null, status: 'running', latestRunId: 'r1', ...o });
+
+test('notify: muatan pertama tanpa pemicu; pertanyaan baru memicu sekali, polling berikutnya tidak mengulang', () => {
+  assert.deepEqual(newTriggers(null, [proj({ pending: 2 })]), []);
+  const a = [proj({ pending: 1 })];
+  const t = newTriggers(snapshot([proj({})]), a);
+  assert.deepEqual(t, [{ projectId: 'p1', kind: 'pending' }]);
+  assert.deepEqual(newTriggers(snapshot(a), a), []);
+  assert.deepEqual(newTriggers(snapshot(a), [proj({ pending: 0 })]), []); // dijawab: tidak berbunyi
+});
+
+test('notify: run gagal/terhenti dan batas pemakaian memicu sekali per run', () => {
+  const base = snapshot([proj({})]);
+  const failed = [proj({ status: 'failed' })];
+  assert.deepEqual(newTriggers(base, failed), [{ projectId: 'p1', kind: 'failed' }]);
+  assert.deepEqual(newTriggers(snapshot(failed), failed), []);
+  assert.deepEqual(newTriggers(base, [proj({ status: 'limit_paused' })]), [{ projectId: 'p1', kind: 'limit' }]);
+  assert.deepEqual(newTriggers(base, [proj({ status: 'done' })]), []);
+});
+
+test('tabTitle: jumlah butuh kamu + proyek tertua menunggu; kosong = judul dasar; parseSound bawaan hidup', () => {
+  assert.equal(tabTitle([proj({})]), 'Crew Control');
+  const ps = [proj({ id: 'a', name: 'Alfa', pending: 1, oldestPendingAt: '2026-11-05T10:00' }), proj({ id: 'b', name: 'Beta', pending: 2, oldestPendingAt: '2026-11-05T09:00' })];
+  assert.equal(tabTitle(ps), '(3) Butuh kamu · Beta');
+  assert.equal(parseSound(null), true);
+  assert.equal(parseSound('off'), false);
+});

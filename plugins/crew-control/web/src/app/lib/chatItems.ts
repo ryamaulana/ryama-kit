@@ -14,6 +14,7 @@ export function describeAnswer(m: Msg): string {
   const a = m.answer;
   if (!a) return '';
   const who: Record<string, string> = { dashboard: 'kamu', agent: 'agent membatalkan', system: 'run berakhir' };
+  if (a.from === 'desktop') return 'Dijawab dari desktop';
   if (m.state === 'cancelled') return `Dibatalkan (${who[a.from] ?? a.from})`;
   if (a.decision) return `${a.decision === 'allow' ? 'Disetujui' : 'Ditolak'}${a.reason ? `: ${a.reason}` : ''}`;
   return Object.entries(a.answers ?? {}).map(([q, v]) => `${q} → ${v}`).join('; ');
