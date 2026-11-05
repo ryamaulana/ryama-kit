@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { Harness } from '../src/harness/index.js';
 import { createApp, type AppOptions } from '../src/server.js';
-import { createRateLimiter } from '../src/security.js';
+import { createRateLimiter, isAllowedTailscaleUser } from '../src/security.js';
 import { Store } from '../src/store/index.js';
 import type { Run } from '../src/contract/index.js';
 import { FAKE, tmpProject } from './helpers.js';
@@ -54,7 +54,7 @@ test('CSP bagian 10 pada respons berkas tampilan', async (t) => {
   const { root } = tmpProject('web');
   const webDir = path.join(root, 'web');
   fs.writeFileSync(path.join(webDir, 'index.html'), '<!doctype html><title>x</title>');
-  const s = setup({ webDir }); t.after(s.close);
+  const s = setup({ distDir: webDir }); t.after(s.close);
   const r = await s.app.inject({ method: 'GET', url: '/', headers: { host: 'localhost:4780' } });
   assert.equal(r.statusCode, 200);
   assert.equal(r.headers['content-security-policy'],
@@ -96,4 +96,17 @@ test('SSE replay maksimal 5000 event per sambungan', () => {
   store.replayAndSubscribe('r1', 0, () => n++)();
   assert.equal(n, 5000);
   store.close();
+});
+
+test('isAllowedTailscaleUser (M1): Host IP Tailscale dan peer non-loopback tidak melewati daftar', () => {
+  const U = ['owner@example.com'];
+  const ts = '100.101.102.103:4780';
+  assert.equal(isAllowedTailscaleUser(ts, 'other@example.com', '127.0.0.1', U), false); // pengguna di luar daftar
+  assert.equal(isAllowedTailscaleUser(ts, undefined, '127.0.0.1', U), false); // tanpa header di Host non-loopback
+  assert.equal(isAllowedTailscaleUser(ts, 'owner@example.com', '100.64.0.9', U), false); // peer tailnet langsung (header palsu)
+  assert.equal(isAllowedTailscaleUser('127.0.0.1:4780', undefined, '100.64.0.9', U), false); // Host dipalsukan dari peer tailnet
+  assert.equal(isAllowedTailscaleUser(ts, 'Owner@Example.com', '::ffff:127.0.0.1', U), true); // lewat tailscale serve
+  assert.equal(isAllowedTailscaleUser('laptop.tail1.ts.net', 'owner@example.com', '127.0.0.1', U), true);
+  assert.equal(isAllowedTailscaleUser('localhost:4780', undefined, '127.0.0.1', U), true); // laptop sendiri tanpa header
+  assert.equal(isAllowedTailscaleUser(ts, undefined, '100.64.0.9', []), true); // daftar kosong = semua tailnet
 });

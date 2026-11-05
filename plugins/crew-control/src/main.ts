@@ -38,7 +38,6 @@ new FreeFlow({ harness });
 if (!store.getSetting('demo_label')) harness.restoreLimitPaused();
 const app = createApp({
   store, harness, workRoot: env.CREW_WORK_ROOT, maxRuns: env.CREW_MAX_RUNS, defaultModel: env.CREW_DEFAULT_MODEL,
-  webDir: path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'web'),
   distDir: path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'web', 'dist'),
   teamDirs: list(env.CREW_TEAM_DIRS).length ? list(env.CREW_TEAM_DIRS) : [path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..')],
   allowedHosts: list(env.CREW_ALLOWED_HOSTS), allowedOrigins: list(env.CREW_ALLOWED_ORIGINS), tailscaleUsers: list(env.CREW_TAILSCALE_USERS),

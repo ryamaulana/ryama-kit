@@ -9,14 +9,14 @@ import { api, ApiError } from '../api.js';
 import { useRunStream } from '../hooks/useRunStream.js';
 import { agentStates } from '../lib/agentStates.js';
 import { agentRows, phaseOf, topBarStats } from '../lib/projectScreen.js';
+import { canContinue, topBarStatusText } from '../lib/answers.js';
 import { allowedActions } from '../lib/runState.js';
 import { toDetailData } from '../lib/agentDetail.js';
 import type { AgentDetail as AgentDetailResp } from '../../../../src/contract/messages.js';
-import { ChatPanel, type SideTab } from '../../ui/chat/ChatPanel.js';
+import type { SideTab } from '../../ui/chat/ChatPanel.js';
 import { AgentDetail } from '../../ui/chat/AgentDetail.js';
+import { ChatContainer } from './ChatContainer.js';
 import { FlowMap } from './FlowMap.js';
-
-const NOOP_ACTIONS = { answerQuestion() {}, allow() {}, deny() {}, always() {}, approveMilestone() {}, editMilestone() {}, answerDecision() {} };
 
 /** Layar proyek /proyek/:id: run aktif atau terakhir lewat SSE. Peta dan Chat menyusul (item lain). UX 6.2. */
 export function ProjectContainer() {
@@ -45,6 +45,8 @@ export function ProjectContainer() {
     mutationFn: (action: 'pause' | 'resume' | 'stop') => api('POST', `/api/runs/${run!.id}/${action}`),
     onSettled: () => setStopOpen(false),
   });
+
+  const resumeRun = useMutation({ mutationFn: () => api('POST', `/api/runs/${run!.id}/continue`, {}) });
 
   const agents = useMemo(() => {
     const team = teamQ.data ?? ({ agents: [], flow: { nodes: [], edges: [] } } as unknown as Team);
@@ -86,14 +88,17 @@ export function ProjectContainer() {
     <>
       {status === 'reconnecting' && <p role="status">Koneksi terputus, menyambung ulang…</p>}
       {control.isError && <p role="alert">{control.error.message}</p>}
+      {resumeRun.isError && <p role="alert">{resumeRun.error.message}</p>}
       <ProjectView
         topBar={{
           name: project.name, path: project.relPath, phase,
-          statusText: desktop ? 'Dari desktop' : undefined,
+          statusText: topBarStatusText(run, project.limitResetAt) ?? (desktop ? 'Dari desktop' : undefined),
           milestone: stats.milestone, freeText: stats.milestone ? undefined : (run as { title?: string }).title ?? run.prompt,
           tokens: stats.tokens, duration: stats.duration, waiting: stats.waiting,
           onPause: can.pause && !desktop ? () => ask('pause') : undefined,
           onResume: can.resume && !desktop ? () => ask('resume') : undefined,
+          children: canContinue(run, run.id === project.latestRunId)
+            ? <button type="button" className="btn btn--primary" disabled={resumeRun.isPending} onClick={() => resumeRun.mutate()}>Lanjutkan</button> : undefined,
           stopOpen, onStopRequest: () => setStopOpen(true), onStopCancel: () => setStopOpen(false), onStopConfirm: () => ask('stop'),
         }}
         agents={{ agents, selectedId: selected, onSelect: pick }}
@@ -101,10 +106,8 @@ export function ProjectContainer() {
           ? <FlowMap flow={teamQ.data.flow} rows={agents} selectedId={selected} onSelect={pick} />
           : teamQ.isError ? <p role="alert">Alur tim tidak bisa dimuat. <button type="button" className="btn" onClick={() => teamQ.refetch()}>Coba lagi</button></p> : <p role="status">Memuat alur tim…</p>}
         chat={
-          // Isi Chat menyusul (item ch04): daftar kosong, kotak ketik disembunyikan lewat banner.
-          <ChatPanel tab={tab} onTabChange={setTab} items={[]} waiting={stats.waiting} readOnly="Chat belum tersedia di versi ini."
-            actions={NOOP_ACTIONS} composer={{ mode: 'run', value: '', onChange: () => {}, onSend: () => {} }}
-            detail={detailPane} />
+          <ChatContainer run={run} messages={state.messages} tools={state.tools} latestRunId={project.latestRunId} projectId={project.id} limitResetAt={project.limitResetAt}
+            tab={tab} onTabChange={setTab} waiting={stats.waiting} detail={detailPane} />
         }
       />
     </>

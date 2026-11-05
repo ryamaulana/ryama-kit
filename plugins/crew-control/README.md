@@ -14,7 +14,7 @@ npm run build
 npm start
 ```
 
-Buka http://127.0.0.1:4780/app/. Database dibuat otomatis di `data/crew.db`. Port 4777 milik Flow Viewer; Crew Control memakai 4780.
+Buka http://127.0.0.1:4780/. Database dibuat otomatis di `data/crew.db`. Port 4777 milik Flow Viewer; Crew Control memakai 4780.
 
 ## 2. Isi `.env`
 
@@ -43,7 +43,7 @@ Catatan: manifes plugin (`.claude-plugin/plugin.json`) untuk hook sesi desktop (
 ## 4. Buka dari HP lewat Tailscale
 
 1. Pasang Tailscale di laptop dan HP, masuk dengan akun yang sama.
-2. Batasi siapa yang boleh masuk: isi `CREW_TAILSCALE_USERS` di `.env` dengan login Tailscale pemilik (pisah koma bila lebih dari satu), lalu mulai ulang server. Kosong berarti semua anggota tailnet boleh.
+2. Batasi siapa yang boleh masuk: isi `CREW_TAILSCALE_USERS` di `.env` dengan login Tailscale pemilik (pisah koma bila lebih dari satu), lalu mulai ulang server. Kosong berarti semua anggota tailnet boleh. Bila daftar diisi, hanya akses lewat `tailscale serve` (langkah 3) yang diterima; membuka langsung `http://100.x.y.z:4780` dari perangkat tailnet ditolak, karena header login bisa dipalsukan di jalur itu (temuan M1). Jangan mengisi `CREW_HOST` dengan IP Tailscale sebagai pengganti `tailscale serve`.
 3. Bagikan server ke tailnet (tetap tanpa membuka ke internet umum):
 
 ```
@@ -53,6 +53,17 @@ tailscale serve --bg --https=443 http://127.0.0.1:4780
 4. Di HP buka `https://<laptop>.<tailnet>.ts.net`, pilih Tambahkan ke layar utama, lalu tekan Aktifkan pemberitahuan.
 
 Untuk berhenti berbagi: `tailscale serve reset`. Jangan memakai `tailscale funnel` (itu membuka ke internet umum).
+
+## Risiko izin otomatis A3
+
+Izin otomatis A3 (policy) memakai pola sederhana dan TIDAK menahan semua bahaya. Terima risikonya hanya bila dipakai di laptop sendiri:
+
+- Path POSIX absolut tidak ditahan (mis. `cat /etc/passwd`); hanya path drive-letter dan `..` yang dideteksi.
+- `git -C . push` lolos, karena pola hanya cocok dengan `git push` tanpa opsi sebelum subcommand.
+- `node -e` dan `curl -d @file https://...` tidak ditahan.
+- Symlink di dalam proyek yang menunjuk ke luar tidak ditahan.
+
+Jangan pakai A3 di mesin bersama atau server. Bila perlu, tambah pola git dengan opsi dan path POSIX absolut di `src/policy.ts` lebih dulu (temuan M2, `docs/bukti/cyber-fase1.md`).
 
 ## Perintah lain
 

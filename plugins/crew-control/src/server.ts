@@ -30,9 +30,7 @@ export interface AppOptions {
   allowedOrigins?: string[];
   /** CREW_TAILSCALE_USERS: login Tailscale yang boleh lewat Host *.ts.net. Kosong = tanpa cek. */
   tailscaleUsers?: string[];
-  /** Folder berkas tampilan (index.html, app.js, lib.js). Tanpa ini, hanya API yang dilayani. */
-  webDir?: string;
-  /** Hasil build Vite (web/dist), dilayani di /app/. Tanpa ini, tidak dilayani. */
+  /** Hasil build Vite (web/dist), dilayani di akar. Tanpa ini, hanya API yang dilayani. */
   distDir?: string;
 }
 
@@ -92,23 +90,17 @@ export function createApp(o: AppOptions): FastifyInstance {
     console.error(e); // detail hanya di log server, tidak ke klien
     return err(reply, 500, 'internal_error', 'Galat internal.');
   });
-  app.setNotFoundHandler((_req, reply) => err(reply, 404, 'not_found', 'Rute tidak ditemukan.'));
+  const hasDist = !!o.distDir && fs.existsSync(path.join(o.distDir, 'index.html'));
+  app.setNotFoundHandler((req, reply) => {
+    // Rute klien (React Router): GET halaman selain /api dan /hook diberi index.html.
+    if (hasDist && req.method === 'GET' && !/^\/(api|hook)(\/|$)/.test(req.url) && !path.extname(req.url.split('?')[0]))
+      return reply.sendFile('index.html');
+    return err(reply, 404, 'not_found', 'Rute tidak ditemukan.');
+  });
 
-  if (o.distDir && fs.existsSync(o.distDir)) {
+  if (hasDist) {
     // Tanpa daftar isi folder dan tanpa dotfile.
-    void app.register(fastifyStatic, { root: o.distDir, prefix: '/app/', index: 'app.html', list: false, dotfiles: 'deny', wildcard: true });
-  }
-
-  // ---- Berkas tampilan: hanya nama berkas di webDir (satu tingkat), tanpa path dari klien ----
-  if (o.webDir) {
-    const types: Record<string, string> = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8' };
-    const serve = (name: string, reply: FastifyReply) => {
-      const type = types[path.extname(name)];
-      if (!type || name !== path.basename(name) || !fs.existsSync(path.join(o.webDir!, name))) return err(reply, 404, 'not_found', 'Rute tidak ditemukan.');
-      return reply.type(type).send(fs.readFileSync(path.join(o.webDir!, name)));
-    };
-    app.get('/', async (_req, reply) => serve('index.html', reply));
-    app.get('/:file', async (req, reply) => serve((req.params as { file: string }).file, reply));
+    void app.register(fastifyStatic, { root: o.distDir!, prefix: '/', index: 'index.html', list: false, dotfiles: 'deny', wildcard: true });
   }
 
   // ---- API ----
