@@ -1,6 +1,7 @@
 import type { ChildProcess } from 'node:child_process';
 import type { Run } from '../contract/index.js';
 import type { Store } from '../store/index.js';
+import type { ActivityTracker } from './stream.js';
 
 export class HarnessError extends Error {
   constructor(public code: string, message: string, public status = 409, public details?: Record<string, unknown>) {
@@ -35,4 +36,5 @@ export interface Live {
   stopTimers: NodeJS.Timeout[];
   stderrTail: string;
   seq: number;
+  tracker: ActivityTracker; // status agent live dari stream sesi ini
 }

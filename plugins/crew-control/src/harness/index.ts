@@ -8,7 +8,8 @@ import { TERMINAL_STATUSES, type AnswerRequest, type Message, type Question, typ
 import { decide } from '../policy.js';
 import { projectKey } from '../projects.js';
 import { HarnessError, type HarnessOptions, type Live } from './session.js';
-import { QuestionsInput, clip, nowIso, summarize } from './stream.js';
+import { QuestionsInput, clip, createActivityTracker, nowIso, summarize } from './stream.js';
+import type { RunMeta } from '../store/types.js';
 import { liveStatus } from '../conductor/status.js';
 import { LIMIT_DEFAULTS, killTree as killTreeOf, type ResolvedOptions } from './limits.js';
 
@@ -17,6 +18,8 @@ export { HarnessError, type HarnessOptions } from './session.js';
 export class Harness {
   /** Pengamat giliran (FreeFlow): activity = ada kemajuan/pesan baru, result = giliran selesai, end = proses berhenti. */
   onTurn?: (runId: string, ev: 'activity' | 'result' | 'end') => void;
+  /** Id agent anggota tim (dipasang server dari katalog tim); null = tim tak dikenal, semua agent in_team=false. */
+  teamAgentsOf?: (teamId: string) => string[] | null;
   private live = new Map<string, Live>();
   private byKey = new Map<string, Live>();
   private byToken = new Map<string, Live>();
@@ -30,13 +33,13 @@ export class Harness {
 
   // ---------- perintah dari luar ----------
   /** projectDir harus sudah divalidasi (resolveProject). Satu run aktif per proyek. */
-  startRun(req: { projectDir: string; prompt: string; model?: string }): Run {
+  startRun(req: { projectDir: string; prompt: string; model?: string; meta?: RunMeta }): Run {
     const run: Run = {
       id: crypto.randomUUID(), project: req.projectDir, projectName: path.basename(req.projectDir), prompt: req.prompt,
       model: req.model ?? null, origin: 'dashboard', status: 'running', reason: null, lastLog: null, sessionId: null,
       pending: 0, tokens: null, startedAt: nowIso(), endedAt: null, durationMs: null,
     };
-    return this.launch(run, req.prompt, null);
+    return this.launch(run, req.prompt, null, req.meta);
   }
 
   /** Id run aktif di folder ini, atau null. */
@@ -52,7 +55,7 @@ export class Harness {
   isOwnSession(sessionId: string): boolean { return [...this.live.values()].some((l) => l.run.sessionId === sessionId); }
 
   /** Jalankan proses claude untuk run ini (baru, atau melanjutkan sesi `resumeId` setelah giliran sebelumnya selesai). */
-  private launch(run: Run, firstText: string, resumeId: string | null): Run {
+  private launch(run: Run, firstText: string, resumeId: string | null, meta?: RunMeta): Run {
     const key = projectKey(run.project);
     const busy = this.byKey.get(key);
     if (busy) throw new HarnessError('project_busy', 'Proyek ini sudah punya run aktif.', 409, { activeRunId: busy.run.id });
@@ -77,11 +80,17 @@ export class Harness {
     const l: Live = {
       run, child, key, token, paused: false, stopRequested: false, disconnect: false, exited: false, waiters: [],
       pending: new Map(), queued: [], stopTimers: [], stderrTail: '', seq: 0,
+      tracker: undefined!,
     };
     this.live.set(run.id, l);
     this.byKey.set(key, l);
     this.byToken.set(token, l);
-    this.store.saveRun(run);
+    this.store.saveRun(run, meta);
+    const teamId = this.store.runTeamId(run.id);
+    l.tracker = createActivityTracker({
+      runId: run.id, sessionId: run.sessionId ?? resumeId ?? '', teamAgents: teamId ? this.teamAgentsOf?.(teamId) ?? null : null,
+      prior: this.store.listActivities(run.id),
+    });
 
     child.stdin!.on('error', () => {}); // EPIPE saat proses sudah mati; ditangani lewat exit
     child.stderr!.on('data', (d) => { l.stderrTail = (l.stderrTail + d).slice(-2000); });
@@ -264,6 +273,9 @@ export class Harness {
   private onLine(l: Live, line: string) {
     let m: any;
     try { m = JSON.parse(line); } catch { return; }
+    const t = l.tracker.feed(m); // langkah alat (orkestrator + subagent) dan status agent
+    for (const s of t.tools) this.store.addTool(l.run.id, s);
+    for (const a of t.activities) this.store.saveActivity(a);
     switch (m.type) {
       case 'system':
         if (m.subtype === 'init') this.patch(l, { sessionId: m.session_id ?? null, model: l.run.model ?? m.model ?? null });
@@ -282,8 +294,6 @@ export class Harness {
     for (const c of m.message?.content ?? []) {
       if (c.type === 'text' && !sub && typeof c.text === 'string' && c.text.trim()) {
         this.store.saveMessage(this.newMessage(l.run.id, 'agent', clip(c.text, 20000)));
-      } else if (c.type === 'tool_use') {
-        this.store.addTool(l.run.id, { name: String(c.name), summary: summarize(c.input), subagent: sub, at: nowIso() });
       }
     }
   }
@@ -369,6 +379,7 @@ export class Harness {
   private finalize(l: Live, code: number | null) {
     if (l.exited) return;
     l.exited = true;
+    for (const a of l.tracker.end()) this.store.saveActivity(a);
     this.onTurn?.(l.run.id, 'end');
     l.stopTimers.forEach(clearTimeout);
     l.waiters.splice(0).forEach((r) => r());

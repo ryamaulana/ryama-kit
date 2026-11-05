@@ -1,0 +1,7 @@
+{ "item": "lp06-ui-peta", "entries": [
+  { "kind": "image", "path": "docs/bukti/lp06-ui-peta/terang/audit-1440.png", "caption": "Peta jalur 12 agent, 1440 terang: ui-designer Butuh kamu, fe dan be rel paralel, rel berbalik di baris kedua (sesudah perbaikan)" },
+  { "kind": "image", "path": "docs/bukti/lp06-ui-peta/gelap/audit-1440.png", "caption": "Peta jalur 1440 gelap" },
+  { "kind": "image", "path": "docs/bukti/lp06-ui-peta/kosong/audit-1440.png", "caption": "Keadaan kosong: 12 stasiun Siap + ajakan Mulai run" },
+  { "kind": "text", "path": "docs/bukti/lp06-ui-peta/terang/audit.json", "caption": "Audit ui-craft --lang id: terang tinggi 0 sedang 0 rendah 3 (copy-tombol pada baris agent milik lp05); kosong 0/0/0" },
+  { "kind": "text", "path": "docs/bukti/lp06-ui-peta/gelap/audit.json", "caption": "Gelap: tinggi 0, 1 sedang token-warna dari tautan lompat (batasan skrip pada tema gelap, sama dengan lp05; dicek visual: semua var(--...))" }
+]}

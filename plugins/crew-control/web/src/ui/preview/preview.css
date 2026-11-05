@@ -1,3 +1,8 @@
 .pv-note { padding: var(--sp-32) var(--sp-24); display: grid; gap: var(--sp-8); max-width: var(--measure-chat); }
 .pv-note h2 { font-size: var(--fs-16); font-weight: var(--fw-semibold); }
 .pv-note p { color: var(--text-2); }
+.pv-stub { padding: var(--sp-24) var(--sp-16); color: var(--text-2); display: grid; gap: var(--sp-8); align-content: start; }
+.pv-stub h2 { font-size: var(--fs-16); font-weight: var(--fw-semibold); color: var(--text); }
+
+/* Panel Chat berdiri sendiri (uji lebar 375 dan 376) */
+.pv-chatonly { display: flex; flex-direction: column; height: 100dvh; background: var(--surface); }

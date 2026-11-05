@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import http from 'node:http';
+import os from 'node:os';
 import path from 'node:path';
 import { FreeFlow } from '../src/conductor/free-flow.js';
 import { Harness } from '../src/harness/index.js';
@@ -27,11 +28,17 @@ async function setup() {
     store, hookBaseUrl: `http://127.0.0.1:${port}`, bin: process.execPath, binArgs: [FAKE], maxRuns: 1,
   });
   new FreeFlow({ harness, graceMs: 150 });
-  const app = createApp({ store, harness, workRoot: root, maxRuns: 1 });
+  const teamDir = fs.mkdtempSync(path.join(os.tmpdir(), 'cc-teams-'));
+  const plug = path.join(teamDir, 'tiruan');
+  fs.cpSync(path.join(import.meta.dirname, 'fixtures/teams/tiruan'), plug, { recursive: true });
+  const mf = JSON.parse(fs.readFileSync(path.join(plug, 'crew/team.json'), 'utf8'));
+  mf.commands.push({ id: 'backlog', label: 'Jalankan backlog', kind: 'backlog', template: '/backlog run {batchSize}', needsText: false, placeholder: 'Opsional' });
+  fs.writeFileSync(path.join(plug, 'crew/team.json'), JSON.stringify(mf));
+  const app = createApp({ store, harness, workRoot: root, maxRuns: 1, teamDirs: [teamDir] });
   await app.listen({ port, host: '127.0.0.1' });
   const base = `http://127.0.0.1:${port}`;
   const api = async (method: string, url: string, body?: unknown) => {
-    const r = await fetch(base + url, { method, headers: { 'content-type': 'application/json' }, body: body === undefined ? undefined : JSON.stringify(body) });
+    const r = await fetch(base + url, { method, headers: { 'content-type': 'application/json' }, body: body === undefined ? undefined : JSON.stringify(method === 'POST' && url === '/api/runs' ? { teamId: 'tiruan', commandId: 'bebas', ...(body as object) } : body) });
     return { status: r.status, body: (await r.json()) as any };
   };
   const events: RunEvent[] = [];
@@ -95,7 +102,7 @@ test('validasi batas: folder di luar folder kerja, input rusak, galat seragam ta
   await bad({ project: 'app', prompt: 'x' }, 400, 'invalid_project');
   await bad({ project: path.join(s.root, 'tidak-ada'), prompt: 'x' }, 400, 'project_not_found');
   await bad({ project: s.dir }, 400, 'invalid_request');
-  await bad({ project: s.dir, prompt: '   ' }, 400, 'invalid_request');
+  await bad({ project: s.dir, prompt: '   ' }, 400, 'command_needs_text');
   await bad({ project: s.dir, prompt: 'x', model: 'a b; rm -rf' }, 400, 'invalid_request');
   await bad({ project: s.dir, prompt: 'x', model: 'gpt-5' }, 400, 'invalid_request'); // bukan dari daftar
   await bad({ project: s.dir, prompt: 'x', ekstra: 1 }, 400, 'invalid_request');
@@ -254,4 +261,65 @@ test('folders: POST membuat folder (git init), project muncul, galat seragam', a
   assert.match(l.body.project.id, /^[0-9a-f]{12}$/);
   const parent = await s.api('GET', '/api/folders');
   assert.equal(parent.body.folders.find((f: any) => f.name === 'app').activeRunId, run.body.id);
+});
+
+test('POST /api/runs: tim, perintah, teks, backlog, model tersimpan, project_busy', async (t) => {
+  const s = await setup(); t.after(s.close);
+  const bad = async (body: object, status: number, code: string) => {
+    const r = await s.api('POST', '/api/runs', body);
+    assert.equal(r.status, status, JSON.stringify(r.body));
+    assert.equal(ApiError.parse(r.body).error.code, code);
+    return r.body;
+  };
+  await bad({ project: s.dir, prompt: 'x', teamId: 'tidak-ada' }, 400, 'team_not_found');
+  await bad({ project: s.dir, prompt: 'x', commandId: 'tidak-ada' }, 400, 'command_not_found');
+  await bad({ project: s.dir, prompt: '', commandId: 'bebas' }, 400, 'command_needs_text');
+  await bad({ project: s.dir, prompt: '', commandId: 'backlog' }, 409, 'no_backlog');
+  await bad({ project: s.dir, prompt: 'x', model: 'gpt-5' }, 400, 'invalid_request');
+  const link = path.join(s.root, 'tautan'); fs.symlinkSync(path.dirname(s.root), link);
+  await bad({ project: link, prompt: 'x' }, 400, 'project_outside_root');
+  fs.mkdirSync(path.join(s.dir, 'docs')); fs.writeFileSync(path.join(s.dir, 'docs', 'backlog.json'), '{"items":[]}');
+  const t0 = Date.now();
+  const r = await s.api('POST', '/api/runs', { project: s.dir, prompt: '', commandId: 'backlog', model: 'opus' });
+  assert.equal(r.status, 201, JSON.stringify(r.body));
+  assert.ok(Date.now() - t0 < 1000);
+  assert.equal(r.body.model, 'opus');
+  assert.equal(r.body.prompt, '/backlog run 5');
+  const busy = await bad({ project: s.dir, prompt: 'x' }, 409, 'project_busy');
+  assert.equal(busy.error.details.activeRunId, r.body.id);
+  await s.api('POST', `/api/runs/${r.body.id}/stop`, {});
+});
+
+test('F5: dua jawaban bersamaan, satu menang (200) dan satu 409 already_answered dengan details.state; pilihan > 4 dan multi-pilih tersimpan', async (t) => {
+  const s = await setup(); let stop = () => {}; t.after(() => { stop(); return s.close(); });
+  const start = await s.api('POST', '/api/runs', { project: s.dir, prompt: '[tanya6]' });
+  const runId = start.body.id;
+  stop = s.watch(runId);
+  const q = await waitFor(() => s.events.find((e) => e.type === 'message' && e.data.kind === 'question'), 8000, 'pertanyaan');
+  const m = (q as any).data;
+  assert.equal(m.questions[0].options.length, 6);
+  assert.equal(m.questions[0].multiSelect, true);
+  assert.equal(m.state, 'pending');
+
+  const url = `/api/runs/${runId}/messages/${m.id}/answer`;
+  const [a, b] = await Promise.all([
+    s.api('POST', url, { kind: 'question', answers: { 'Warna favorit?': ['Merah', 'Ungu'] } }),
+    s.api('POST', url, { kind: 'question', answers: { 'Warna favorit?': 'Biru' } }),
+  ]);
+  const statuses = [a.status, b.status].sort();
+  assert.deepEqual(statuses, [200, 409]);
+  const loser = a.status === 409 ? a : b;
+  assert.equal(loser.body.error.code, 'already_answered');
+  assert.equal(loser.body.error.details.state, 'answered');
+
+  const win = a.status === 200 ? a : b;
+  const saved = (await s.api('GET', `/api/runs/${runId}`)).body.messages.find((x: any) => x.id === m.id);
+  assert.equal(saved.state, 'answered');
+  assert.equal(saved.answer.from, 'dashboard');
+  assert.deepEqual(saved.answer, win.body.answer);
+  assert.ok(Date.parse(saved.answeredAt) >= Date.parse(saved.createdAt));
+  // tersimpan permanen: dibaca langsung dari store
+  assert.equal(s.store.getMessage(m.id)!.answeredAt, saved.answeredAt);
+  await waitFor(() => s.events.some((e) => e.type === 'run' && e.data.status === 'done'), 8000, 'run selesai');
+  assert.match(fs.readFileSync(path.join(s.dir, 'jawaban.txt'), 'utf8'), /^(Merah, Ungu|Biru)$/);
 });

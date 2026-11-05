@@ -7,7 +7,7 @@ import { z, type ZodType } from 'zod';
 import {
   AnswerRequest, ApiError, Config, EmptyBody, FolderListing, Message, MODELS, OwnerMessageRequest, Project, ProjectBoard, ProjectSettingsRequest,
   ProjectsQuery, Run, RunDetail, RunList, SettingsRequest, SettingsResponse,
-  StartRunRequest, TERMINAL_STATUSES, Team, type ModelId,
+  StartRunRequestV2, TERMINAL_STATUSES, Team, type ModelId,
 } from './contract/index.js';
 import { buildBoard, detail, findProject } from './board.js';
 import { createCatalog } from './teams/catalog.js';
@@ -63,6 +63,7 @@ export function createApp(o: AppOptions): FastifyInstance {
   const app = Fastify({ bodyLimit: 64 * 1024, logger: false });
   const { store, harness } = o;
   const catalog = createCatalog(o.teamDirs ?? []);
+  harness.teamAgentsOf = (id) => catalog.get(id)?.agents.map((a) => a.id) ?? null;
 
   // ---- Lapisan keamanan (semua rute) ----
   app.addHook('onRequest', async (req, reply) => {
@@ -112,6 +113,7 @@ export function createApp(o: AppOptions): FastifyInstance {
   app.get('/api/health', async () => ({ ok: true }));
 
   const defaultModel = o.defaultModel ?? 'sonnet';
+  const defBatch = o.defaultBatchSize ?? 5;
   app.get('/api/config', async (_req, reply) =>
     ok(reply, Config, {
       workRoot: o.workRoot, projects: listProjects(o.workRoot), models: MODELS, defaultModel, maxRuns: o.maxRuns, permissionMode: 'A3',
@@ -148,8 +150,7 @@ export function createApp(o: AppOptions): FastifyInstance {
   });
 
   // ---- Proyek dan pengaturan ----
-  const defBatch = o.defaultBatchSize ?? 5;
-  const projectOr404 = (id: string) => {
+    const projectOr404 = (id: string) => {
     const p = findProject(store, id);
     if (!p) throw new HarnessError('not_found', 'Proyek tidak ditemukan.', 404);
     return p;
@@ -175,9 +176,26 @@ export function createApp(o: AppOptions): FastifyInstance {
   });
 
   app.post('/api/runs', async (req, reply) => {
-    const body = parse(StartRunRequest, req.body);
+    const body = parse(StartRunRequestV2, req.body);
     const projectDir = resolveProject(o.workRoot, body.project);
-    return ok(reply, Run, harness.startRun({ projectDir, prompt: body.prompt, model: body.model ?? defaultModel }), 201);
+    const team = catalog.get(body.teamId);
+    if (!team) throw new HarnessError('team_not_found', 'Tim tidak ditemukan.', 400);
+    if (!team.valid) throw new HarnessError('team_invalid', 'Definisi tim rusak, perbaiki dulu.', 400, { error: team.error });
+    const cmd = catalog.command(team, body.commandId);
+    if (!cmd) throw new HarnessError('command_not_found', 'Perintah tidak ada di tim ini.', 400);
+    if (cmd.needsText && !body.prompt) throw new HarnessError('command_needs_text', 'Perintah ini perlu teks.', 400);
+    if (cmd.kind === 'backlog' && !fs.existsSync(path.join(projectDir, 'docs', 'backlog.json'))) {
+      throw new HarnessError('no_backlog', 'Folder ini belum punya docs/backlog.json.', 409);
+    }
+    const pid = projectId(projectDir);
+    // shortcut: hanya {prompt} dan {batchSize} diisi; {milestone}/{note}/{home} menunggu item orkestrasi.
+    const prompt = cmd.template.replaceAll('{prompt}', body.prompt).replaceAll('{batchSize}', String(store.getProject(pid)?.batchSize ?? defBatch));
+    const run = harness.startRun({ projectDir, prompt, model: body.model ?? defaultModel,
+      meta: { projectId: pid, teamId: team.id, commandId: cmd.id, title: body.prompt.slice(0, 80) || cmd.label, origin: 'dashboard' } });
+    const old = store.getProject(pid);
+    store.saveProject({ id: pid, path: projectDir, name: path.basename(projectDir), teamId: old?.teamId ?? team.id, batchSize: old?.batchSize ?? null,
+      lastCommandId: cmd.id, lastActivityAt: run.startedAt });
+    return ok(reply, Run, run, 201);
   });
 
   app.get('/api/runs', async (req, reply) => {

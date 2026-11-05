@@ -118,6 +118,14 @@ Library `~/.claude/design-library/` tidak dibuka; token diturunkan dari konsep d
 ## Rancangan layar: Daftar proyek, porting ke aplikasi (ProjectListView)
 - Jalur cepat dari `daftar-proyek.html` (Approved): tata letak, token, dan keadaan sama. Tambahan: TabBar HP (< 900) di AppShell menggantikan rel; Riwayat di TabBar berlabel "segera" (Fase 3), bukan tautan. Ringkasan angka 0 diciutkan oleh komponen. Label "dari desktop" = chip di samping status.
 
+## Rancangan layar: Chat + Detail agent, porting ke aplikasi (ChatPanel, AgentDetail)
+- **Jenis:** tugas (Chat) di dalam layar dashboard; dial Layar tugas. Tugas: jawab, setujui/tolak, kirim pesan tanpa meninggalkan peta.
+- **Titik fokus:** kartu menunggu (tepi oranye 2). **Urutan baca:** 1 kartu menunggu, 2 pesan agent terakhir, 3 kotak ketik. Detail: nama + status, lalu model terdeklarasi vs terpakai, lalu daftar.
+- **Konsep terlihat di:** Mark kecil (cincin) di kicker kartu, bulatan pesan sistem, blok gagal berbentuk silang, StatusDot di kepala Detail.
+- **Sengaja tidak ada:** avatar, gelembung agent, tombol Setujui terpicu Enter, galeri bukti (Fase 2), konfirmasi "Selalu setujui" (diganti Batalkan).
+- **Mobile 375:** panel yang sama selebar layar, target 44, kartu tidak berubah susunan; peta/kolom agent urusan item HP.
+- **Catatan untuk audit:** `/app/preview.html?layar=chat&chat=banyak|tolak|izin&keadaan=jeda|henti|selesai|desktop`; `layar=proyek&chat=sistem|terjawab|bacasaja&tab=detail&agent=fe|ui-critic`.
+
 ## Wujud arah per jenis layar
 - **Dashboard · (c) Daftar proyek (layar kunci berikutnya):**
   - Kepala: 5 angka dalam satu deret label + angka Overpass 600 (angka 0 diciutkan); [Run baru] tinta.

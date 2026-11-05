@@ -1,11 +1,13 @@
 // Pratinjau komponen ui/ dengan data contoh (bukan API).
-// ?layar=kerangka|daftar|baru  &tema=gelap  &keadaan=…  (lihat KEADAAN di bawah)
+// ?layar=kerangka|daftar|baru|proyek  &tema=gelap  &keadaan=…  (lihat KEADAAN di bawah)
 import { useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import '../styles/index.css';
 import { AppShell, PageHead } from '../screens/AppShell.js';
 import { ProjectListView } from '../screens/ProjectListView.js';
 import { NewRunView, type NewRunNotice } from '../screens/NewRunView.js';
+import { ProjectDemo } from './projectDemo.js';
+import { ChatDemo } from './chatDemo.js';
 import * as fx from './fixtures.js';
 import './preview.css';
 
@@ -132,9 +134,10 @@ function Kerangka() {
 function Preview() {
   const [settings, setSettings] = useState(false);
   const current = layar === 'baru' ? 'baru' : 'proyek';
+  if (layar === 'chat') return <div className="pv-chatonly"><ChatDemo mode={keadaan === 'jeda' ? 'paused' : keadaan === 'selesai' ? 'done' : keadaan === 'desktop' ? 'desktop' : keadaan === 'henti' ? 'stopped' : 'run'} /></div>;
   return (
     <AppShell nav={{ current, needsYou: layar === 'daftar' && keadaan ? 0 : 1, settingsOpen: settings, onNavigate: noNav, onOpenSettings: () => setSettings((s) => !s) }}>
-      {layar === 'daftar' ? <Daftar /> : layar === 'baru' ? <Baru /> : <Kerangka />}
+      {layar === 'daftar' ? <Daftar /> : layar === 'baru' ? <Baru /> : layar === 'proyek' ? <ProjectDemo keadaan={keadaan} /> : <Kerangka />}
     </AppShell>
   );
 }

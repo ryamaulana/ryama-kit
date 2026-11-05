@@ -1,0 +1,148 @@
+[
+  {
+    "viewport": {
+      "w": 375,
+      "h": 812
+    },
+    "counts": {
+      "high": 0,
+      "medium": 2,
+      "low": 0
+    },
+    "stats": {
+      "ukuranHuruf": [
+        12,
+        13,
+        14,
+        16
+      ],
+      "keluargaHuruf": [
+        "Overpass",
+        "Overpass Mono"
+      ],
+      "nilaiSpasi": 5,
+      "spasiDiLuarSkalaPersen": 0,
+      "radius": [
+        4,
+        8
+      ],
+      "bayangan": 0,
+      "warnaTeks": 4,
+      "tombolSolidDiLayarPertama": 1,
+      "elemenTerkuat": [
+        "h3 \"Izinkan Write?\"",
+        "h2.vh \"Chat\"",
+        "button.btn \"Kirim penolakan\""
+      ],
+      "tepiKiriTerbanyak": [
+        "34px(7)",
+        "16px(5)",
+        "40px(2)",
+        "192px(2)",
+        "240px(2)",
+        "0px(1)"
+      ],
+      "jumlahGambar": 0,
+      "kataJudulTerpanjang": 2,
+      "jumlahSvg": 2,
+      "warnaAksen": 1,
+      "grupKartuSeragam": 0,
+      "jumlahKartuSeragam": 0,
+      "kandidatFokus": [
+        "h3 \"Izinkan Write?\"",
+        "h2.vh \"Chat\""
+      ],
+      "blokWarnaJenuhLayarPertamaPersen": 0,
+      "token": {
+        "aktif": true,
+        "warnaDiLuar": 0,
+        "radiusDiLuar": 0,
+        "hurufDiLuar": 0,
+        "fontDiLuar": 0
+      }
+    },
+    "issues": [
+      {
+        "sev": "medium",
+        "rule": "target-sentuh",
+        "detail": "38px, butuh minimal 44px",
+        "at": "button.link-btn \"Batal\""
+      },
+      {
+        "sev": "medium",
+        "rule": "heading",
+        "detail": "ada 0 elemen h1 (seharusnya 1)"
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    },
+    "counts": {
+      "high": 0,
+      "medium": 1,
+      "low": 0
+    },
+    "stats": {
+      "ukuranHuruf": [
+        12,
+        13,
+        14,
+        16
+      ],
+      "keluargaHuruf": [
+        "Overpass",
+        "Overpass Mono"
+      ],
+      "nilaiSpasi": 5,
+      "spasiDiLuarSkalaPersen": 0,
+      "radius": [
+        4,
+        8
+      ],
+      "bayangan": 0,
+      "warnaTeks": 4,
+      "tombolSolidDiLayarPertama": 1,
+      "elemenTerkuat": [
+        "h3 \"Izinkan Write?\"",
+        "h2.vh \"Chat\"",
+        "button.btn \"Kirim penolakan\""
+      ],
+      "tepiKiriTerbanyak": [
+        "34px(7)",
+        "16px(5)",
+        "40px(2)",
+        "0px(1)",
+        "8px(1)",
+        "26px(1)"
+      ],
+      "jumlahGambar": 0,
+      "kataJudulTerpanjang": 2,
+      "jumlahSvg": 2,
+      "warnaAksen": 1,
+      "grupKartuSeragam": 0,
+      "jumlahKartuSeragam": 0,
+      "kandidatFokus": [
+        "h3 \"Izinkan Write?\"",
+        "h2.vh \"Chat\""
+      ],
+      "blokWarnaJenuhLayarPertamaPersen": 0,
+      "token": {
+        "aktif": true,
+        "warnaDiLuar": 0,
+        "radiusDiLuar": 0,
+        "hurufDiLuar": 0,
+        "fontDiLuar": 0
+      }
+    },
+    "issues": [
+      {
+        "sev": "medium",
+        "rule": "heading",
+        "detail": "ada 0 elemen h1 (seharusnya 1)"
+      }
+    ]
+  }
+]

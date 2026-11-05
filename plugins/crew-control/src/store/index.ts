@@ -46,6 +46,11 @@ export class Store {
   /** Run belum berakhir (semua asal), untuk cek satu run aktif per proyek dan kapasitas. */
   listActiveRuns(): { run: Run; origin: string }[] { return q.selectActiveRuns(this.db); }
 
+  /** team_id run (kolom v2), untuk mencocokkan agent dengan tim saat sesi dilanjutkan. */
+  runTeamId(runId: string): string | null {
+    return (this.db.prepare('SELECT team_id FROM runs WHERE id = ?').get(runId) as { team_id: string | null } | undefined)?.team_id ?? null;
+  }
+
   getRun(id: string): Run | undefined {
     return q.selectRun(this.db, id);
   }
@@ -84,7 +89,7 @@ export class Store {
 
   saveEvidence(e: EvidenceRow): void { q3.upsertEvidence(this.db, e); }
   listEvidence(projectId: string, itemKey?: string): EvidenceRow[] { return q3.selectEvidence(this.db, projectId, itemKey); }
-  saveActivity(a: ActivityRow): void { q3.upsertActivity(this.db, a); }
+  saveActivity(a: ActivityRow): void { q3.upsertActivity(this.db, a); this.emit(a.runId, 'activity', a); }
   listActivities(runId: string): ActivityRow[] { return q3.selectActivities(this.db, runId); }
   saveRule(r: RuleRow): void { q3.upsertRule(this.db, r); }
   listRules(projectId: string, includeRevoked = false): RuleRow[] { return q3.selectRules(this.db, projectId, includeRevoked); }

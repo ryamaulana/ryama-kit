@@ -1,0 +1,66 @@
+[
+  {
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    },
+    "counts": {
+      "high": 0,
+      "medium": 0,
+      "low": 0
+    },
+    "stats": {
+      "ukuranHuruf": [
+        12,
+        13,
+        14,
+        16,
+        18
+      ],
+      "keluargaHuruf": [
+        "Overpass",
+        "Overpass Mono"
+      ],
+      "nilaiSpasi": 5,
+      "spasiDiLuarSkalaPersen": 0,
+      "radius": [
+        4
+      ],
+      "bayangan": 0,
+      "warnaTeks": 7,
+      "tombolSolidDiLayarPertama": 2,
+      "elemenTerkuat": [
+        "h1 \"toconnect\"",
+        "h2 \"Chat\"",
+        "span.nav-rail__badge \"1\""
+      ],
+      "tepiKiriTerbanyak": [
+        "96px(10)",
+        "28px(3)",
+        "576px(3)",
+        "10px(2)",
+        "176px(2)",
+        "328px(2)"
+      ],
+      "jumlahGambar": 0,
+      "kataJudulTerpanjang": 2,
+      "jumlahSvg": 13,
+      "warnaAksen": 3,
+      "grupKartuSeragam": 1,
+      "jumlahKartuSeragam": 24,
+      "kandidatFokus": [
+        "h1 \"toconnect\"",
+        "h2 \"Chat\""
+      ],
+      "blokWarnaJenuhLayarPertamaPersen": 0,
+      "token": {
+        "aktif": true,
+        "warnaDiLuar": 0,
+        "radiusDiLuar": 0,
+        "hurufDiLuar": 0,
+        "fontDiLuar": 0
+      }
+    },
+    "issues": []
+  }
+]

@@ -1,0 +1,178 @@
+[
+  {
+    "viewport": {
+      "w": 375,
+      "h": 812
+    },
+    "counts": {
+      "high": 0,
+      "medium": 2,
+      "low": 2
+    },
+    "stats": {
+      "ukuranHuruf": [
+        12,
+        13,
+        14,
+        16,
+        21
+      ],
+      "keluargaHuruf": [
+        "Overpass",
+        "Overpass Mono"
+      ],
+      "nilaiSpasi": 5,
+      "spasiDiLuarSkalaPersen": 0,
+      "radius": [
+        4,
+        8
+      ],
+      "bayangan": 0,
+      "warnaTeks": 4,
+      "tombolSolidDiLayarPertama": 2,
+      "elemenTerkuat": [
+        "h2.vh \"Chat\"",
+        "h3#q-a \"Kartu bukti yang tidak punya\"",
+        "h3#q-b \"Informasi tambahan di kartu?\""
+      ],
+      "tepiKiriTerbanyak": [
+        "48px(9)",
+        "34px(6)",
+        "16px(5)",
+        "40px(2)",
+        "240px(2)",
+        "0px(1)"
+      ],
+      "jumlahGambar": 0,
+      "kataJudulTerpanjang": 8,
+      "jumlahSvg": 2,
+      "warnaAksen": 1,
+      "grupKartuSeragam": 1,
+      "jumlahKartuSeragam": 4,
+      "kandidatFokus": [
+        "h2.vh \"Chat\"",
+        "h3#q-a \"Kartu bukti yang tidak punya\""
+      ],
+      "blokWarnaJenuhLayarPertamaPersen": 0,
+      "token": {
+        "aktif": true,
+        "warnaDiLuar": 0,
+        "radiusDiLuar": 0,
+        "hurufDiLuar": 1,
+        "fontDiLuar": 0
+      }
+    },
+    "issues": [
+      {
+        "sev": "medium",
+        "rule": "heading",
+        "detail": "ada 0 elemen h1 (seharusnya 1)"
+      },
+      {
+        "sev": "medium",
+        "rule": "token-huruf",
+        "detail": "ukuran huruf di luar skala token: 21px"
+      },
+      {
+        "sev": "low",
+        "rule": "copy-tombol",
+        "detail": "tombol 7 kata (ideal 1-3): \"Ringkasan teksDua baris hasil tes atau audit\"",
+        "at": "button.opt \"Ringkasan teksDua baris hasi\""
+      },
+      {
+        "sev": "low",
+        "rule": "copy-tombol",
+        "detail": "tombol 7 kata (ideal 1-3): \"Ikon jenis berkasIkon garis + nama berkas\"",
+        "at": "button.opt \"Ikon jenis berkasIkon garis \""
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "w": 376,
+      "h": 812
+    },
+    "counts": {
+      "high": 0,
+      "medium": 2,
+      "low": 2
+    },
+    "stats": {
+      "ukuranHuruf": [
+        12,
+        13,
+        14,
+        16,
+        21
+      ],
+      "keluargaHuruf": [
+        "Overpass",
+        "Overpass Mono"
+      ],
+      "nilaiSpasi": 5,
+      "spasiDiLuarSkalaPersen": 0,
+      "radius": [
+        4,
+        8
+      ],
+      "bayangan": 0,
+      "warnaTeks": 4,
+      "tombolSolidDiLayarPertama": 2,
+      "elemenTerkuat": [
+        "h2.vh \"Chat\"",
+        "h3#q-a \"Kartu bukti yang tidak punya\"",
+        "h3#q-b \"Informasi tambahan di kartu?\""
+      ],
+      "tepiKiriTerbanyak": [
+        "48px(9)",
+        "34px(6)",
+        "16px(5)",
+        "40px(2)",
+        "0px(1)",
+        "8px(1)"
+      ],
+      "jumlahGambar": 0,
+      "kataJudulTerpanjang": 8,
+      "jumlahSvg": 2,
+      "warnaAksen": 1,
+      "grupKartuSeragam": 1,
+      "jumlahKartuSeragam": 4,
+      "kandidatFokus": [
+        "h2.vh \"Chat\"",
+        "h3#q-a \"Kartu bukti yang tidak punya\""
+      ],
+      "blokWarnaJenuhLayarPertamaPersen": 0,
+      "token": {
+        "aktif": true,
+        "warnaDiLuar": 0,
+        "radiusDiLuar": 0,
+        "hurufDiLuar": 1,
+        "fontDiLuar": 0
+      }
+    },
+    "issues": [
+      {
+        "sev": "medium",
+        "rule": "heading",
+        "detail": "ada 0 elemen h1 (seharusnya 1)"
+      },
+      {
+        "sev": "medium",
+        "rule": "token-huruf",
+        "detail": "ukuran huruf di luar skala token: 21px"
+      },
+      {
+        "sev": "low",
+        "rule": "copy-tombol",
+        "detail": "tombol 7 kata (ideal 1-3): \"Ringkasan teksDua baris hasil tes atau audit\"",
+        "at": "button.opt \"Ringkasan teksDua baris hasi\""
+      },
+      {
+        "sev": "low",
+        "rule": "copy-tombol",
+        "detail": "tombol 7 kata (ideal 1-3): \"Ikon jenis berkasIkon garis + nama berkas\"",
+        "at": "button.opt \"Ikon jenis berkasIkon garis \""
+      }
+    ]
+  }
+]
