@@ -2,45 +2,35 @@
 
 Diperbarui otomatis oleh backlog.js. Jangan edit tangan; ubah lewat perintah atau agent backlog.
 
-**Progres: 4/45 selesai** · berjalan 5 · siap 1 · menunggu 35 · gagal 0
-
-## Berjalan
-
-| ID | Jenis | Judul | Agent | Nilai/Usaha |
-|---|---|---|---|---|
-| f05-store-v2-inti | be | Penyimpanan v2 (1/2): proyek, run, sesi, milestone, batch, item | be | high/m |
-| f16-ui-kerangka | ui | Kerangka halaman: rel navigasi, token desain, gaya dasar, tema terang/gelap | ui-designer | high/m |
-| rb01-katalog-tim | be | Server membaca daftar agent dan perintah tim Fullstack dari plugin yang terpasang (agents/*.md) | be | high/m |
-| lp10-fe-lib-run | fe | Logika tampilan murni: status run, format, susunan Chat, status agent, tata letak peta | fe | high/m |
-| ll01-parser-limit | be | Fixture dan pengenalan batas pemakaian serta jam reset | be (opus) | high/m |
+**Progres: 9/45 selesai** · berjalan 0 · siap 6 · menunggu 30 · gagal 0
 
 ## Siap dikerjakan
 
 | ID | Jenis | Judul | Agent | Nilai/Usaha |
 |---|---|---|---|---|
+| f06-store-v2-sisanya | be | Penyimpanan v2 (2/2): bukti, pesan, aktivitas agent, aturan izin, push, notifikasi, pengaturan | be | high/m |
+| f14-ketat-resume | be | Pengetatan: ketik-lanjut hanya untuk run terakhir Selesai; restart tidak mengubah run tanpa sesi | be | high/m |
+| f17-fe-kerangka | fe | Kerangka aplikasi: rute, klien API, tema | fe | high/m |
+| rb02-folder-proyek | be | Jelajah dan buat folder proyek di bawah folder kerja | be | high/m |
+| rb05-ui-run-baru | ui | Layar Run baru dan Daftar proyek (bangun dan audit dalam satu item) | ui-designer | high/l |
 | sc01-jaringan | be | Keamanan jaringan: pengguna Tailscale, CSP, batas laju | be (opus) | high/s |
 
 ## Menunggu dependensi
 
 | ID | Judul | Menunggu |
 |---|---|---|
-| f06-store-v2-sisanya | Penyimpanan v2 (2/2): bukti, pesan, aktivitas agent, aturan izin, push, notifikasi, pengaturan | f05-store-v2-inti |
-| f14-ketat-resume | Pengetatan: ketik-lanjut hanya untuk run terakhir Selesai; restart tidak mengubah run tanpa sesi | f05-store-v2-inti |
-| f17-fe-kerangka | Kerangka aplikasi: rute, klien API, tema | f16-ui-kerangka |
-| rb02-folder-proyek | Jelajah dan buat folder proyek di bawah folder kerja | f05-store-v2-inti |
-| rb03a-conductor-inti | Pengatur run: mesin status, satu run aktif per proyek, kapasitas | f05-store-v2-inti, f14-ketat-resume, rb01-katalog-tim |
+| rb03a-conductor-inti | Pengatur run: mesin status, satu run aktif per proyek, kapasitas | f14-ketat-resume |
 | rb03b-free-flow | Run prompt bebas dan perintah sesi (FreeFlow) | rb03a-conductor-inti |
 | rb04-api-mulai-run | Mulai run lewat API dengan model dan perintah dari tim | rb03b-free-flow, rb02-folder-proyek |
-| rb05-ui-run-baru | Layar Run baru dan Daftar proyek (bangun dan audit dalam satu item) | f16-ui-kerangka |
 | rb06-fe-run-baru | Menyambung Run baru: ingat folder dan model, Enter untuk mulai | rb05-ui-run-baru, rb04-api-mulai-run, rb02-folder-proyek, f17-fe-kerangka |
 | lp01-transkrip | Token dan model per pemanggilan agent dari transkrip | f06-store-v2-sisanya |
 | lp02-aktivitas-agent | Status agent live dari aliran sesi | f06-store-v2-sisanya, rb03b-free-flow |
-| lp03-api-detail-run | API detail run dan detail agent | lp01-transkrip, lp02-aktivitas-agent, rb01-katalog-tim |
-| lp04-seed-demo | Data contoh berlabel dari run asli dan satu skenario tim fullstack (npm run seed) | f06-store-v2-sisanya, rb01-katalog-tim, lp01-transkrip |
-| lp05-ui-kerangka-proyek | Layar proyek (1/3): bar atas, kolom agent, rangka tiga kolom | f16-ui-kerangka, lp04-seed-demo |
+| lp03-api-detail-run | API detail run dan detail agent | lp01-transkrip, lp02-aktivitas-agent |
+| lp04-seed-demo | Data contoh berlabel dari run asli dan satu skenario tim fullstack (npm run seed) | f06-store-v2-sisanya, lp01-transkrip |
+| lp05-ui-kerangka-proyek | Layar proyek (1/3): bar atas, kolom agent, rangka tiga kolom | lp04-seed-demo |
 | lp06-ui-peta | Layar proyek (2/3): peta jalur, bangun dan audit dalam satu item | lp05-ui-kerangka-proyek |
 | lp07-ui-chat | Layar proyek (3/3): panel Chat, kartu, dan tab Detail agent | lp05-ui-kerangka-proyek |
-| lp12a-fe-proyek-data | Layar proyek: data live, bar atas, kolom agent, Jeda/Lanjut/Stop | lp05-ui-kerangka-proyek, lp10-fe-lib-run, lp03-api-detail-run, f17-fe-kerangka, lp07a-keputusan-screenshot |
+| lp12a-fe-proyek-data | Layar proyek: data live, bar atas, kolom agent, Jeda/Lanjut/Stop | lp05-ui-kerangka-proyek, lp03-api-detail-run, f17-fe-kerangka, lp07a-keputusan-screenshot |
 | lp12b-fe-peta | Layar proyek: peta jalur dengan zoom, geser, pas layar (tanpa timeline) | lp06-ui-peta, lp12a-fe-proyek-data |
 | lp12c-fe-detail-agent | Layar proyek: tab Detail agent dan lencana Chat | lp07-ui-chat, lp12a-fe-proyek-data |
 | lp13-critic-proyek | Kritik layar proyek yang sudah tersambung data (peta, Chat, Detail agent) | lp12a-fe-proyek-data, lp12b-fe-peta, lp12c-fe-detail-agent, ch04-fe-chat, ch05-fe-izin |
@@ -50,7 +40,7 @@ Diperbarui otomatis oleh backlog.js. Jangan edit tangan; ubah lewat perintah ata
 | ch04-fe-chat | Chat: jawab pertanyaan, kotak ketik, baca saja | lp07-ui-chat, ch01-pesan-jawab, ch03-kirim-lanjutkan, lp12a-fe-proyek-data |
 | ch05-fe-izin | Chat: kartu izin, serta tampilan Gagal/Terputus/Jeda limit dengan Lanjutkan | ch04-fe-chat, ch02-izin-aturan, lp12a-fe-proyek-data, ch03-kirim-lanjutkan, ll03-limit-jadwal |
 | ll02-jeda-panjang | Jeda lebih dari 50 menit dan lanjut dari sesi terlepas | rb03b-free-flow, ch03-kirim-lanjutkan |
-| ll03-limit-jadwal | Jeda limit: lanjut otomatis setelah reset, bertahan saat restart, pemulihan setelah restart | ll01-parser-limit, rb03b-free-flow, ch03-kirim-lanjutkan |
+| ll03-limit-jadwal | Jeda limit: lanjut otomatis setelah reset, bertahan saat restart, pemulihan setelah restart | rb03b-free-flow, ch03-kirim-lanjutkan |
 | pb01-api-proyek | API daftar proyek, detail proyek, pengaturan | f06-store-v2-sisanya, rb03a-conductor-inti, rb02-folder-proyek |
 | pb03-fe-daftar | Daftar proyek: polling 3 detik dan aksi satu klik | rb05-ui-run-baru, pb01-api-proyek, ch03-kirim-lanjutkan, f17-fe-kerangka |
 | hapus-web-lama | Hapus tampilan polos lama setelah rute React hidup | rb06-fe-run-baru, pb03-fe-daftar, lp12a-fe-proyek-data |
@@ -67,7 +57,12 @@ Diperbarui otomatis oleh backlog.js. Jangan edit tangan; ubah lewat perintah ata
 | f01-contract-pindah | Kontrak data dan Harness/Store dipindah ke folder modul tanpa mengubah perilaku (mekanis) | typecheck bersih; npm test 50 lulus 0 gagal; src/contract/, src/harness/, src/store/ ada, file lama hilang |
 | f03-skema-kontrak | Skema kontrak Fase 1: umum, galat, tim, run, pesan, proyek, pengaturan, jeda limit | typecheck bersih; test/contract.test.ts 7 lulus; npm test 57 lulus 0 gagal |
 | f04-vite-boilerplate | Kerangka aplikasi tampilan: Vite, React, alias kontrak, server melayani hasil build | build sukses; typecheck server+web bersih; 50 tes lulus; npm audit 0 vuln; web/vite.config.ts, web/src/main.tsx ada |
+| f05-store-v2-inti | Penyimpanan v2 (1/2): proyek, run, sesi, milestone, batch, item | migrasi user_version 2 di src/store/migrations.ts; node --test store.test.ts lulus (33/33 gabungan store,teams,limits,web-lib) |
 | f12-spike-asumsi | Cek asumsi T1 dan T2 dengan claude asli | docs/SPIKE.md bagian Cek T1/T2 (baris 112); test/fixtures/stream/subagent-background-haiku.jsonl; T1 dan T2 terbukti |
+| f16-ui-kerangka | Kerangka halaman: rel navigasi, token desain, gaya dasar, tema terang/gelap | docs/bukti/f16-ui-kerangka/{terang,gelap}/audit-{1440,900}.png + audit.json (high/medium/low=0), NavRail + KOMPONEN.md ada, typecheck lulus |
+| rb01-katalog-tim | Server membaca daftar agent dan perintah tim Fullstack dari plugin yang terpasang (agents/*.md) | src/teams/catalog.ts, fixture test/fixtures/teams {tiruan,rusak}; teams.test.ts lulus |
+| lp10-fe-lib-run | Logika tampilan murni: status run, format, susunan Chat, status agent, tata letak peta | web/src/app/lib/{runState,format,agentStates,chatItems,railLayout}.ts; web-lib.test.ts lulus |
+| ll01-parser-limit | Fixture dan pengenalan batas pemakaian serta jam reset | src/harness/limits.ts + 12 fixture test/fixtures/limits; limits.test.ts lulus |
 
 ## Ide / nanti (diparkir, belum dikerjakan)
 

@@ -83,7 +83,7 @@
       "finishedAt": "2026-11-05T00:06:57.401Z"
     },
     {
-      "status": "running",
+      "status": "done",
       "needs": [
         "f01-contract-pindah",
         "f03-skema-kontrak"
@@ -106,7 +106,9 @@
       "done": "Migrasi user_version 2 menambah tabel projects, sessions, milestones, batches, items dan kolom baru runs; basis data v1 (2 run uji) tetap terbaca dengan nilai bawaan (tes memakai berkas v1); batasan unik dan indeks sesuai bagian 5; npm test hijau. Tanpa pemangkasan: tidak ada kode DELETE/prune/batas jumlah pada runs, sessions, messages, events (listRuns hanya membatasi bacaan, bukan simpanan); kolom json menyimpan objek penuh; tes: 300 run tetap tersimpan semua.",
       "notes": "[Fase 1]",
       "attempts": 1,
-      "startedAt": "2026-11-05T00:07:56.875Z"
+      "startedAt": "2026-11-05T00:07:56.875Z",
+      "evidence": "migrasi user_version 2 di src/store/migrations.ts; node --test store.test.ts lulus (33/33 gabungan store,teams,limits,web-lib)",
+      "finishedAt": "2026-11-05T00:51:48.245Z"
     },
     {
       "status": "todo",
@@ -180,7 +182,7 @@
       "notes": "[Fase 1] Digabung dari: f15-ketat-disconnected."
     },
     {
-      "status": "running",
+      "status": "done",
       "needs": [
         "f04-vite-boilerplate"
       ],
@@ -210,7 +212,9 @@
       "notes": "[Fase 1] Data contoh, bukan API. Komponen ke web/src/ui/, satu baris di docs/KOMPONEN.md.",
       "done": "web/src/ui/styles (tokens.css impor docs/design-tokens.css, base.css), font Overpass lokal, NavRail (Run baru, Proyek + lencana, Riwayat, Kesehatan kit, Pengaturan), kerangka halaman; terang dan gelap; screenshot 1440 dan 900 di docs/bukti/f16-ui-kerangka/ dengan bukti.json; audit ui-craft --lang id lulus. Riwayat dan Kesehatan kit tetap tampil di rel navigasi dengan tanda \"segera\" (tidak disembunyikan, tidak bisa dibuka); catat di docs/KOMPONEN.md.",
       "attempts": 1,
-      "startedAt": "2026-11-05T00:07:56.937Z"
+      "startedAt": "2026-11-05T00:07:56.937Z",
+      "evidence": "docs/bukti/f16-ui-kerangka/{terang,gelap}/audit-{1440,900}.png + audit.json (high/medium/low=0), NavRail + KOMPONEN.md ada, typecheck lulus",
+      "finishedAt": "2026-11-05T00:51:48.280Z"
     },
     {
       "status": "todo",
@@ -238,7 +242,7 @@
       "notes": "[Fase 1]"
     },
     {
-      "status": "running",
+      "status": "done",
       "needs": [
         "f03-skema-kontrak",
         "f01-contract-pindah"
@@ -262,7 +266,9 @@
       "done": "src/teams/ (catalog, agent-md), GET /api/config (teams, perintah, model, defaultBatchSize) dan GET /api/teams/:id; tim fixture test/fixtures/teams dengan satu agent tiruan muncul tanpa mengubah kode (AC F1 kedua); agent baru di folder tim muncul tanpa ubah kode; definisi rusak tampil valid:false + file dan bagian, tim lain tak terpengaruh; template hanya placeholder dikenal; tes semuanya.",
       "notes": "[Fase 1] A14: di Fase 1 belum ada crew/team.json; dibaca dari agents/*.md plugin Fullstack. Tidak bergantung pada f07 (Fase 2).",
       "attempts": 1,
-      "startedAt": "2026-11-05T00:07:57.000Z"
+      "startedAt": "2026-11-05T00:07:57.000Z",
+      "evidence": "src/teams/catalog.ts, fixture test/fixtures/teams {tiruan,rusak}; teams.test.ts lulus",
+      "finishedAt": "2026-11-05T00:51:48.317Z"
     },
     {
       "status": "todo",
@@ -613,7 +619,7 @@
       "done": "ChatPanel, ChatCard (agent), QuestionCard (tunggal, multi, Lainnya), PermissionCard (Setujui, Tolak dengan kotak alasan, Selalu setujui), MilestoneCard, DecisionCard, SystemLine (batch, limit, gagal, aturan + Batalkan), Composer, banner Baca saja; data contoh; screenshot; kontrak komponen. | AgentDetail dengan tab Chat/Detail dan lencana, isi: tugas, model deklarasi vs terpakai, skill, alat/MCP, langkah, file, token, durasi, bukti; state agent belum jalan (definisi saja); screenshot; kontrak komponen."
     },
     {
-      "status": "running",
+      "status": "done",
       "needs": [
         "f04-vite-boilerplate",
         "f03-skema-kontrak"
@@ -638,7 +644,9 @@
       "done": "web/src/app/lib/: runState (port applyEvent dari web/lib.js beserta tesnya), format (Intl id-ID, \"78,4 rb\"), countTokens dari kontrak, chatItems (gabung langkah alat, kartu terjawab); tes node:test test/web-*.test.ts lulus. | agentStates(team, activities, messages, run) memberi 6 status dan urutan kolom kiri (Butuh kamu, Gagal, Jalan, lainnya menurut alur); railLayout(flow, width) tanpa simpul saling menimpa untuk 12 agent dan alur tim fixture (tes bounding box); agent di luar tim dan jumlah putaran; tes lulus.",
       "notes": "[Fase 1] Gabungan lp10 dan lp11.",
       "attempts": 1,
-      "startedAt": "2026-11-05T00:07:57.099Z"
+      "startedAt": "2026-11-05T00:07:57.099Z",
+      "evidence": "web/src/app/lib/{runState,format,agentStates,chatItems,railLayout}.ts; web-lib.test.ts lulus",
+      "finishedAt": "2026-11-05T00:51:48.358Z"
     },
     {
       "status": "todo",
@@ -878,7 +886,7 @@
       "notes": "[Fase 1] Digabung dari: ll05-fe-lanjutkan."
     },
     {
-      "status": "running",
+      "status": "done",
       "needs": [
         "f01-contract-pindah"
       ],
@@ -900,7 +908,9 @@
       "model": "opus",
       "notes": "[Fase 1] Digabung dari: f13-fixture-limit.",
       "attempts": 1,
-      "startedAt": "2026-11-05T00:07:57.158Z"
+      "startedAt": "2026-11-05T00:07:57.158Z",
+      "evidence": "src/harness/limits.ts + 12 fixture test/fixtures/limits; limits.test.ts lulus",
+      "finishedAt": "2026-11-05T00:51:48.397Z"
     },
     {
       "status": "todo",
@@ -2337,5 +2347,5 @@
       "notes": "asal: f03-skema-kontrak"
     }
   ],
-  "updatedAt": "2026-11-05T00:07:57.160Z"
+  "updatedAt": "2026-11-05T00:51:48.398Z"
 }
