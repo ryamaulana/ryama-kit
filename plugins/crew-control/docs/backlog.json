@@ -111,7 +111,7 @@
       "finishedAt": "2026-11-05T00:51:48.245Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "f05-store-v2-inti"
       ],
@@ -128,7 +128,11 @@
       "value": "high",
       "size": "m",
       "done": "Tabel evidence, agent_activity, permission_rules, push_subscriptions, notifications, settings dan kolom messages baru; Store.subscribeAll(fn) memancarkan semua event run; tes simpan/baca tiap entitas dan subscribeAll; npm test hijau. Event menyimpan payload penuh tanpa dipangkas (langkah alat dengan masukan/hasil, status, izin); tabel metrik kesehatan kit tidak perlu, dihitung dari data ini.",
-      "notes": "[Fase 1] Pesan, aktivitas agent, dan token per sesi dicatat lengkap sejak Fase 1 (PRD A15). Tabel bukti, push, dan notifikasi disiapkan skemanya saja."
+      "notes": "[Fase 1] Pesan, aktivitas agent, dan token per sesi dicatat lengkap sejak Fase 1 (PRD A15). Tabel bukti, push, dan notifikasi disiapkan skemanya saja.",
+      "attempts": 1,
+      "startedAt": "2026-11-05T00:57:41.929Z",
+      "evidence": "tsc bersih; npm test 97 lulus/1 gagal (A3 policy, sudah gagal sebelumnya); 4 tes store baru; src/store/queries3.ts ada",
+      "finishedAt": "2026-11-05T01:00:28.769Z"
     },
     {
       "status": "done",
@@ -157,7 +161,7 @@
       "finishedAt": "2026-11-05T00:06:44.930Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "f05-store-v2-inti"
       ],
@@ -179,7 +183,11 @@
       "value": "high",
       "size": "m",
       "done": "POST pesan ke run yang bukan run terakhir proyek atau berstatus failed/stopped/disconnected ditolak run_read_only (details.latestRunId); hanya run terakhir berstatus done yang dilanjutkan; tes batas tiap status; npm test hijau. | markDisconnected hanya mengubah run yang punya proses; limit_paused, ready_review, needs_owner tanpa sesi tetap utuh setelah restart (tes: simpan, buat Store baru, cek status); npm test hijau.",
-      "notes": "[Fase 1] Digabung dari: f15-ketat-disconnected."
+      "notes": "[Fase 1] Digabung dari: f15-ketat-disconnected.",
+      "attempts": 1,
+      "startedAt": "2026-11-05T01:00:28.960Z",
+      "evidence": "npm test 99 lulus/1 gagal (A3 lama); tes baru harness.test.ts batas status+restart",
+      "finishedAt": "2026-11-05T01:02:09.367Z"
     },
     {
       "status": "done",
@@ -217,7 +225,7 @@
       "finishedAt": "2026-11-05T00:51:48.280Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "f04-vite-boilerplate",
         "f16-ui-kerangka",
@@ -239,7 +247,11 @@
       "value": "high",
       "size": "m",
       "done": "web/src/app/routes.tsx memuat semua rute UX bagian 4 (halaman kosong bertanda), api.ts (fetch + ApiError dari kontrak), QueryClient, useSettings dengan tema (ikut sistem pada kunjungan pertama, pilihan diingat di localStorage); NavRail tersambung; tes lib murni; typecheck dan npm run build bersih. Rute /riwayat dan /kesehatan-kit memuat halaman \"Segera hadir (fase 2)\"; tanda \"segera\" di rel tersambung; tes lib untuk penandanya.",
-      "notes": "[Fase 1]"
+      "notes": "[Fase 1]",
+      "attempts": 1,
+      "startedAt": "2026-11-05T00:57:41.975Z",
+      "evidence": "typecheck+build bersih; 4 tes lib baru di test/web-lib.test.ts; file routes.tsx/api.ts/theme.ts/nav.ts ada; kegagalan A3 policy sudah ada sebelumnya",
+      "finishedAt": "2026-11-05T00:59:39.327Z"
     },
     {
       "status": "done",
@@ -271,7 +283,7 @@
       "finishedAt": "2026-11-05T00:51:48.317Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "f05-store-v2-inti",
         "f03-skema-kontrak"
@@ -292,10 +304,14 @@
       "value": "high",
       "size": "m",
       "done": "projects.ts: createFolder (validasi nama bagian 6.2, git init) dan projectId (12 hex sha1 projectKey); GET /api/folders memuat activeRunId dan project {id,lastCommandId,hasOpenBacklog,activeRunId}; POST /api/folders; tes: 3 tingkat dapat dibuka, .. dan symlink keluar ditolak, batas 500, folder_exists, nama terlarang Windows; npm test hijau.",
-      "notes": "[Fase 1]"
+      "notes": "[Fase 1]",
+      "attempts": 1,
+      "startedAt": "2026-11-05T01:02:12.179Z",
+      "evidence": "npm test 105 lulus/1 gagal (A3 lama); tsc bersih; test/folders.test.ts ada",
+      "finishedAt": "2026-11-05T01:03:39.455Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "f01-contract-pindah",
         "f05-store-v2-inti",
@@ -320,10 +336,14 @@
       "size": "m",
       "model": "opus",
       "done": "src/conductor/ (index, status): mesin status run dengan prioritas tampilan paused > needs_owner > running; maks satu run aktif per proyek dan CREW_MAX_RUNS (bawaan 1, rentang 1..3; keputusan pemilik 2026-11-04) dengan project_busy/capacity; origin=desktop tidak dihitung kapasitas; Harness memberi --session-id sendiri (isOwnSession) sesuai hasil T2; tes memakai fake-claude; npm test hijau. Setiap perubahan status run dicatat sebagai event bertipe status (dari, ke, alasan, waktu) agar riwayat dan pemberitahuan fase 2 bisa disusun ulang.",
-      "notes": "[Fase 1]"
+      "notes": "[Fase 1]",
+      "attempts": 1,
+      "startedAt": "2026-11-05T01:03:43.339Z",
+      "evidence": "npm test 121 lulus/1 gagal (A3 lama); tsc bersih; 10 tes baru test/conductor.test.ts",
+      "finishedAt": "2026-11-05T01:08:17.903Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "rb03a-conductor-inti"
       ],
@@ -342,7 +362,11 @@
       "value": "high",
       "size": "m",
       "done": "FreeFlow.start merender template perintah tim dan meluncurkan sesi; giliran selesai dan tidak ada pesan baru 2 dtk -> sesi ditutup dan run done; logika \"giliran selesai = run selesai\" keluar dari Harness; tes dengan fake-claude; npm test hijau.",
-      "notes": "[Fase 1]"
+      "notes": "[Fase 1]",
+      "attempts": 1,
+      "startedAt": "2026-11-05T01:08:32.240Z",
+      "evidence": "npm test 132 lulus/1 gagal (A3 lama); typecheck bersih; test/free-flow.test.ts",
+      "finishedAt": "2026-11-05T01:10:58.524Z"
     },
     {
       "status": "todo",
@@ -369,7 +393,7 @@
       "notes": "[Fase 1]"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "f16-ui-kerangka"
       ],
@@ -400,7 +424,11 @@
       "size": "l",
       "screen": "Run baru, Daftar proyek",
       "notes": "[Fase 1] Gabungan rb05, rb05-audit, pb02 (permintaan pemilik: gabung ui-designer dan audit). Setelah membangun, agent menjalankan audit ui-craft dan memperbaiki di item yang sama. Status siap review (Fase 2) dan pilihan tim lain (Fase 3) tidak dibuat.",
-      "done": "NewRunView dan FolderPopover (tiap baris punya Pilih, Terakhir dipakai, jejak dari folder kerja tanpa jalan naik, buat folder baru), menu model (nama + keterangan), chip perintah, peringatan folder kerja; semua state UX bagian 9; data contoh; screenshot terang/gelap 1440 dan 900; tabel Kontrak komponen di laporan dan docs/KOMPONEN.md. | Audit ui-craft --lang id (dan teks ux-writing-id) tanpa temuan blocker/major; bukti.json diperbarui dengan screenshot sesudah perbaikan. | ProjectListView (5 angka dengan 0 diciutkan, kelompok Perlu diurus/Jalan/Diam, baris proyek dengan label dari desktop, baris Aktifkan pemberitahuan yang bisa ditutup); data contoh; screenshot terang/gelap 1440 dan 375; kontrak komponen."
+      "done": "NewRunView dan FolderPopover (tiap baris punya Pilih, Terakhir dipakai, jejak dari folder kerja tanpa jalan naik, buat folder baru), menu model (nama + keterangan), chip perintah, peringatan folder kerja; semua state UX bagian 9; data contoh; screenshot terang/gelap 1440 dan 900; tabel Kontrak komponen di laporan dan docs/KOMPONEN.md. | Audit ui-craft --lang id (dan teks ux-writing-id) tanpa temuan blocker/major; bukti.json diperbarui dengan screenshot sesudah perbaikan. | ProjectListView (5 angka dengan 0 diciutkan, kelompok Perlu diurus/Jalan/Diam, baris proyek dengan label dari desktop, baris Aktifkan pemberitahuan yang bisa ditutup); data contoh; screenshot terang/gelap 1440 dan 375; kontrak komponen.",
+      "attempts": 1,
+      "startedAt": "2026-11-05T01:00:29.003Z",
+      "evidence": "docs/bukti/rb05-ui-run-baru/bukti.json (26 screenshot terang/gelap); audit ui-craft id 0 temuan tinggi; typecheck+build bersih",
+      "finishedAt": "2026-11-05T01:12:16.314Z"
     },
     {
       "status": "todo",
@@ -431,7 +459,7 @@
       "notes": "[Fase 1]"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "f06-store-v2-sisanya"
       ],
@@ -452,7 +480,11 @@
       "value": "high",
       "size": "m",
       "done": "src/transcripts.ts: usage(sessionId, transcriptPath?) membaca JSONL ~/.claude/projects inkremental, dedupe per id pesan, token 4 jenis dan model terpakai, atribusi ITEM <id>; path divalidasi di dalam ~/.claude/projects; fixture test/fixtures/transcripts; npm test hijau. Hasil token per sesi dan per pemanggilan agent (4 jenis, model terpakai, atribusi item) DISIMPAN ke Store saat sesi berakhir, bukan hanya dihitung dari transkrip, agar tetap ada bila berkas transkrip hilang.",
-      "notes": "[Fase 1]"
+      "notes": "[Fase 1]",
+      "attempts": 1,
+      "startedAt": "2026-11-05T01:08:32.283Z",
+      "evidence": "test/transcripts.test.ts 5 lulus/0 gagal; npm test penuh 131 lulus/1 gagal (A3 lama); src/transcripts.ts ada",
+      "finishedAt": "2026-11-05T01:10:19.351Z"
     },
     {
       "status": "todo",
@@ -506,7 +538,7 @@
       "notes": "[Fase 1]"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "f06-store-v2-sisanya",
         "rb01-katalog-tim",
@@ -526,7 +558,11 @@
       "value": "high",
       "size": "m",
       "done": "npm run seed menulis data/demo.db (berlabel contoh) dari (a) run asli 07_Sandbox yang diimpor lewat transkrip dan (b) satu skenario tim fullstack 10 agent: 2 agent paralel, 1 agent bertanya; plus run dalam tiap status, milestone, batch, pesan, bukti dari docs/mockups/arah-b/bukti-contoh; server berjalan dengan CREW_DB=data/demo.db; data/ di .gitignore; tes memuat demo.db.",
-      "notes": "[Fase 1] Dipindah sebelum lp05 (keputusan pemilik 2026-11-05): tidak bergantung API layar proyek (lp03); layar proyek dibangun di atas data ini."
+      "notes": "[Fase 1] Dipindah sebelum lp05 (keputusan pemilik 2026-11-05): tidak bergantung API layar proyek (lp03); layar proyek dibangun di atas data ini.",
+      "attempts": 1,
+      "startedAt": "2026-11-05T01:11:02.421Z",
+      "evidence": "npm test hasil lihat laporan; test/seed.test.ts; src/seed.ts; data/demo.db diabaikan git",
+      "finishedAt": "2026-11-05T01:13:46.719Z"
     },
     {
       "status": "todo",
@@ -962,7 +998,7 @@
       "notes": "[Fase 1] Gabungan ll03 dan ll04. Pemberitahuan limit di Fase 1 hanya judul tab dan bunyi."
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "f06-store-v2-sisanya",
         "rb03a-conductor-inti",
@@ -984,7 +1020,11 @@
       "value": "high",
       "size": "m",
       "done": "GET /api/projects (ProjectBoard: totals dan ProjectSummary lengkap), GET /api/projects/:id, PUT /api/projects/:id/settings, PUT /api/settings (batch 1..20); angka butuh kamu/siap review/jalan/gagal/limit sesuai UX 6.1; tes; npm test hijau.",
-      "notes": "[Fase 1]"
+      "notes": "[Fase 1]",
+      "attempts": 1,
+      "startedAt": "2026-11-05T01:11:02.380Z",
+      "evidence": "test/projects-api.test.ts 2 tes lulus; npm test 134 lulus/1 gagal (A3 lama); src/board.ts ada",
+      "finishedAt": "2026-11-05T01:12:52.821Z"
     },
     {
       "status": "todo",
@@ -2245,7 +2285,7 @@
       "notes": "[Fase 1] Keputusan pemilik 2026-11-05: layar disetujui dulu sebelum fe menyambung."
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "f03-skema-kontrak",
         "f04-vite-boilerplate"
@@ -2267,7 +2307,11 @@
       "size": "s",
       "model": "opus",
       "done": "src/security.ts: CREW_TAILSCALE_USERS memaksa header Tailscale-User-Login untuk Host *.ts.net (403 forbidden_user); CSP bagian 10 pada respons berkas tampilan; batas 60 permintaan pengubah per menit per alamat (429 rate_limited); SSE replay maks 5000 event; tes tiap aturan; npm test hijau.",
-      "notes": "[Fase 1] Ditarik dari Fase 2 (keputusan pemilik 2026-11-05). Menyentuh [SEC], jadi opus."
+      "notes": "[Fase 1] Ditarik dari Fase 2 (keputusan pemilik 2026-11-05). Menyentuh [SEC], jadi opus.",
+      "attempts": 1,
+      "startedAt": "2026-11-05T01:03:43.381Z",
+      "evidence": "npm test 111 lulus/1 gagal (A3 lama); test/security.test.ts 6 tes; tsc bersih",
+      "finishedAt": "2026-11-05T01:06:23.225Z"
     },
     {
       "status": "rejected",
@@ -2345,7 +2389,137 @@
       "value": "mid",
       "size": "m",
       "notes": "asal: f03-skema-kontrak"
+    },
+    {
+      "id": "bug-a3-glob-absolut",
+      "title": "Perbaiki tes kebijakan A3: Glob absolut harus ask, kini allow",
+      "type": "be",
+      "agent": "be",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: f06/f17 (gagal sebelum perubahan)"
+    },
+    {
+      "id": "keputusan-rute-kesehatan",
+      "title": "Samakan rute Kesehatan kit: /kesehatan vs /kesehatan-kit; hapus alias",
+      "type": "fe",
+      "agent": "fe",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: f17"
+    },
+    {
+      "id": "tes-http-run-read-only",
+      "title": "Uji lapisan HTTP untuk galat run_read_only",
+      "type": "be",
+      "agent": "be",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: f14"
+    },
+    {
+      "id": "isi-last-command-id",
+      "title": "Isi lastCommandId di daftar folder setelah commandId disimpan di tabel runs",
+      "type": "be",
+      "agent": "be",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: rb02"
+    },
+    {
+      "id": "sc01-celah-sse",
+      "title": "Celah event pada SSE bila >5000 event tertunda; panduan tailscale serve tetap 127.0.0.1",
+      "type": "be",
+      "agent": "be",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: sc01 (cek pengguna hanya untuk Host *.ts.net)"
+    },
+    {
+      "id": "pasang-conductor-server",
+      "title": "Pasang Conductor di server.ts/main.ts dan hapus cek busy/capacity bawaan Harness",
+      "type": "be",
+      "agent": "be",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: rb03a"
+    },
+    {
+      "id": "pasang-usage-harness",
+      "title": "Pasang recordSessionUsage di onSessionEnd Harness dan agregasi token per item",
+      "type": "be",
+      "agent": "be",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: lp01"
+    },
+    {
+      "id": "rb05-lembar-folder-hp",
+      "title": "Lembar bawah pilih folder untuk HP",
+      "type": "ui",
+      "agent": "ui-designer",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: rb05"
+    },
+    {
+      "id": "rb05-ui-critic",
+      "title": "ui-critic untuk Run baru dan Daftar proyek (agent rb05 menyebut tidak perlu; pemilik putuskan)",
+      "type": "ui",
+      "agent": "ui-critic",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: rb05"
+    },
+    {
+      "id": "seed-07-sandbox-asli",
+      "title": "Hubungkan impor run asli 07_Sandbox (transcriptRoot) ke npm run seed bila ada",
+      "type": "be",
+      "agent": "be",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: lp04"
     }
   ],
-  "updatedAt": "2026-11-05T00:51:48.398Z"
+  "updatedAt": "2026-11-05T01:13:46.764Z"
 }

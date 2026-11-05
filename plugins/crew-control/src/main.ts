@@ -3,6 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { z } from 'zod';
 import { ModelId } from './contract/index.js';
+import { FreeFlow } from './conductor/free-flow.js';
 import { Harness } from './harness/index.js';
 import { createApp } from './server.js';
 import { Store } from './store/index.js';
@@ -19,6 +20,7 @@ const env = z.object({
   CREW_TEAM_DIRS: z.string().optional(), // default: folder induk plugin ini (plugins/)
   CREW_ALLOWED_HOSTS: z.string().optional(),
   CREW_ALLOWED_ORIGINS: z.string().optional(),
+  CREW_TAILSCALE_USERS: z.string().optional(),
 }).parse(process.env);
 
 if (env.CREW_HOST === '0.0.0.0' || env.CREW_HOST === '::') {
@@ -27,17 +29,18 @@ if (env.CREW_HOST === '0.0.0.0' || env.CREW_HOST === '::') {
 }
 
 const store = new Store(path.resolve(env.CREW_DB));
-const stale = store.markDisconnected();
+const stale = store.getSetting('demo_label') ? 0 : store.markDisconnected(); // data contoh (npm run seed) tidak diubah saat server mulai
 if (stale) console.log(`${stale} run dari sesi server sebelumnya ditandai Terputus.`);
 const harness = new Harness({
   store, hookBaseUrl: `http://127.0.0.1:${env.CREW_PORT}`, bin: env.CREW_CLAUDE_BIN, maxRuns: env.CREW_MAX_RUNS,
 });
+new FreeFlow({ harness });
 const app = createApp({
   store, harness, workRoot: env.CREW_WORK_ROOT, maxRuns: env.CREW_MAX_RUNS, defaultModel: env.CREW_DEFAULT_MODEL,
   webDir: path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'web'),
   distDir: path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'web', 'dist'),
   teamDirs: list(env.CREW_TEAM_DIRS).length ? list(env.CREW_TEAM_DIRS) : [path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..')],
-  allowedHosts: list(env.CREW_ALLOWED_HOSTS), allowedOrigins: list(env.CREW_ALLOWED_ORIGINS),
+  allowedHosts: list(env.CREW_ALLOWED_HOSTS), allowedOrigins: list(env.CREW_ALLOWED_ORIGINS), tailscaleUsers: list(env.CREW_TAILSCALE_USERS),
 });
 
 const stopAll = async () => {

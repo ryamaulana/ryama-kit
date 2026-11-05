@@ -2,13 +2,16 @@
 // [Fase 1] A14: tanpa crew/team.json, plugin bernama "fullstack-dev" memakai fullstack.fallback.json (data, bukan kode); plugin lain tanpa team.json dilewati.
 import fs from 'node:fs';
 import path from 'node:path';
-import { Team, TeamManifest, type TeamSummary } from '../contract/index.js';
+import { Team, TeamManifest, type TeamCommand, type TeamSummary } from '../contract/index.js';
 import { AgentMdError, parseAgentMd, type AgentDef } from './agent-md.js';
 
 const FALLBACK = path.join(import.meta.dirname, 'fullstack.fallback.json');
 const FALLBACK_PLUGIN = 'fullstack-dev';
 
-export interface TeamCatalog { list(): TeamSummary[]; get(id: string): Team | null; agentOf(team: Team, name: string): Team['agents'][number] | undefined }
+export interface TeamCatalog { list(): TeamSummary[]; get(id: string): Team | null; agentOf(team: Team, name: string): Team['agents'][number] | undefined; command(team: Team, id: string): TeamCommand | undefined }
+
+// Template perintah hanya dipakai server (tidak ada di kontrak API Team): disimpan di samping objek Team.
+const fullCommands = new WeakMap<Team, TeamCommand[]>();
 
 const bad = (id: string, name: string, file: string, section: string, message: string): Team => ({
   id, name, valid: false, error: { file, section, message }, commands: [], agents: [],
@@ -46,11 +49,13 @@ function load(pluginDir: string): Team | null {
   }
   const missing = m.flow.nodes.find((n) => !agents.has(n));
   if (missing) return bad(m.id, m.name, file, 'flow.nodes', `Agent "${missing}" ada di alur tetapi tidak ada di folder agent.`);
-  return {
+  const team: Team = {
     id: m.id, name: m.name, valid: true,
     commands: m.commands.map(({ id, label, kind, needsText, placeholder }) => ({ id, label, kind, needsText, placeholder })),
     agents: [...agents.values()], orchestrator: m.orchestrator, flow: m.flow, milestoneKinds: m.milestoneKinds,
   };
+  fullCommands.set(team, m.commands);
+  return team;
 }
 
 export function createCatalog(dirs: string[]): TeamCatalog {
@@ -71,5 +76,6 @@ export function createCatalog(dirs: string[]): TeamCatalog {
     list: () => all().map(({ id, name, valid, error, commands }) => ({ id, name, valid, ...(error ? { error } : {}), commands })),
     get: (id) => all().find((t) => t.id === id) ?? null,
     agentOf: (team, name) => team.agents.find((a) => a.id === name),
+    command: (team, id) => fullCommands.get(team)?.find((c) => c.id === id),
   };
 }

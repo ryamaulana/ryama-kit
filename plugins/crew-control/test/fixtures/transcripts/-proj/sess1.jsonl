@@ -1,0 +1,7 @@
+{"type":"user","timestamp":"2026-11-01T10:00:00.000Z","message":{"role":"user","content":"kerjakan item"}}
+{"type":"assistant","timestamp":"2026-11-01T10:00:01.000Z","message":{"id":"m1","model":"claude-opus-4-7","usage":{"input_tokens":5,"output_tokens":10,"cache_read_input_tokens":100,"cache_creation_input_tokens":20},"content":[{"type":"text","text":"mulai"}]}}
+{"type":"assistant","timestamp":"2026-11-01T10:00:02.000Z","message":{"id":"m1","model":"claude-opus-4-7","usage":{"input_tokens":5,"output_tokens":40,"cache_read_input_tokens":100,"cache_creation_input_tokens":20},"content":[{"type":"tool_use","id":"toolu_A","name":"Agent","input":{"subagent_type":"crew:be","prompt":"Proyek x\n\nITEM lp01-transkrip [be]"}}]}}
+{"type":"user","timestamp":"2026-11-01T10:00:03.000Z","message":{"role":"user","content":[{"type":"tool_result","tool_use_id":"toolu_A","content":[{"type":"text","text":"Async agent launched successfully.\nagentId: a1b2 (internal)"}]}]}}
+{"type":"assistant","timestamp":"2026-11-01T10:05:00.000Z","message":{"id":"m2","model":"claude-opus-4-7","usage":{"input_tokens":1,"output_tokens":2,"cache_read_input_tokens":3,"cache_creation_input_tokens":4},"content":[{"type":"text","text":"selesai"}]}}
+{"type":"assistant","timestamp":"2026-11-01T10:05:01.000Z","message":{"id":"x","model":"<synthetic>","usage":{"input_tokens":999,"output_tokens":999},"content":[]}}
+tidak json

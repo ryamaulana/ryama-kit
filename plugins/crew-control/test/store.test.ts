@@ -33,7 +33,7 @@ test('berkas v1 (2 run) tetap terbaca setelah migrasi dengan nilai bawaan', () =
   assert.equal(s.getRun('a')?.prompt, 'x');
   s.close();
   const raw = new DatabaseSync(file);
-  assert.equal((raw.prepare('PRAGMA user_version').get() as any).user_version, 2);
+  assert.equal((raw.prepare('PRAGMA user_version').get() as any).user_version, 3);
   const row = raw.prepare("SELECT origin, title, project_id, team_id FROM runs WHERE id = 'a'").get() as any;
   assert.deepEqual({ ...row }, { origin: 'dashboard', title: '', project_id: null, team_id: null });
   raw.close();
@@ -99,4 +99,81 @@ test('tanpa pemangkasan: 300 run tersimpan semua; listRuns hanya membatasi bacaa
 test('kode store tidak berisi DELETE/prune', () => {
   const dir = path.join(path.dirname(new URL(import.meta.url).pathname.replace(/^\/(\w:)/, '$1')), '..', 'src', 'store');
   for (const f of fs.readdirSync(dir)) assert.doesNotMatch(fs.readFileSync(path.join(dir, f), 'utf8'), /DELETE\s+FROM|DROP\s+TABLE|prune/i, f);
+});
+
+// Seam: Store bagian 2 (antarmuka publik). Menangkap: migrasi v2->v3 tanpa kehilangan pesan, simpan/baca tiap entitas, subscribeAll, payload event utuh, dedupe notifikasi. Terlewat: kinerja, kueri Kesehatan kit.
+const msg = (id: string, runId: string, extra: object = {}) => ({ id, runId, kind: 'question', text: 'q', createdAt: '2026-01-01T00:00:00.000Z', state: 'pending', questions: null, tool: null, answer: null, answeredAt: null, sentOnResume: false, ...extra }) as any;
+
+test('v3: pesan lama (v2) tetap terbaca dan kolom baru terisi dari json', () => {
+  const file = tmp();
+  const s0 = new Store(file);
+  s0.saveRun(run('r1'));
+  s0.close();
+  const db = new DatabaseSync(file);
+  db.exec('PRAGMA user_version = 2; DROP TABLE settings; DROP TABLE notifications; DROP TABLE push_subscriptions; DROP TABLE permission_rules; DROP TABLE agent_activity; DROP TABLE evidence;');
+  db.exec('ALTER TABLE messages DROP COLUMN kind; ALTER TABLE messages DROP COLUMN state; ALTER TABLE messages DROP COLUMN answered_at; ALTER TABLE messages DROP COLUMN ref_item; ALTER TABLE messages DROP COLUMN ref_milestone;');
+  const m = msg('m1', 'r1', { state: 'answered', answeredAt: '2026-01-01T00:01:00.000Z' });
+  db.prepare('INSERT INTO messages (id, run_id, created_at, json) VALUES (?,?,?,?)').run(m.id, m.runId, m.createdAt, JSON.stringify(m));
+  db.close();
+  const s = new Store(file);
+  assert.deepEqual(s.getMessage('m1'), m);
+  const raw = new DatabaseSync(file).prepare('SELECT kind, state, answered_at FROM messages WHERE id = ?').get('m1');
+  assert.deepEqual({ ...raw }, { kind: 'question', state: 'answered', answered_at: '2026-01-01T00:01:00.000Z' });
+});
+
+test('pesan: kolom terindeks mengikuti ref dan state; json utuh', () => {
+  const s = new Store(':memory:');
+  const m = msg('m2', 'r1', { kind: 'milestone', ref: { itemId: 'f01', milestoneId: 'ms1' }, source: 'backlog', proposal: null });
+  s.saveMessage(m);
+  s.saveMessage({ ...m, state: 'answered', answeredAt: '2026-01-01T00:05:00.000Z' });
+  assert.equal(s.getMessage('m2')!.state, 'answered');
+  assert.deepEqual(s.listMessages('r1').map((x) => x.id), ['m2']);
+});
+
+test('bukti, aktivitas agent, aturan izin, push, notifikasi, pengaturan: simpan, baca, perbarui', () => {
+  const s = new Store(':memory:');
+  const ev = { id: 'e1', projectId: 'p1', itemKey: 'f01', kind: 'image', path: 'docs/a.png', caption: 'a', size: 10, present: true, checkedAt: 't' };
+  s.saveEvidence(ev); s.saveEvidence({ ...ev, present: false });
+  s.saveEvidence({ ...ev, id: 'e2', itemKey: 'f02' });
+  assert.deepEqual(s.listEvidence('p1', 'f01'), [{ ...ev, present: false }]);
+  assert.equal(s.listEvidence('p1').length, 2);
+
+  const act = { id: 'tu1', runId: 'r1', sessionId: 's1', agent: 'be', inTeam: true, itemKey: 'f06', round: 1, status: 'running' as const, startedAt: 't1', endedAt: null, modelUsed: null, toolCount: 0, files: ['a.ts'], tokens: tok };
+  s.saveActivity(act); s.saveActivity({ ...act, status: 'done', endedAt: 't2', toolCount: 7, modelUsed: 'sonnet' });
+  assert.deepEqual(s.listActivities('r1'), [{ ...act, status: 'done', endedAt: 't2', toolCount: 7, modelUsed: 'sonnet' }]);
+
+  const rule = { id: 'ru1', projectId: 'p1', tool: 'Bash', pattern: 'npm test*', createdFrom: 'm1', createdAt: 't', revokedAt: null };
+  s.saveRule(rule); s.saveRule({ ...rule, revokedAt: 't9' });
+  assert.deepEqual(s.listRules('p1'), []);
+  assert.equal(s.listRules('p1', true)[0].revokedAt, 't9');
+
+  const sub = { endpoint: 'https://push.example/x', keys: { p256dh: 'a', auth: 'b' }, label: 'HP', createdAt: 't', lastOkAt: null, failures: 0 };
+  s.savePushSub(sub); s.savePushSub({ ...sub, failures: 2 });
+  assert.deepEqual(s.listPushSubs(), [{ ...sub, failures: 2 }]);
+  assert.throws(() => s.savePushSub({ ...sub, endpoint: 'http://x/y' }), /https/);
+
+  const n = { key: 'msg:m1', runId: 'r1', kind: 'question', sentAt: 't', resolvedAt: null };
+  assert.equal(s.saveNotification(n), true);
+  assert.equal(s.saveNotification({ ...n, resolvedAt: 't3' }), false);
+  assert.equal(s.getNotification('msg:m1')!.resolvedAt, 't3');
+
+  assert.equal(s.getSetting('batch_size'), undefined);
+  s.setSetting('batch_size', '3'); s.setSetting('batch_size', '4');
+  assert.equal(s.getSetting('batch_size'), '4');
+});
+
+test('subscribeAll memancarkan event semua run (baru saja) dan bisa berhenti; payload alat utuh', () => {
+  const s = new Store(':memory:');
+  s.saveRun(run('before'));
+  const got: any[] = [];
+  const off = s.subscribeAll((e) => got.push(e));
+  const big = 'x'.repeat(200_000);
+  s.saveRun(run('a')); s.saveRun(run('b'));
+  s.saveMessage(msg('m1', 'a'));
+  s.addTool('b', { name: 'Bash', summary: 's', subagent: false, at: 't', id: 'tu9', input: { command: 'ls', big }, result: { out: big }, status: 'done' });
+  assert.deepEqual(got.map((e) => `${e.runId}:${e.type}`), ['a:run', 'a:status', 'b:run', 'b:status', 'a:message', 'b:tool']);
+  assert.equal((s.eventsAfter('b', 0).at(-1)!.data as any).input.big.length, 200_000);
+  assert.equal((s.eventsAfter('b', 0).at(-1)!.data as any).result.out.length, 200_000);
+  off(); s.saveRun(run('c'));
+  assert.equal(got.length, 6);
 });

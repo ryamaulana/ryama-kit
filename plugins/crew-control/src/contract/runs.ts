@@ -64,7 +64,10 @@ export const FolderListing = z.object({
   name: z.string(),
   parent: z.string().nullable(), // null bila ini folder kerja (tidak bisa naik lebih tinggi)
   isRoot: z.boolean(),
-  folders: z.array(z.object({ name: z.string(), path: z.string() })), // subfolder langsung, urut nama, maks 500
+  folders: z.array(z.object({ name: z.string(), path: z.string(), activeRunId: z.string().nullable() })), // subfolder langsung, urut nama, maks 500
+  project: z.object({
+    id: z.string(), lastCommandId: z.string().nullable(), hasOpenBacklog: z.boolean(), activeRunId: z.string().nullable(),
+  }).strict().nullable(), // null bila folder ini belum pernah punya run dan tanpa backlog terbuka
 });
 export const Config = z.object({
   workRoot: z.string(),

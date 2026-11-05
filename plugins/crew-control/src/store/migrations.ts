@@ -41,4 +41,29 @@ export function migrate(db: DatabaseSync): void {
       COMMIT;
     `);
   }
+  if (v < 3) {
+    const tok = 'tok_input INTEGER NOT NULL DEFAULT 0, tok_output INTEGER NOT NULL DEFAULT 0, tok_cache_read INTEGER NOT NULL DEFAULT 0, tok_cache_write INTEGER NOT NULL DEFAULT 0';
+    // Aditif saja; kolom baru messages diisi dari json lama supaya baris v1/v2 tetap terbaca.
+    db.exec(`
+      BEGIN;
+      ALTER TABLE messages ADD COLUMN kind TEXT NOT NULL DEFAULT 'agent';
+      ALTER TABLE messages ADD COLUMN state TEXT;
+      ALTER TABLE messages ADD COLUMN answered_at TEXT;
+      ALTER TABLE messages ADD COLUMN ref_item TEXT;
+      ALTER TABLE messages ADD COLUMN ref_milestone TEXT;
+      UPDATE messages SET kind = COALESCE(json_extract(json, '$.kind'), 'agent'), state = json_extract(json, '$.state'), answered_at = json_extract(json, '$.answeredAt');
+      CREATE TABLE evidence (id TEXT PRIMARY KEY, project_id TEXT NOT NULL, item_key TEXT NOT NULL, kind TEXT NOT NULL, path TEXT NOT NULL, caption TEXT NOT NULL, size INTEGER NOT NULL DEFAULT 0, present INTEGER NOT NULL DEFAULT 1, checked_at TEXT NOT NULL);
+      CREATE INDEX evidence_item ON evidence(project_id, item_key);
+      CREATE TABLE agent_activity (id TEXT PRIMARY KEY, run_id TEXT NOT NULL, session_id TEXT NOT NULL, agent TEXT NOT NULL, in_team INTEGER NOT NULL DEFAULT 1, item_key TEXT, round INTEGER NOT NULL DEFAULT 1, status TEXT NOT NULL, started_at TEXT NOT NULL, ended_at TEXT, model_used TEXT, tool_count INTEGER NOT NULL DEFAULT 0, files TEXT NOT NULL DEFAULT '[]', ${tok});
+      CREATE INDEX agent_activity_run ON agent_activity(run_id, started_at);
+      CREATE INDEX agent_activity_session ON agent_activity(session_id);
+      CREATE TABLE permission_rules (id TEXT PRIMARY KEY, project_id TEXT NOT NULL, tool TEXT NOT NULL, pattern TEXT, created_from TEXT, created_at TEXT NOT NULL, revoked_at TEXT);
+      CREATE INDEX permission_rules_project ON permission_rules(project_id);
+      CREATE TABLE push_subscriptions (endpoint TEXT PRIMARY KEY, keys TEXT NOT NULL, label TEXT NOT NULL DEFAULT '', created_at TEXT NOT NULL, last_ok_at TEXT, failures INTEGER NOT NULL DEFAULT 0);
+      CREATE TABLE notifications (key TEXT PRIMARY KEY, run_id TEXT NOT NULL, kind TEXT NOT NULL, sent_at TEXT NOT NULL, resolved_at TEXT);
+      CREATE TABLE settings (key TEXT PRIMARY KEY, value TEXT NOT NULL);
+      PRAGMA user_version = 3;
+      COMMIT;
+    `);
+  }
 }

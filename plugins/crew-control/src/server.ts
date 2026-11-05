@@ -5,13 +5,15 @@ import fastifyStatic from '@fastify/static';
 import Fastify, { type FastifyInstance, type FastifyReply } from 'fastify';
 import { z, type ZodType } from 'zod';
 import {
-  AnswerRequest, ApiError, Config, EmptyBody, FolderListing, Message, MODELS, OwnerMessageRequest, Run, RunDetail, RunList,
+  AnswerRequest, ApiError, Config, EmptyBody, FolderListing, Message, MODELS, OwnerMessageRequest, Project, ProjectBoard, ProjectSettingsRequest,
+  ProjectsQuery, Run, RunDetail, RunList, SettingsRequest, SettingsResponse,
   StartRunRequest, TERMINAL_STATUSES, Team, type ModelId,
 } from './contract/index.js';
+import { buildBoard, detail, findProject } from './board.js';
 import { createCatalog } from './teams/catalog.js';
 import { HarnessError, type Harness } from './harness/index.js';
-import { browseFolder, listProjects, PathError, resolveProject } from './projects.js';
-import { isAllowedHost, isAllowedOrigin, isAllowedPeer, isLoopback } from './security.js';
+import { browseFolder, createFolder, listProjects, projectId, PathError, resolveProject } from './projects.js';
+import { installNetworkSecurity, isAllowedHost, isAllowedOrigin, isAllowedPeer, isLoopback } from './security.js';
 import type { Store } from './store/index.js';
 
 export interface AppOptions {
@@ -25,10 +27,20 @@ export interface AppOptions {
   defaultBatchSize?: number; // default 5
   allowedHosts?: string[];
   allowedOrigins?: string[];
+  /** CREW_TAILSCALE_USERS: login Tailscale yang boleh lewat Host *.ts.net. Kosong = tanpa cek. */
+  tailscaleUsers?: string[];
   /** Folder berkas tampilan (index.html, app.js, lib.js). Tanpa ini, hanya API yang dilayani. */
   webDir?: string;
   /** Hasil build Vite (web/dist), dilayani di /app/. Tanpa ini, tidak dilayani. */
   distDir?: string;
+}
+
+/** docs/backlog.json ada dan masih punya item yang belum done. */
+function openBacklog(dir: string): boolean {
+  try {
+    const b = JSON.parse(fs.readFileSync(path.join(dir, 'docs', 'backlog.json'), 'utf8'));
+    return Array.isArray(b.items) && b.items.some((i: { status?: string }) => i.status !== 'done');
+  } catch { return false; }
 }
 
 const err = (reply: FastifyReply, status: number, code: string, message: string, details?: Record<string, unknown>) =>
@@ -67,9 +79,11 @@ export function createApp(o: AppOptions): FastifyInstance {
     }
   });
 
+  installNetworkSecurity(app, { tailscaleUsers: o.tailscaleUsers }); // pengguna Tailscale, batas laju, CSP
+
   app.setErrorHandler((e: any, _req, reply) => {
     if (e instanceof HarnessError) return err(reply, e.status, e.code, e.message, e.details);
-    if (e instanceof PathError) return err(reply, 400, e.code, e.message);
+    if (e instanceof PathError) return err(reply, e.code === 'folder_exists' ? 409 : 400, e.code, e.message);
     if (e instanceof z.ZodError) return err(reply, 500, 'internal_error', 'Galat internal.'); // respons gagal kontrak: bug server
     if (e.statusCode && e.statusCode < 500) return err(reply, e.statusCode, 'invalid_request', 'Permintaan tidak valid.');
     console.error(e); // detail hanya di log server, tidak ke klien
@@ -111,9 +125,53 @@ export function createApp(o: AppOptions): FastifyInstance {
   });
 
   // Jelajah bertahap: tanpa ?path = folder kerja. Path divalidasi seperti proyek (di dalam folder kerja, symlink diselesaikan).
+  const withProject = (l: ReturnType<typeof browseFolder>) => {
+    const hasRuns = store.listRuns(l.path, 1).length > 0;
+    const hasOpenBacklog = openBacklog(l.path);
+    return {
+      ...l,
+      folders: l.folders.map((f) => ({ ...f, activeRunId: harness.activeRunId(f.path) })),
+      project: hasRuns || hasOpenBacklog
+        ? { id: projectId(l.path), lastCommandId: null, hasOpenBacklog, activeRunId: harness.activeRunId(l.path) }
+        : null,
+    };
+  };
+
   app.get('/api/folders', async (req, reply) => {
     const { path: p } = parse(z.object({ path: z.string().min(1).max(500).optional() }), req.query);
-    return ok(reply, FolderListing, browseFolder(o.workRoot, p));
+    return ok(reply, FolderListing, withProject(browseFolder(o.workRoot, p)));
+  });
+
+  app.post('/api/folders', async (req, reply) => {
+    const body = parse(z.object({ parent: z.string().min(1).max(500), name: z.string().min(1).max(100) }).strict(), req.body);
+    return ok(reply, FolderListing, withProject(createFolder(o.workRoot, body.parent, body.name)), 201);
+  });
+
+  // ---- Proyek dan pengaturan ----
+  const defBatch = o.defaultBatchSize ?? 5;
+  const projectOr404 = (id: string) => {
+    const p = findProject(store, id);
+    if (!p) throw new HarnessError('not_found', 'Proyek tidak ditemukan.', 404);
+    return p;
+  };
+  app.get('/api/projects', async (req, reply) => {
+    const q = parse(ProjectsQuery, req.query);
+    return ok(reply, ProjectBoard, buildBoard(store, o.workRoot, o.maxRuns, q.recent));
+  });
+  app.get('/api/projects/:id', async (req, reply) =>
+    ok(reply, Project, detail(store, o.workRoot, defBatch, projectOr404((req.params as { id: string }).id))));
+  app.put('/api/projects/:id/settings', async (req, reply) => {
+    const p = projectOr404((req.params as { id: string }).id);
+    const body = parse(ProjectSettingsRequest, req.body);
+    if (body.teamId !== undefined && !catalog.get(body.teamId)) throw new HarnessError('team_not_found', 'Tim tidak ditemukan.', 400);
+    store.saveProject({ id: p.id, path: p.path, name: p.name, lastActivityAt: p.lastActivityAt, lastCommandId: store.getProject(p.id)?.lastCommandId ?? null,
+      teamId: body.teamId ?? p.teamId, batchSize: body.batchSize ?? p.batchSize });
+    return ok(reply, Project, detail(store, o.workRoot, defBatch, projectOr404(p.id)));
+  });
+  app.put('/api/settings', async (req, reply) => {
+    const { batchSize } = parse(SettingsRequest, req.body);
+    store.setSetting('batchSize', String(batchSize));
+    return ok(reply, SettingsResponse, { batchSize });
   });
 
   app.post('/api/runs', async (req, reply) => {

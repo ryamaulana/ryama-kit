@@ -2,7 +2,7 @@ import { spawn } from 'node:child_process';
 import type { HarnessOptions, Live } from './session.js';
 
 // Batas bawaan: jumlah run aktif, jeda penutupan sesi, dan waktu henti paksa.
-export const LIMIT_DEFAULTS = { bin: 'claude', binArgs: [] as string[], maxRuns: 1, finishGraceMs: 2000, stopSoftMs: 3000, stopKillMs: 6000 };
+export const LIMIT_DEFAULTS = { bin: 'claude', binArgs: [] as string[], maxRuns: 1, stopSoftMs: 3000, stopKillMs: 6000 };
 export type ResolvedOptions = Required<Omit<HarnessOptions, 'store' | 'hookBaseUrl'>> & Pick<HarnessOptions, 'store' | 'hookBaseUrl'>;
 
 export type LimitHit = { resetAt: string | null };

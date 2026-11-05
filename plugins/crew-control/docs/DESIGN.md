@@ -103,6 +103,21 @@ Library `~/.claude/design-library/` tidak dibuka; token diturunkan dari konsep d
 - Tidak ada: label teks di item aktif (rel 56 tetap ikon + tooltip), hamburger. < 900 (TabBar HP) di luar lingkup item ini; rel tetap tampil.
 - Audit tema gelap: skrip ui-craft hanya membaca nilai pertama tiap token, jadi token gelap diperiksa dengan salinan design-tokens.css yang blok gelapnya di depan (bukan nilai baru).
 
+## Rancangan layar: Run baru `/baru` (NewRunView + FolderPopover), aplikasi `web/src/ui/`
+- **Jenis:** layar tugas, dial Layar tugas (3 / 2 / 4; ENERGY 1, RHYTHM 2, MOTION 1). Jalur penuh (tanpa mockup). Lingkup ≥ 900 (1440 dan 900); lembar bawah HP menyusul.
+- **Tugas:** memulai satu run di folder yang benar dengan perintah tim yang benar, satu kirim. **Titik fokus:** kotak ketik putih di tengah latar `--bg`, dengan [Mulai] tinta di pojok kanan bawahnya (satu-satunya tombol tinta di isi). Alasan: yang ditulis adalah satu-satunya hal yang tidak bisa ditebak bawaan pintar.
+- **Urutan baca:** 1. kotak ketik + contoh isinya · 2. tombol folder (kiri bawah kotak) yang menulis jejak path · 3. chip perintah di atas kotak · 4. Tim dan Model di kanan bawah · 5. baris peringatan/galat di bawah kotak.
+- **Blok (kolom tengah `--measure-chat` 680, mulai 96 dari kepala):** PageHead "Run baru" + sub folder kerja (mono) · chip perintah (radiogroup; terpilih = tepi tinta + bulatan 8 isi, yang lain garis `--line`) · kartu kotak ketik (`--surface`, radius 8, tepi `--line`, fokus-dalam tepi `--edge`): textarea 16/1.55 tumbuh 3-12 baris, lalu bilah dalam kartu: [Folder] kiri, [Tim] [Model] [Mulai] kanan · di bawah kartu: satu baris tetap peringatan folder kerja (ikon segitiga `--text-2`, teks `--text`), atau baris galat (ikon lingkaran `--bad`, teks `--text`, tautan aksi) · petunjuk tombol 12 `--text-3` "Enter mengirim, Shift+Enter baris baru" rata kanan.
+- **Popover folder (440 × maks 480, radius 8, satu-satunya bayangan `--shadow-pop`):** kotak "Cari folder" · "Terakhir dipakai" (maks 5; nama 14/600 + path mono 13; label "sedang jalan" dengan bulatan biru) · "Jelajah": jejak stasiun (bulatan 6 + nama, terakhir tebal, akar tanpa tombol naik) · baris subfolder 40 (klik = masuk, ikon › di kanan, [Pilih] garis selalu tampil) · kaki: [Pakai <nama>] tinta kecil + [Folder baru di sini] → kotak nama + Enter. Galat buat folder menempel di bawah kotak nama.
+- **Menu Tim/Model:** listbox di atas tombol; tiap pilihan nama 14/600 + keterangan 13 `--text-2`, terpilih bertanda centang. Model tampil di tombol sebagai nama saja.
+- **Konsep terlihat di:** tombol folder menulis path sebagai deret stasiun kecil (bulatan 4 di antara segmen mono, segmen terakhir = nama folder Overpass 600); jejak Jelajah memakai bentuk yang sama; chip perintah terpilih membawa bulatan stasiun; label "sedang jalan" = bulatan biru Jalan.
+- **Sengaja tidak ada:** sapaan, kartu saran prompt, ilustrasi, riwayat run di layar ini, tombol Mulai nonaktif, tombol naik di atas folder kerja.
+- **Keadaan:** galat 409 sibuk ("Proyek ini sudah punya run aktif." [Buka run]) · 409 kapasitas ("Sudah 3 run jalan bersamaan. Hentikan satu atau tunggu." [Lihat proyek]) · teks kosong ("Tulis dulu apa yang mau dikerjakan.") · folder hilang (galat menempel di tombol folder + popover terbuka di induk) · popover memuat (kerangka 4 baris; fe menunda 300 ms) / kosong ("Belum ada folder di sini." + [Folder baru di sini]) / galat ("Folder tidak bisa dibaca." + [Coba lagi]) · mengirim ([Mulai] berlabel "Memulai…", aria-busy). Pratinjau: `/app/preview.html?layar=baru&keadaan=…`.
+- **900:** kolom tetap 680 bila muat, gutter 24; bilah kotak ketik membungkus Tim/Model ke kanan tanpa memotong nama folder (nama folder elipsis di tengah jejak, segmen terakhir utuh).
+
+## Rancangan layar: Daftar proyek, porting ke aplikasi (ProjectListView)
+- Jalur cepat dari `daftar-proyek.html` (Approved): tata letak, token, dan keadaan sama. Tambahan: TabBar HP (< 900) di AppShell menggantikan rel; Riwayat di TabBar berlabel "segera" (Fase 3), bukan tautan. Ringkasan angka 0 diciutkan oleh komponen. Label "dari desktop" = chip di samping status.
+
 ## Wujud arah per jenis layar
 - **Dashboard · (c) Daftar proyek (layar kunci berikutnya):**
   - Kepala: 5 angka dalam satu deret label + angka Overpass 600 (angka 0 diciutkan); [Run baru] tinta.
@@ -183,6 +198,8 @@ Aturan: aksen yang disengaja = **biru ruas aktif** (hidup); oranye hanya untuk B
 | titik-fokus: 7 tombol berlatar solid di 1440, 4 di 375 (sedang) | `review-milestone.html` | Yang terhitung adalah area bukti (tombol "lihat penuh" berlatar `--sunk`) + [Run baru] di rel; satu-satunya tombol tinta di isi adalah [Setujui] |
 | copy-tombol 6-16 kata (rendah) | `review-milestone.html`, area bukti | Seluruh bukti adalah tombol pembuka Lihat penuh; nama aksesnya `aria-label` "Lihat penuh: <judul item>", teks di dalamnya adalah isi bukti |
 | kartu-seragam 19 (rendah) / copy-ulang "Agent tidak menyimpan hasil…" (rendah) | `review-milestone.html` | Galeri bukti memang koleksi sejenis (PRD F7); hierarki datang dari isi bukti dan bulatan status. Kalimat tanpa bukti sama untuk dua item karena keadaannya sama |
+| titik-fokus: 4-5 tombol berlatar solid saat popover/menu terbuka (sedang) | Run baru `?keadaan=folder*`, `model` | Yang terhitung: [Run baru] di rel, [Mulai], [Pakai <folder>] di popover, chip terpilih, tombol folder/menu yang terbuka. Popover adalah lapisan sementara dengan aksinya sendiri; saat tertutup (`keadaan=isi`) 0 temuan sedang |
+| copy-tombol 6 kata: tombol folder dan baris Terakhir dipakai (rendah) | Run baru | Isinya data (jejak path), bukan label aksi; nama aksesnya "Folder: …" dan "Pakai <nama>" |
 | big-n 28/700 hasil tes jadi "elemen terkuat" | `review-milestone.html` | Angka lulus adalah bukti itu sendiri (fokus rancangan = bukti); 28 adalah ukuran angka besar di skala |
 
 ## Decision log

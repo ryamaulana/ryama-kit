@@ -104,7 +104,7 @@ readline.createInterface({ input: process.stdin }).on('line', (line) => {
       started = true;
       const resumed = args.includes('--resume') ? args[args.indexOf('--resume') + 1] : null;
       sc = /\[([\w-]+)\]/.exec(text)?.[1] ?? (resumed ? 'lanjut' : 'ok');
-      out({ type: 'system', subtype: 'init', session_id: resumed ?? 'sess-fake', model: 'fake', permissionMode: 'default' });
+      out({ type: 'system', subtype: 'init', session_id: resumed ?? (args.includes('--session-id') ? args[args.indexOf('--session-id') + 1] : 'sess-fake'), model: 'fake', permissionMode: 'default' });
       if (sc === 'lanjut') { say(`lanjut:${resumed}:${text}:${args.includes('--model') ? args[args.indexOf('--model') + 1] : '-'}`); finish(); return; }
       run(text);
     } else extras.push(text);

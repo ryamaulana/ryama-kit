@@ -55,8 +55,8 @@ test('STATUS_LABEL mencakup semua status; MODELS 3 alias', () => {
   for (const s of RunStatus.options) assert.ok(STATUS_LABEL[s], s);
   assert.deepEqual(MODELS.map((m) => m.id), ['opus', 'sonnet', 'haiku']);
 });
-test('kode galat 6.1: 32 kode, status HTTP sesuai dokumen', () => {
-  assert.equal(Object.keys(ERROR_STATUS).length, 32);
+test('kode galat 6.1: 33 kode, status HTTP sesuai dokumen', () => {
+  assert.equal(Object.keys(ERROR_STATUS).length, 33);
   assert.equal(ERROR_STATUS.rate_limited, 429);
   assert.equal(ERROR_STATUS.unsupported_media_type, 415);
   assert.equal(ERROR_STATUS.file_not_allowed, 403);

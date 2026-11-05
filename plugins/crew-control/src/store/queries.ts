@@ -1,6 +1,6 @@
 // Semua SQL Store di satu tempat; parameter selalu lewat placeholder.
 import type { DatabaseSync } from 'node:sqlite';
-import type { Message, Run, RunEvent } from '../contract/index.js';
+import type { Message, MessageV2, Run, RunEvent } from '../contract/index.js';
 
 export function insertEvent(db: DatabaseSync, runId: string, type: string, at: string, data: unknown): number {
   const r = db.prepare('INSERT INTO events (run_id, type, at, json) VALUES (?, ?, ?, ?)').run(runId, type, at, JSON.stringify(data));
@@ -26,11 +26,17 @@ export function selectRuns(db: DatabaseSync, project: string | undefined, limit:
   return rows.map((r) => JSON.parse(r.json));
 }
 
-export function upsertMessage(db: DatabaseSync, m: Message): void {
+export function selectActiveRuns(db: DatabaseSync): { run: Run; origin: string }[] {
+  const rows = db.prepare("SELECT json, origin FROM runs WHERE status NOT IN ('stopped', 'failed', 'done', 'disconnected')").all() as { json: string; origin: string }[];
+  return rows.map((r) => ({ run: JSON.parse(r.json), origin: r.origin }));
+}
+
+export function upsertMessage(db: DatabaseSync, m: Message | MessageV2): void {
+  const ref = 'ref' in m ? m.ref : null;
   db.prepare(
-    `INSERT INTO messages (id, run_id, created_at, json) VALUES (?, ?, ?, ?)
-     ON CONFLICT(id) DO UPDATE SET json = excluded.json`,
-  ).run(m.id, m.runId, m.createdAt, JSON.stringify(m));
+    `INSERT INTO messages (id, run_id, created_at, json, kind, state, answered_at, ref_item, ref_milestone) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+     ON CONFLICT(id) DO UPDATE SET json = excluded.json, state = excluded.state, answered_at = excluded.answered_at, ref_item = excluded.ref_item, ref_milestone = excluded.ref_milestone`,
+  ).run(m.id, m.runId, m.createdAt, JSON.stringify(m), m.kind, m.state, m.answeredAt, ref?.itemId ?? null, ref?.milestoneId ?? null);
 }
 
 export function selectMessage(db: DatabaseSync, id: string): Message | undefined {

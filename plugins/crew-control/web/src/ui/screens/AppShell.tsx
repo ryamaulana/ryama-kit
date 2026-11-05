@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { NavRail, type NavRailProps } from './NavRail.js';
+import { TabBar } from './TabBar.js';
 import './AppShell.css';
 
 export interface AppShellProps {
@@ -11,7 +12,7 @@ export interface AppShellProps {
   skipLabel?: string;
 }
 
-/** Kerangka halaman laptop: rel navigasi + area isi. */
+/** Kerangka halaman: rel navigasi (≥ 900) atau tab bawah (< 900) + area isi. */
 export function AppShell({ nav, children, panel, skipLabel = 'Langsung ke isi' }: AppShellProps) {
   return (
     <div className="app-shell">
@@ -20,6 +21,7 @@ export function AppShell({ nav, children, panel, skipLabel = 'Langsung ke isi' }
       <main id="isi" className="app-shell__main" tabIndex={-1}>
         {children}
       </main>
+      <TabBar {...nav} />
       {panel}
     </div>
   );

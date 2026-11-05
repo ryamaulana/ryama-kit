@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { Run } from './runs.js';
+import { RunStatus } from './common.js';
 
 export const Question = z.object({
   question: z.string(),
@@ -41,13 +42,23 @@ export const ToolEvent = z.object({
   summary: z.string(),
   subagent: z.boolean(),
   at: z.string(),
+  // Fase 1: langkah alat lengkap, tidak dipangkas (PRD A15).
+  id: z.string().optional(),
+  input: z.unknown().optional(),
+  result: z.unknown().optional(),
+  status: z.enum(['running', 'done', 'failed']).optional(),
 });
 export type ToolEvent = z.infer<typeof ToolEvent>;
+
+// Setiap perubahan status run (dari, ke, alasan, waktu): sumber riwayat dan pemberitahuan. from null = run baru.
+export const RunStatusChange = z.object({ from: RunStatus.nullable(), to: RunStatus, reason: z.string().nullable(), at: z.string() }).strict();
+export type RunStatusChange = z.infer<typeof RunStatusChange>;
 
 export const RunEvent = z.discriminatedUnion('type', [
   z.object({ seq: z.number().int(), runId: z.string(), at: z.string(), type: z.literal('run'), data: Run }),
   z.object({ seq: z.number().int(), runId: z.string(), at: z.string(), type: z.literal('message'), data: Message }),
   z.object({ seq: z.number().int(), runId: z.string(), at: z.string(), type: z.literal('tool'), data: ToolEvent }),
+  z.object({ seq: z.number().int(), runId: z.string(), at: z.string(), type: z.literal('status'), data: RunStatusChange }),
 ]);
 export type RunEvent = z.infer<typeof RunEvent>;
 

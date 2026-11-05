@@ -8,3 +8,8 @@ export interface BatchRow { id: string; runId: string; milestoneId: string | nul
 export interface ItemRow { projectId: string; itemKey: string; milestoneId: string | null; title: string; agent: string | null; type: string | null; status: string; attempts: number; origin: 'asli' | 'perbaikan' | 'ditambah'; fixOf: string | null; firstSeenAt: string; doneAt: string | null; doneBatchId: string | null; tokens: Tokens }
 /** Kolom tambahan run v2; objek penuh tetap di kolom json. */
 export interface RunMeta { projectId?: string | null; teamId?: string | null; commandId?: string | null; title?: string; origin?: 'dashboard' | 'desktop' }
+export interface EvidenceRow { id: string; projectId: string; itemKey: string; kind: string; path: string; caption: string; size: number; present: boolean; checkedAt: string }
+export interface ActivityRow { id: string; runId: string; sessionId: string; agent: string; inTeam: boolean; itemKey: string | null; round: number; status: 'running' | 'done' | 'failed'; startedAt: string; endedAt: string | null; modelUsed: string | null; toolCount: number; files: string[]; tokens: Tokens }
+export interface RuleRow { id: string; projectId: string; tool: string; pattern: string | null; createdFrom: string | null; createdAt: string; revokedAt: string | null }
+export interface PushSubRow { endpoint: string; keys: Record<string, string>; label: string; createdAt: string; lastOkAt: string | null; failures: number }
+export interface NotificationRow { key: string; runId: string; kind: string; sentAt: string; resolvedAt: string | null }

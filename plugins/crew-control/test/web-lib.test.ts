@@ -99,3 +99,46 @@ test('railLayout: simpul tidak saling menimpa untuk alur tim dan 12 agent, pada 
     }
   assert.doesNotThrow(() => railLayout({ nodes: ['a', 'b'], edges: [['a', 'b'], ['b', 'a']] }, 900));
 });
+
+import { parseTheme, applyTheme } from '../web/src/app/lib/theme.js';
+import { destForPath, isSoon } from '../web/src/app/lib/nav.js';
+import { api, ApiError } from '../web/src/app/api.js';
+
+test('parseTheme: kunjungan pertama atau nilai asing = ikut sistem; light/dark diingat', () => {
+  assert.equal(parseTheme(null), 'system');
+  assert.equal(parseTheme('biru'), 'system');
+  assert.equal(parseTheme('dark'), 'dark');
+  assert.equal(parseTheme('light'), 'light');
+});
+
+test('applyTheme: system menghapus atribut, selain itu memasangnya', () => {
+  const attrs = new Map<string, string>();
+  const root = { setAttribute: (k: string, v: string) => void attrs.set(k, v), removeAttribute: (k: string) => void attrs.delete(k) };
+  applyTheme(root, 'dark');
+  assert.equal(attrs.get('data-theme'), 'dark');
+  applyTheme(root, 'system');
+  assert.equal(attrs.has('data-theme'), false);
+});
+
+test('rel: Riwayat dan Kesehatan kit bertanda segera; destForPath memetakan rute UX 4', () => {
+  assert.equal(isSoon('riwayat'), true);
+  assert.equal(isSoon('kesehatan'), true);
+  assert.equal(isSoon('baru'), false);
+  assert.equal(isSoon('proyek'), false);
+  assert.equal(destForPath('/'), 'proyek');
+  assert.equal(destForPath('/proyek/abc/review'), 'proyek');
+  assert.equal(destForPath('/riwayat/banding'), 'riwayat');
+  assert.equal(destForPath('/nyasar'), null);
+});
+
+test('api: galat seragam jadi ApiError; jaringan putus jadi network; sukses mengembalikan isi', async () => {
+  const real = globalThis.fetch;
+  try {
+    globalThis.fetch = (async () => new Response(JSON.stringify({ error: { code: 'project_busy', message: 'Sibuk', details: { activeRunId: 'r1' } } }), { status: 409 })) as typeof fetch;
+    await assert.rejects(api('POST', '/api/x'), (e: ApiError) => e instanceof ApiError && e.status === 409 && e.code === 'project_busy' && e.details?.activeRunId === 'r1');
+    globalThis.fetch = (async () => { throw new TypeError('down'); }) as typeof fetch;
+    await assert.rejects(api('GET', '/api/x'), (e: ApiError) => e.code === 'network');
+    globalThis.fetch = (async () => new Response(JSON.stringify({ ok: true }))) as typeof fetch;
+    assert.deepEqual(await api('GET', '/api/health'), { ok: true });
+  } finally { globalThis.fetch = real; }
+});
