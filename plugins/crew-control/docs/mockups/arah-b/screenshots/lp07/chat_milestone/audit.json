@@ -1,0 +1,102 @@
+[
+  {
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    },
+    "counts": {
+      "high": 0,
+      "medium": 1,
+      "low": 5
+    },
+    "stats": {
+      "ukuranHuruf": [
+        12,
+        13,
+        14,
+        16,
+        18
+      ],
+      "keluargaHuruf": [
+        "Overpass",
+        "Overpass Mono"
+      ],
+      "nilaiSpasi": 5,
+      "spasiDiLuarSkalaPersen": 0,
+      "radius": [
+        4,
+        8
+      ],
+      "bayangan": 0,
+      "warnaTeks": 6,
+      "tombolSolidDiLayarPertama": 4,
+      "elemenTerkuat": [
+        "h3 \"Review dan bukti 8 item\"",
+        "h1 \"toconnect\"",
+        "h2.vh \"Chat\""
+      ],
+      "tepiKiriTerbanyak": [
+        "96px(15)",
+        "1124px(9)",
+        "1100px(6)",
+        "1082px(5)",
+        "246px(4)",
+        "28px(3)"
+      ],
+      "jumlahGambar": 0,
+      "kataJudulTerpanjang": 5,
+      "jumlahSvg": 17,
+      "warnaAksen": 2,
+      "grupKartuSeragam": 1,
+      "jumlahKartuSeragam": 24,
+      "kandidatFokus": [
+        "h3 \"Review dan bukti 8 item\"",
+        "h1 \"toconnect\""
+      ],
+      "blokWarnaJenuhLayarPertamaPersen": 0,
+      "token": {
+        "aktif": true,
+        "warnaDiLuar": 0,
+        "radiusDiLuar": 0,
+        "hurufDiLuar": 0,
+        "fontDiLuar": 0
+      }
+    },
+    "issues": [
+      {
+        "sev": "medium",
+        "rule": "titik-fokus",
+        "detail": "4 tombol/tautan berlatar solid di layar pertama; terlalu banyak yang berebut perhatian (biasanya 1-2 aksi utama)"
+      },
+      {
+        "sev": "low",
+        "rule": "copy-ulang",
+        "detail": "kalimat yang sama muncul dua kali: \"Bash npm test -- runs\"",
+        "at": "code \"Bash npm test -- runs\""
+      },
+      {
+        "sev": "low",
+        "rule": "copy-tombol",
+        "detail": "tombol 5 kata (ideal 1-3): \"ui-designeruiButuh kamuPertanyaan menunggu di Chat\"",
+        "at": "button.agent \"ui-designeruiButuh kamuPerta\""
+      },
+      {
+        "sev": "low",
+        "rule": "copy-tombol",
+        "detail": "tombol 5 kata (ideal 1-3): \"fefeJalan, putaran 3Kerangka layar Riwayat\"",
+        "at": "button.agent \"fefeJalan, putaran 3Kerangka\""
+      },
+      {
+        "sev": "low",
+        "rule": "copy-tombol",
+        "detail": "tombol 5 kata (ideal 1-3): \"bebeJalan, putaran 2Paginasi daftar run\"",
+        "at": "button.agent \"bebeJalan, putaran 2Paginasi\""
+      },
+      {
+        "sev": "low",
+        "rule": "titik-fokus",
+        "detail": "dua kandidat fokus hampir sama kuat di layar pertama: h3 \"Review dan bukti 8 item\" vs h1 \"toconnect\""
+      }
+    ]
+  }
+]

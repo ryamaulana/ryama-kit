@@ -15,11 +15,15 @@ export const emptyState = (): RunState => ({ run: null, messages: [], tools: [],
 const upsert = <T extends { id: string }>(list: T[], item: T): T[] =>
   list.some((x) => x.id === item.id) ? list.map((x) => (x.id === item.id ? item : x)) : [...list, item];
 
-/** Terapkan satu event SSE. message dan activity diganti per id (event berupa pembaruan), tool ditambah. */
+/** Terapkan satu event SSE. message dan activity diganti per id (event berupa pembaruan), tool ditambah (digabung per toolUseId). */
 export function applyEvent(state: RunState, ev: RunEventInput): RunState {
   switch (ev.type) {
     case 'run': return { ...state, run: ev.data };
-    case 'tool': return { ...state, tools: [...state.tools, ev.data] };
+    case 'tool': { // langkah datang dua kali (mulai, hasil): gabung per toolUseId, waktu mulai dipertahankan
+      const i = ev.data.toolUseId ? state.tools.findIndex((t) => t.toolUseId === ev.data.toolUseId) : -1;
+      if (i < 0) return { ...state, tools: [...state.tools, ev.data] };
+      return { ...state, tools: state.tools.map((t, j) => (j === i ? { ...t, ...ev.data, at: t.at } : t)) };
+    }
     case 'message': return { ...state, messages: upsert(state.messages, ev.data) };
     case 'activity': return { ...state, activities: upsert(state.activities, ev.data) };
     default: return state;

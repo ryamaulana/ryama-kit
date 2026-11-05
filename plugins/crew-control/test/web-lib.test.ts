@@ -142,3 +142,43 @@ test('api: galat seragam jadi ApiError; jaringan putus jadi network; sukses meng
     assert.deepEqual(await api('GET', '/api/health'), { ok: true });
   } finally { globalThis.fetch = real; }
 });
+
+import { parsePrefs, rememberRun, pickId, pickCommand, validatePrompt, startNotice, parseDraft } from '../web/src/app/lib/newRun.js';
+
+test('newRun: prefs rusak kembali ke bawaan, bidang sah dipertahankan', () => {
+  assert.deepEqual(parsePrefs('bukan json'), { folder: undefined, model: undefined, team: undefined, recent: [], cmds: {} });
+  const p = parsePrefs(JSON.stringify({ folder: '/a', model: 5, recent: ['/a', 3], cmds: { '/a': 'x', '/b': 1 } }));
+  assert.equal(p.folder, '/a'); assert.equal(p.model, undefined); assert.deepEqual(p.recent, ['/a']); assert.deepEqual(p.cmds, { '/a': 'x' });
+});
+test('newRun: rememberRun menaruh folder terbaru di depan, tanpa duplikat, maks 5', () => {
+  let p = parsePrefs(null);
+  for (const f of ['/1', '/2', '/3', '/4', '/5', '/6', '/2']) p = rememberRun(p, { folder: f, model: 'opus', team: 't', commandId: 'c' });
+  assert.deepEqual(p.recent, ['/2', '/6', '/5', '/4', '/3']);
+});
+test('newRun: pickId dan pickCommand', () => {
+  assert.equal(pickId('opus', ['sonnet', 'opus']), 'opus');
+  assert.equal(pickId('gone', ['sonnet', 'opus'], 'opus'), 'opus');
+  assert.equal(pickId('gone', ['sonnet', 'opus']), 'sonnet');
+  const cmds = [{ id: 'ide', kind: 'session' as const }, { id: 'bk', kind: 'backlog' as const }];
+  assert.equal(pickCommand(cmds, 'bk', false), 'bk');
+  assert.equal(pickCommand(cmds, 'hilang', true), 'bk');
+  assert.equal(pickCommand(cmds, null, false), 'ide');
+});
+test('newRun: validatePrompt, draf, dan galat mulai', () => {
+  assert.equal(validatePrompt('  ', true), 'Tulis dulu apa yang mau dikerjakan.');
+  assert.equal(validatePrompt('', false), null);
+  assert.equal(parseDraft('x'.repeat(20001)).length, 20000);
+  const busy = startNotice({ status: 409, code: 'project_busy', message: 'm', details: { activeRunId: 'r1' } }, {});
+  assert.deepEqual(busy.action, { label: 'Buka run', href: '/proyek/r1' });
+  assert.match(startNotice({ status: 409, code: 'capacity', message: 'm', details: { activeRunIds: ['a', 'b'] } }, {}).message, /^Sudah 2 run/);
+  assert.equal(startNotice({ status: 400, code: 'project_not_found', message: 'm' }, {}).folderGone, true);
+});
+
+test('applyEvent: langkah alat mulai + hasil digabung per toolUseId, waktu mulai tetap', () => {
+  const a = { name: 'Bash', summary: 'echo hai', subagent: true, agent: 'be', toolUseId: 'B1', status: 'running' as const };
+  let s = applyEvent(emptyState(), { type: 'tool', data: { ...a, at: '2026-11-05T00:00:01.000Z' } } as any);
+  s = applyEvent(s, { type: 'tool', data: { ...a, at: '2026-11-05T00:00:03.000Z', status: 'done', result: 'hai' } } as any);
+  s = applyEvent(s, { type: 'tool', data: { name: 'Read', summary: 'x', subagent: false, at: '2026-11-05T00:00:04.000Z' } } as any);
+  assert.equal(s.tools.length, 2);
+  assert.deepEqual([s.tools[0].status, s.tools[0].result, s.tools[0].at], ['done', 'hai', '2026-11-05T00:00:01.000Z']);
+});

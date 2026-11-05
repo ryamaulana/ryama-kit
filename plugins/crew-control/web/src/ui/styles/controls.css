@@ -41,6 +41,14 @@
 .mark--done { background: var(--ink); color: var(--on-ink); }
 .mark--done svg { width: calc(var(--sp-8) + var(--line-w) * 2); height: calc(var(--sp-8) + var(--line-w) * 2); }
 .mark--stopped { border-radius: var(--radius-s); background: var(--edge); width: var(--dot); height: var(--dot); margin: calc(var(--line-w) * 2); }
+.mark--ready { border: calc(var(--line-w) * 2) solid var(--edge); }
+.mark--skip { border: calc(var(--line-w) * 2) dashed var(--edge); color: var(--text-3); }
+.mark--skip svg { width: var(--sp-8); height: var(--sp-8); }
+.status-dot { display: inline-flex; align-items: center; gap: var(--sp-8); }
+.status-dot__text { font-weight: var(--fw-semibold); white-space: nowrap; }
+.status-dot--ask .status-dot__text { color: var(--ask); }
+.status-dot--run .status-dot__text { color: var(--run); }
+.status-dot--bad .status-dot__text { color: var(--bad); }
 .mark--sm { width: var(--dot); height: var(--dot); }
 .mark--sm.mark--ask, .mark--sm.mark--review { border-width: calc(var(--line-w) * 2); }
 .mark--sm.mark--review::after { width: var(--sp-4); height: var(--sp-4); }

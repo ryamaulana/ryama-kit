@@ -1,0 +1,90 @@
+[
+  {
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    },
+    "counts": {
+      "high": 0,
+      "medium": 0,
+      "low": 4
+    },
+    "stats": {
+      "ukuranHuruf": [
+        12,
+        13,
+        14,
+        18
+      ],
+      "keluargaHuruf": [
+        "Overpass",
+        "Overpass Mono"
+      ],
+      "nilaiSpasi": 5,
+      "spasiDiLuarSkalaPersen": 0,
+      "radius": [
+        4,
+        8
+      ],
+      "bayangan": 0,
+      "warnaTeks": 6,
+      "tombolSolidDiLayarPertama": 3,
+      "elemenTerkuat": [
+        "h1 \"toconnect\"",
+        "h3 \"fe\"",
+        "span.nav-rail__badge \"1\""
+      ],
+      "tepiKiriTerbanyak": [
+        "1082px(18)",
+        "96px(15)",
+        "1146px(5)",
+        "246px(4)",
+        "28px(3)",
+        "176px(3)"
+      ],
+      "jumlahGambar": 0,
+      "kataJudulTerpanjang": 3,
+      "jumlahSvg": 16,
+      "warnaAksen": 2,
+      "grupKartuSeragam": 1,
+      "jumlahKartuSeragam": 24,
+      "kandidatFokus": [
+        "h1 \"toconnect\"",
+        "h3 \"fe\""
+      ],
+      "blokWarnaJenuhLayarPertamaPersen": 0,
+      "token": {
+        "aktif": true,
+        "warnaDiLuar": 0,
+        "radiusDiLuar": 0,
+        "hurufDiLuar": 0,
+        "fontDiLuar": 0
+      }
+    },
+    "issues": [
+      {
+        "sev": "low",
+        "rule": "copy-tombol",
+        "detail": "tombol 5 kata (ideal 1-3): \"ui-designeruiButuh kamuPertanyaan menunggu di Chat\"",
+        "at": "button.agent \"ui-designeruiButuh kamuPerta\""
+      },
+      {
+        "sev": "low",
+        "rule": "copy-tombol",
+        "detail": "tombol 5 kata (ideal 1-3): \"fefeJalan, putaran 3Kerangka layar Riwayat\"",
+        "at": "button.agent \"fefeJalan, putaran 3Kerangka\""
+      },
+      {
+        "sev": "low",
+        "rule": "copy-tombol",
+        "detail": "tombol 5 kata (ideal 1-3): \"bebeJalan, putaran 2Paginasi daftar run\"",
+        "at": "button.agent \"bebeJalan, putaran 2Paginasi\""
+      },
+      {
+        "sev": "low",
+        "rule": "titik-fokus",
+        "detail": "dua kandidat fokus hampir sama kuat di layar pertama: h1 \"toconnect\" vs h3 \"fe\""
+      }
+    ]
+  }
+]

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { Run } from './runs.js';
-import { RunStatus } from './common.js';
+import { RunStatus, Tokens } from './common.js';
 
 export const Question = z.object({
   question: z.string(),
@@ -26,7 +26,7 @@ export const Message = z.object({
   tool: z.object({ name: z.string(), summary: z.string(), why: z.string() }).nullable(), // hanya kind=permission
   answer: z
     .object({
-      from: z.enum(['dashboard', 'agent', 'system']), // agent = dibatalkan claude (mis. dijawab di tempat lain); system = run berakhir
+      from: z.enum(['dashboard', 'desktop', 'agent', 'system']), // desktop = dijawab di terminal Claude Code; agent = dibatalkan claude (mis. dijawab di tempat lain); system = run berakhir
       answers: z.record(z.string(), z.string()).nullable(), // question -> jawaban (multi-pilih digabung ", ")
       decision: z.enum(['allow', 'deny']).nullable(),
       reason: z.string().nullable(),
@@ -47,8 +47,20 @@ export const ToolEvent = z.object({
   input: z.unknown().optional(),
   result: z.unknown().optional(),
   status: z.enum(['running', 'done', 'failed']).optional(),
+  // Fase 1 (6.3): pemilik langkah (id agent atau `orkestrator`) dan id tool_use claude. Langkah dikirim dua kali:
+  // saat mulai (running, input) dan saat hasil (done/failed, result); pembaca menggabungkan per toolUseId.
+  agent: z.string().optional(),
+  toolUseId: z.string().optional(),
 });
 export type ToolEvent = z.infer<typeof ToolEvent>;
+
+// Baris agent_activity (ARCHITECTURE 5): satu panggilan subagent; id = tool_use_id pemanggil (Agent/Task).
+export const AgentActivity = z.object({
+  id: z.string(), runId: z.string(), sessionId: z.string(), agent: z.string(), inTeam: z.boolean(), itemKey: z.string().nullable(),
+  round: z.number().int(), status: z.enum(['running', 'done', 'failed']), startedAt: z.string(), endedAt: z.string().nullable(),
+  modelUsed: z.string().nullable(), toolCount: z.number().int(), files: z.array(z.string()), tokens: Tokens,
+}).strict();
+export type AgentActivity = z.infer<typeof AgentActivity>;
 
 // Setiap perubahan status run (dari, ke, alasan, waktu): sumber riwayat dan pemberitahuan. from null = run baru.
 export const RunStatusChange = z.object({ from: RunStatus.nullable(), to: RunStatus, reason: z.string().nullable(), at: z.string() }).strict();
@@ -59,6 +71,7 @@ export const RunEvent = z.discriminatedUnion('type', [
   z.object({ seq: z.number().int(), runId: z.string(), at: z.string(), type: z.literal('message'), data: Message }),
   z.object({ seq: z.number().int(), runId: z.string(), at: z.string(), type: z.literal('tool'), data: ToolEvent }),
   z.object({ seq: z.number().int(), runId: z.string(), at: z.string(), type: z.literal('status'), data: RunStatusChange }),
+  z.object({ seq: z.number().int(), runId: z.string(), at: z.string(), type: z.literal('activity'), data: AgentActivity }),
 ]);
 export type RunEvent = z.infer<typeof RunEvent>;
 

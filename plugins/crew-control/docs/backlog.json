@@ -369,7 +369,7 @@
       "finishedAt": "2026-11-05T01:10:58.524Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "rb03b-free-flow",
         "rb02-folder-proyek"
@@ -390,7 +390,11 @@
       "value": "high",
       "size": "m",
       "done": "POST /api/runs (StartRunRequest) mengembalikan 201 Run < 1 dtk; model di luar daftar ditolak; folder di luar folder kerja/../symlink ditolak tanpa sesi; project_busy menyertakan activeRunId; no_backlog untuk perintah backlog tanpa docs/backlog.json; command_needs_text; model tersimpan di run (bawaan bila kosong); tes semua galat; npm test hijau.",
-      "notes": "[Fase 1]"
+      "notes": "[Fase 1]",
+      "attempts": 1,
+      "startedAt": "2026-11-05T01:16:34.005Z",
+      "evidence": "npm test 136/137 lulus, tsc bersih; semua tes rb04 hijau. 1 gagal lama di test/policy.test.ts A3 (policy.ts dan tesnya tidak disentuh)",
+      "finishedAt": "2026-11-05T01:18:26.035Z"
     },
     {
       "status": "done",
@@ -431,7 +435,7 @@
       "finishedAt": "2026-11-05T01:12:16.314Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "rb05-ui-run-baru",
         "rb04-api-mulai-run",
@@ -456,7 +460,11 @@
       "value": "high",
       "size": "m",
       "done": "NewRunContainer: folder, model, tim, perintah terakhir dari localStorage (kembali ke bawaan + pesan satu baris bila tidak sah); Enter memulai; pindah ke /proyek/<id>; galat project_busy dengan tautan; teks tidak hilang saat ditolak; draf; lib murni dites; T1 = 3 langkah; typecheck dan build bersih.",
-      "notes": "[Fase 1]"
+      "notes": "[Fase 1]",
+      "attempts": 1,
+      "startedAt": "2026-11-05T01:20:17.597Z",
+      "evidence": "tes web-lib+web 21 lulus/0 gagal; tsc -p web bersih; build berhasil; belum diuji di browser dengan server nyata",
+      "finishedAt": "2026-11-05T01:22:08.654Z"
     },
     {
       "status": "done",
@@ -487,7 +495,7 @@
       "finishedAt": "2026-11-05T01:10:19.351Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "f12-spike-asumsi",
         "f06-store-v2-sisanya",
@@ -511,7 +519,11 @@
       "size": "m",
       "model": "opus",
       "done": "stream.ts memetakan pesan ke agent_activity (running/done/failed, putaran, jumlah alat, file) memakai hasil T1 (parent_tool_use_id atau turunan tool_use Task); event SSE activity dan tool (+agent, toolUseId); agent di luar tim in_team=false; tes dengan fixture stream. Semua langkah alat (nama, masukan, hasil, waktu) tersimpan penuh sebagai event; batas 200 langkah hanya berlaku saat dibaca API.",
-      "notes": "[Fase 1]"
+      "notes": "[Fase 1]",
+      "attempts": 1,
+      "startedAt": "2026-11-05T01:18:34.689Z",
+      "evidence": "npm test 147/148 lulus (1 gagal lama: policy A3), typecheck bersih, activity.test.ts 6/6",
+      "finishedAt": "2026-11-05T01:23:35.238Z"
     },
     {
       "status": "todo",
@@ -565,7 +577,7 @@
       "finishedAt": "2026-11-05T01:13:46.719Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "f16-ui-kerangka",
         "lp04-seed-demo"
@@ -593,10 +605,14 @@
       "model": "sonnet",
       "screen": "Layar proyek",
       "notes": "[Fase 1] Porting mockup Approved docs/mockups/arah-b/layar-proyek.html.",
-      "done": "ProjectView (rangka 3 kolom dengan slot), TopBar, AgentColumn, Station, StatusDot (warna + ikon + teks untuk 6 status), konfirmasi Stop menempel di tombol; data contoh; screenshot 1440 terang/gelap sesuai mockup; kontrak komponen tercatat."
+      "done": "ProjectView (rangka 3 kolom dengan slot), TopBar, AgentColumn, Station, StatusDot (warna + ikon + teks untuk 6 status), konfirmasi Stop menempel di tombol; data contoh; screenshot 1440 terang/gelap sesuai mockup; kontrak komponen tercatat.",
+      "attempts": 1,
+      "startedAt": "2026-11-05T01:16:34.086Z",
+      "evidence": "typecheck lulus; screenshot+audit 1440 di docs/bukti/lp05-ui-kerangka-proyek/{terang,gelap,stop,henti,enam}; audit terang/stop/henti/enam lulus, gelap 1 temuan sedang (batasan skrip token warna, dicek visual)",
+      "finishedAt": "2026-11-05T01:20:14.329Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "lp05-ui-kerangka-proyek"
       ],
@@ -621,10 +637,14 @@
       "model": "sonnet",
       "screen": "Layar proyek (peta)",
       "notes": "[Fase 1] Gabungan lp06 dan lp06-audit. Timeline TIDAK dibangun (PRD Q4); tidak ada tombol alih timeline.",
-      "done": "RailMap (Rail, TrackSegments, simpul Station, ruas kustom), state kosong \"Mulai run\"; data contoh 12 agent; screenshot terang/gelap; kontrak komponen. | Audit ui-craft --lang id (dan teks ux-writing-id) tanpa temuan blocker/major; bukti.json diperbarui dengan screenshot sesudah perbaikan."
+      "done": "RailMap (Rail, TrackSegments, simpul Station, ruas kustom), state kosong \"Mulai run\"; data contoh 12 agent; screenshot terang/gelap; kontrak komponen. | Audit ui-craft --lang id (dan teks ux-writing-id) tanpa temuan blocker/major; bukti.json diperbarui dengan screenshot sesudah perbaikan.",
+      "attempts": 1,
+      "startedAt": "2026-11-05T01:20:29.618Z",
+      "evidence": "tsc -p web bersih; screenshot+audit 1440 di docs/bukti/lp06-ui-peta/{terang,gelap,kosong}, bukti.json; audit terang/kosong tanpa tinggi/sedang, gelap 1 sedang (batasan skrip token, a.skip)",
+      "finishedAt": "2026-11-05T01:23:11.044Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "lp05-ui-kerangka-proyek"
       ],
@@ -652,7 +672,11 @@
       "model": "sonnet",
       "screen": "Layar proyek (Chat)",
       "notes": "[Fase 1] Gabungan lp07 dan lp08.",
-      "done": "ChatPanel, ChatCard (agent), QuestionCard (tunggal, multi, Lainnya), PermissionCard (Setujui, Tolak dengan kotak alasan, Selalu setujui), MilestoneCard, DecisionCard, SystemLine (batch, limit, gagal, aturan + Batalkan), Composer, banner Baca saja; data contoh; screenshot; kontrak komponen. | AgentDetail dengan tab Chat/Detail dan lencana, isi: tugas, model deklarasi vs terpakai, skill, alat/MCP, langkah, file, token, durasi, bukti; state agent belum jalan (definisi saja); screenshot; kontrak komponen."
+      "done": "ChatPanel, ChatCard (agent), QuestionCard (tunggal, multi, Lainnya), PermissionCard (Setujui, Tolak dengan kotak alasan, Selalu setujui), MilestoneCard, DecisionCard, SystemLine (batch, limit, gagal, aturan + Batalkan), Composer, banner Baca saja; data contoh; screenshot; kontrak komponen. | AgentDetail dengan tab Chat/Detail dan lencana, isi: tugas, model deklarasi vs terpakai, skill, alat/MCP, langkah, file, token, durasi, bukti; state agent belum jalan (definisi saja); screenshot; kontrak komponen.",
+      "attempts": 1,
+      "startedAt": "2026-11-05T01:23:35.328Z",
+      "evidence": "tsc -p web bersih; screenshot+audit 375/1440 di docs/mockups/arah-b/screenshots/lp07/*; tinggi 0, token luar 0; ui-critic perlu menilai",
+      "finishedAt": "2026-11-05T01:28:47.165Z"
     },
     {
       "status": "done",
@@ -790,7 +814,7 @@
       "notes": "[Fase 1] Satu-satunya ui-critic di Fase 1. Dipindah ke setelah penyambungan fe (keputusan pemilik 2026-11-05): menilai layar dengan data nyata/seed."
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "f06-store-v2-sisanya",
         "rb03b-free-flow"
@@ -811,7 +835,11 @@
       "value": "high",
       "size": "m",
       "done": "Pesan question/permission tersimpan dari can_use_tool dan AskUserQuestion; POST .../answer (question, permission allow|deny+alasan) memakai transaksi: jawaban pertama menang, kedua 409 already_answered (details.state); terjawab tampil < 2 dtk lewat SSE; pertanyaan > 4 pilihan dan multi-pilih diterima; tes dua jawaban bersamaan; npm test hijau. Pertanyaan, pilihan, izin, jawaban, siapa/dari mana menjawab (dashboard/desktop), alasan penolakan, dan waktu dibuat/dijawab tersimpan permanen.",
-      "notes": "[Fase 1]"
+      "notes": "[Fase 1]",
+      "attempts": 1,
+      "startedAt": "2026-11-05T01:23:35.377Z",
+      "evidence": "npm test 148/149 lulus (1 gagal lama: policy A3), tsc bersih; tes F5 dua jawaban bersamaan 200+409. SSE <2 dtk belum diukur angka",
+      "finishedAt": "2026-11-05T01:34:46.159Z"
     },
     {
       "status": "todo",
@@ -2264,7 +2292,7 @@
       "notes": "[Fase 3] Fase 1 dan 2 memakai satu cyber per fase; audit akhir hanya di ujung Fase 3."
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "lp06-ui-peta",
         "lp07-ui-chat",
@@ -2282,7 +2310,9 @@
       "size": "s",
       "checkpoint": "Lihat screenshot layar proyek (lebar 1440 dan 375) dengan data contoh dari seed (run asli 07_Sandbox + skenario tim 10 agent). Apakah tampilannya sudah sesuai untuk disambungkan ke data nyata, atau ada yang diubah?",
       "done": "Pemilik menyetujui screenshot 1440 dan 375, atau memberi catatan perubahan yang dijadikan item.",
-      "notes": "[Fase 1] Keputusan pemilik 2026-11-05: layar disetujui dulu sebelum fe menyambung."
+      "notes": "[Fase 1] Keputusan pemilik 2026-11-05: layar disetujui dulu sebelum fe menyambung.",
+      "evidence": "Keputusan pemilik: Setuju, sambungkan: tampilan 1440 disetujui; HP penuh di item berikutnya",
+      "finishedAt": "2026-11-05T01:32:43.142Z"
     },
     {
       "status": "done",
@@ -2519,7 +2549,46 @@
       "value": "mid",
       "size": "m",
       "notes": "asal: lp04"
+    },
+    {
+      "id": "bug-policy-a3-glob-absolut",
+      "title": "Tes kebijakan A3 gagal: glob absolut mengembalikan allow, harusnya ask",
+      "type": "be",
+      "agent": "be",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: rb04-api-mulai-run; test/policy.test.ts A3, kemungkinan path gaya Windows di Linux; berkaitan keamanan izin"
+    },
+    {
+      "id": "bug-run-baru-polish",
+      "title": "Run baru: daftar terakhir dipakai tanpa label sedang jalan; layar memuat/galat polos; tautan Run baru dari Layar proyek belum dipasang",
+      "type": "fe",
+      "agent": "fe",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: rb06-fe-run-baru"
+    },
+    {
+      "id": "lp02-sisa-tindak-lanjut",
+      "title": "Tindak lanjut lp02: FreeFlow tunggu background_tasks kosong; tipe AgentActivity web pakai kontrak; endpoint batas 200 langkah",
+      "type": "be",
+      "agent": "be",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: lp02-aktivitas-agent"
     }
   ],
-  "updatedAt": "2026-11-05T01:13:46.764Z"
+  "updatedAt": "2026-11-05T01:34:46.160Z"
 }

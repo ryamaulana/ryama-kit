@@ -39,8 +39,9 @@ async function run(prompt) {
     const cwd = process.cwd();
   if (sc === 'ok') { say('halo dari fake'); finish(); }
   if (sc === 'html') { say('<img src=x onerror=alert(1)> **tebal**'); finish(); }
-  if (sc === 'tanya' || sc === 'cancel') {
-    const input = { questions: [{ question: 'Warna favorit?', header: 'Warna', multiSelect: false, options: [{ label: 'Merah', description: 'api' }, { label: 'Biru' }] }] };
+  if (sc === 'tanya' || sc === 'cancel' || sc === 'tanya6') {
+    const six = sc === 'tanya6'; // lebih dari 4 pilihan + multi-pilih
+    const input = { questions: [{ question: 'Warna favorit?', header: 'Warna', multiSelect: six, options: six ? ['Merah', 'Biru', 'Hijau', 'Kuning', 'Ungu', 'Oranye'].map((label) => ({ label })) : [{ label: 'Merah', description: 'api' }, { label: 'Biru' }] }] };
     if (sc === 'cancel') {
       const p = askHost({ subtype: 'can_use_tool', tool_name: 'AskUserQuestion', input });
       await sleep(300);
@@ -83,6 +84,10 @@ async function run(prompt) {
   if (sc === 'stop' || sc === 'stop-hang') {
     await tool('Bash', { command: 'ping -n 60 127.0.0.1' });
     await sleep(60000);
+  }
+  if (sc === 'subagent') { // putar ulang stream asli (docs/SPIKE.md T1) tanpa baris init
+    const f = new URL('./fixtures/stream/subagent-background-haiku.jsonl', import.meta.url);
+    for (const l of fs.readFileSync(f, 'utf8').split('\n').filter(Boolean)) if (JSON.parse(l).subtype !== 'init') process.stdout.write(l + '\n');
   }
   if (sc === 'crash') {
     process.stderr.write('boom: sesuatu rusak\n');

@@ -284,9 +284,9 @@ Berkas tampilan: `GET /` dan rute aplikasi tanpa ekstensi -> `web/dist/index.htm
 `id: <seq>`, `event: <type>`, `data: <JSON>`; tanpa `after` diputar ulang dari awal; ping tiap 15 dtk (ada).
 - `run`: `Run` penuh. Field baru `Run`: `projectId`, `teamId`, `commandId`, `title` (dari prompt/perintah), `origin: dashboard|desktop`, `batchSize`, `milestone {id,name,done,total} | null`, `batchNo`, `limitResetAt`, `tokens` (4 jenis, total run).
 - `message`: `Message` penuh, ganti per `id`. Baru: `kind` + `milestone` (usulan milestone) dan `decision` (item checkpoint backlog); `source: session|backlog|desktop|system`; `ref {itemId?, milestoneId?, batchId?, ruleId?}`; `answer.from` + `desktop`; `answer.decision` + `always`; `proposal {milestoneId, name, items[{id,title}]}` untuk `milestone`.
-- `tool` (ada): + `agent` (id agent atau `orkestrator`), `toolUseId`.
+- `tool` (ada): + `agent` (id agent atau `orkestrator`), `toolUseId`. Tiap langkah dua event: mulai (`status: running`, `input` utuh) dan hasil (`done|failed`, `result` utuh, `at` = waktu hasil); pembaca menggabungkan per `toolUseId`. Tidak dipangkas saat disimpan; batas 200 langkah hanya saat dibaca API.
 - `status`: `{from, to, reason, at}` setiap status run berubah (`from: null` = run baru). Dicatat Store di `saveRun`, siapa pun penulisnya; sumber riwayat status dan pemberitahuan.
-- `activity`: `AgentActivity` (mulai, selesai, gagal, token, model terpakai).
+- `activity`: `AgentActivity` (mulai, selesai, gagal, token, model terpakai). Dari `harness/stream.ts` `createActivityTracker`: satu baris per panggilan Agent/Task (id = tool_use_id), status dari `task_notification`/`task_updated` (cadangan: `tool_result` Agent/Task bukan "Async agent launched"), langkah subagent lewat `parent_tool_use_id`, `in_team` dari agent tim run, `item_key` dari awalan `ITEM <id>` prompt; masih jalan saat proses berakhir -> `failed`.
 - `batch`: `Batch` (mulai, selesai, commit).
 - `milestone`: `Milestone` (status berubah).
 
