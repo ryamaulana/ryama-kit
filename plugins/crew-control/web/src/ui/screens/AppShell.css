@@ -2,7 +2,7 @@
   display: grid; height: 100vh; min-height: 640px;
   grid-template-columns: var(--rail-w) minmax(0, 1fr);
 }
-.app-shell__main { min-width: 0; min-height: 0; overflow: auto; display: flex; flex-direction: column; }
+.app-shell__main { position: relative; min-width: 0; min-height: 0; overflow: auto; display: flex; flex-direction: column; }
 .app-shell__main:focus { outline: none; }
 
 .page-head {
@@ -17,3 +17,11 @@
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .page-head__actions { display: flex; align-items: center; gap: var(--sp-8); flex: none; }
+
+/* HP (< 900): rel diganti TabBar; isi diberi ruang di atas tab bawah */
+@media (max-width: 899px) {
+  .app-shell { grid-template-columns: minmax(0, 1fr); height: auto; min-height: 100vh; }
+  .app-shell > .nav-rail { display: none; }
+  .app-shell__main { overflow: visible; padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom)); scroll-padding-bottom: calc(var(--tabbar-h) + var(--sp-16)); }
+  .page-head { padding: var(--sp-8) var(--sp-16); }
+}

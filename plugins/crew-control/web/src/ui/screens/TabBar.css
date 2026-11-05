@@ -1,0 +1,21 @@
+/* Tab bawah HP (mockup daftar-proyek.html .tabbar). Hanya tampil < 900 px. */
+.tab-bar { display: none; }
+@media (max-width: 899px) {
+  .tab-bar {
+    display: grid; grid-template-columns: repeat(3, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 5;
+    height: calc(var(--tabbar-h) + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom);
+    background: var(--surface); border-top: var(--line-w) solid var(--line);
+  }
+  .tab-bar__item {
+    position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--sp-4);
+    min-height: var(--tap); font-size: var(--fs-12); color: var(--text-2); text-decoration: none;
+  }
+  .tab-bar__item svg { width: calc(var(--sp-16) + var(--sp-4)); height: calc(var(--sp-16) + var(--sp-4)); }
+  .tab-bar__item[aria-current="page"] { color: var(--text); font-weight: var(--fw-semibold); }
+  .tab-bar__item--soon { color: var(--text-3); }
+  .tab-bar__badge {
+    position: absolute; top: var(--sp-4); left: calc(50% + var(--sp-8));
+    min-width: var(--sp-16); height: var(--sp-16); padding: 0 var(--sp-4); border-radius: var(--radius-round);
+    background: var(--ask); color: var(--on-ink); font-size: var(--fs-12); font-weight: var(--fw-bold); line-height: var(--sp-16); text-align: center;
+  }
+}

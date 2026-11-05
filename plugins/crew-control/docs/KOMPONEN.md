@@ -1,8 +1,14 @@
 # Indeks komponen tampilan (`web/src/ui/`)
-Satu baris per komponen. Gaya: `web/src/ui/styles/index.css` (tokens.css impor `docs/design-tokens.css` + font Overpass lokal, base.css), diimpor sekali di `web/src/main.tsx`. Tema: `data-theme="light|dark"` di `<html>` (tanpa atribut = ikut sistem). Pratinjau: `/app/preview.html?tema=terang|gelap`.
+Satu baris per komponen. Gaya: `web/src/ui/styles/index.css` (tokens.css impor `docs/design-tokens.css` + font Overpass lokal, base.css), diimpor sekali di `web/src/main.tsx`. Tema: `data-theme="light|dark"` di `<html>` (tanpa atribut = ikut sistem). Pratinjau: `/app/preview.html?layar=kerangka|daftar|baru&tema=terang|gelap&keadaan=…` (daftar: kosong, memuat, galat, diam; baru: isi, folder, folder-memuat, folder-kosong, folder-galat, folder-baru, folder-hilang, akar, sibuk, penuh, kosong-teks, model, mengirim).
 
 | Komponen | File | Props utama | Dipakai untuk |
 |---|---|---|---|
 | NavRail | `ui/screens/NavRail.tsx` | `current: NavDest\|null`, `needsYou: number`, `hrefs?`, `soon?: NavDest[]` (bawaan riwayat, kesehatan: tampil "segera", tidak bisa dibuka), `settingsOpen`, `onNavigate(dest, e)`, `onOpenSettings()` | Rel navigasi kiri laptop: Run baru, Proyek + lencana Butuh kamu, Riwayat, Kesehatan kit, Pengaturan |
-| AppShell | `ui/screens/AppShell.tsx` | `nav: NavRailProps`, `children`, `panel?`, `skipLabel?` | Kerangka halaman: tautan lompat + rel + `<main id="isi">` |
+| AppShell | `ui/screens/AppShell.tsx` | `nav: NavRailProps`, `children`, `panel?`, `skipLabel?` | Kerangka halaman: tautan lompat + rel (≥ 900) / TabBar (< 900, dokumen yang menggulir) + `<main id="isi">` |
+| TabBar | `ui/screens/TabBar.tsx` | sama dengan `NavRailProps` (dirender AppShell) | Tab bawah HP: Proyek + lencana, Run baru, Riwayat ("segera") |
 | PageHead | `ui/screens/AppShell.tsx` | `title`, `sub?`, `subMono?`, `actions?` | Kepala halaman 56: judul = nama entitas, baris kedua path/ringkasan |
+| ProjectListView | `ui/screens/ProjectListView.tsx` | `status: ready\|loading\|empty`, `totals`, `attention/running/limited/quiet: ProjectRow[]`, `staleAt?`, `showNotifyPrompt?`, `resumingId?`, `onResume`, `onOpen`, `onRetry`, `onEnableNotify`, `onDismissNotify`, `onOpenSettings?` | Daftar proyek `/`: 5 angka (0 diciutkan), kelompok Perlu diurus / Jalan (+ Jeda limit) / Diam |
+| NewRunView | `ui/screens/NewRunView.tsx` | `commands`, `commandId`, `text`, `folder {segments, isWorkRoot}`, `folderError?`, `folderOpen`, `folderPicker`, `teams/models: Choice[]`, `teamId/modelId`, `submitting?`, `notice?: NewRunNotice`, `onSubmit` | Run baru `/baru`: chip perintah, kotak ketik (Enter kirim), Folder / Tim / Model / Mulai |
+| FolderPopover | `ui/screens/FolderPopover.tsx` | `recent`, `crumbs`, `folders: FolderItem[]`, `status: ready\|loading\|error`, `selectedPath?`, `create?`, `onBrowse`, `onPick`, `onCreate`, `onRetry`, `onClose` | Pilih folder: cari, Terakhir dipakai, Jelajah dari folder kerja, Pilih per baris, Folder baru |
+| ChoiceMenu | `ui/parts/ChoiceMenu.tsx` | `title`, `choices: Choice[]` (label + description), `value`, `onChange`, `align?` | Menu Tim/Model (listbox, keyboard) |
+| Mark · Pips · PathTrail · Sep/withSeps · Icon | `ui/parts/*.tsx` | `kind`, `small?` · `total/done/now/bad` · `segments` · `text` | Simbol stasiun, deret milestone, jejak path, pemisah bulatan, ikon garis |

@@ -18,7 +18,7 @@ test('run biasa: berjalan lalu selesai, token dan pesan tercatat, event beruruta
   await waitFor(() => terminal(h.run(r.id).status), 8000, 'run selesai');
   const run = h.run(r.id);
   assert.equal(run.status, 'done');
-  assert.equal(run.sessionId, 'sess-fake');
+  assert.equal(run.sessionId, r.sessionId); // id dari --session-id Harness, dipakai claude
   assert.deepEqual(run.tokens, { input: 10, output: 5, cacheRead: 3, cacheWrite: 2 });
   assert.ok(run.durationMs! >= 0 && run.endedAt);
   assert.equal(h.find(r.id, (m) => m.kind === 'agent')?.text, 'halo dari fake');
@@ -109,8 +109,8 @@ test('chat berkelanjutan: pesan setelah giliran selesai melanjutkan sesi yang sa
   await waitFor(() => terminal(h.run(r.id).status), 8000, 'giliran 2');
   const run = h.run(r.id);
   assert.equal(run.status, 'done');
-  assert.equal(run.sessionId, 'sess-fake'); // sesi sama
-  assert.equal(h.messages(r.id).filter((x) => x.kind === 'agent').at(-1)?.text, 'lanjut:sess-fake:lanjutkan ya:haiku');
+  assert.equal(run.sessionId, r.sessionId); // sesi sama
+  assert.equal(h.messages(r.id).filter((x) => x.kind === 'agent').at(-1)?.text, `lanjut:${r.sessionId}:lanjutkan ya:haiku`);
   // giliran ketiga juga bisa
   h.harness.sendMessage(r.id, 'sekali lagi');
   await waitFor(() => h.messages(r.id).some((x) => x.text.includes(':sekali lagi:')), 8000, 'giliran 3');
@@ -123,15 +123,17 @@ test('chat berkelanjutan: ditolak bila proyek sedang dipakai run lain atau run t
   const r = h.harness.startRun({ projectDir: dir, prompt: '[ok]' });
   await waitFor(() => terminal(h.run(r.id).status));
   const r2 = h.harness.startRun({ projectDir: dir, prompt: '[stop]' }); // proyek yang sama dipakai run lain
-  assert.equal(thrown(() => h.harness.sendMessage(r.id, 'halo')).code, 'project_busy');
+  const ro = thrown(() => h.harness.sendMessage(r.id, 'halo')); // r bukan run terakhir lagi
+  assert.equal(ro.code, 'run_read_only');
+  assert.equal(ro.details?.latestRunId, r2.id);
   assert.equal(h.messages(r.id).some((x) => x.kind === 'owner'), false); // tidak ada pesan tersimpan bila gagal
   h.harness.stop(r2.id);
   await waitFor(() => terminal(h.run(r2.id).status));
   const h2 = await setupHarness({ bin: 'program-tidak-ada-xyz', binArgs: [] }); t.after(h2.close);
   const c = h2.harness.startRun({ projectDir: dir, prompt: 'x' }); // gagal sebelum sesi terbentuk
   await waitFor(() => terminal(h2.run(c.id).status));
-  assert.equal(h2.run(c.id).sessionId, null);
-  assert.equal(thrown(() => h2.harness.sendMessage(c.id, 'halo')).code, 'run_not_active');
+  assert.equal(h2.harness.isOwnSession(h2.run(c.id).sessionId!), false);
+  assert.equal(thrown(() => h2.harness.sendMessage(c.id, 'halo')).code, 'run_read_only'); // failed
 });
 
 test('Jeda menahan langkah berikutnya; pesan saat Jeda terkirim saat Lanjut; sesi sama', async (t) => {
@@ -150,7 +152,7 @@ test('Jeda menahan langkah berikutnya; pesan saat Jeda terkirim saat Lanjut; ses
   assert.equal(h.store.getMessage(m.id)!.sentOnResume, true);
   await waitFor(() => terminal(h.run(r.id).status));
   for (const f of ['a', 'b', 'c']) assert.ok(fs.existsSync(path.join(dir, f + '.txt')), f);
-  assert.equal(h.run(r.id).sessionId, 'sess-fake');
+  assert.equal(h.run(r.id).sessionId, r.sessionId);
   assert.equal(h.run(r.id).status, 'done');
 });
 
@@ -239,4 +241,34 @@ test('server berhenti: run Terputus, bukan Gagal; start ulang menandai sisa run 
   h.store.saveRun(stale);
   assert.equal(h.store.markDisconnected(), 1);
   assert.equal(h.run('stale').status, 'disconnected');
+});
+
+test('ketik-lanjut: hanya run terakhir berstatus done; failed/stopped/disconnected ditolak', async (t) => {
+  const h = await setupHarness(); t.after(h.close);
+  const { dir } = tmpProject();
+  const r = h.harness.startRun({ projectDir: dir, prompt: '[ok]' });
+  await waitFor(() => terminal(h.run(r.id).status));
+  for (const st of ['failed', 'stopped', 'disconnected'] as const) {
+    const id = `ro-${st}`;
+    h.store.saveRun({ ...h.run(r.id), id, status: st, startedAt: new Date(Date.now() + 60000 * (1 + ['failed', 'stopped', 'disconnected'].indexOf(st))).toISOString() });
+    const e = thrown(() => h.harness.sendMessage(id, 'halo'));
+    assert.equal(e.code, 'run_read_only');
+    assert.equal(e.details?.latestRunId, id);
+    assert.equal(h.messages(id).length, 0);
+  }
+});
+
+test('restart: markDisconnected tidak mengubah run tanpa sesi (limit_paused, ready_review, needs_owner)', async (t) => {
+  const h = await setupHarness(); t.after(h.close);
+  const { dir } = tmpProject();
+  const r = h.harness.startRun({ projectDir: dir, prompt: '[ok]' });
+  await waitFor(() => terminal(h.run(r.id).status));
+  const base = h.run(r.id);
+  for (const st of ['limit_paused', 'ready_review', 'needs_owner'] as const) {
+    h.store.saveRun({ ...base, id: `ns-${st}`, status: st, sessionId: null, endedAt: null, durationMs: null });
+  }
+  h.store.saveRun({ ...base, id: 'ws', status: 'needs_owner', sessionId: 's1', endedAt: null, durationMs: null });
+  assert.equal(h.store.markDisconnected(), 1);
+  for (const st of ['limit_paused', 'ready_review', 'needs_owner']) assert.equal(h.run(`ns-${st}`).status, st);
+  assert.equal(h.run('ws').status, 'disconnected');
 });

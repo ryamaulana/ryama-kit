@@ -1,0 +1,65 @@
+[
+  {
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    },
+    "counts": {
+      "high": 0,
+      "medium": 0,
+      "low": 0
+    },
+    "stats": {
+      "ukuranHuruf": [
+        12,
+        13,
+        14,
+        18
+      ],
+      "keluargaHuruf": [
+        "Overpass"
+      ],
+      "nilaiSpasi": 9,
+      "spasiDiLuarSkalaPersen": 4,
+      "radius": [
+        4,
+        8
+      ],
+      "bayangan": 0,
+      "warnaTeks": 4,
+      "tombolSolidDiLayarPertama": 2,
+      "elemenTerkuat": [
+        "h1 \"Proyek\"",
+        "a.btn \"Run baru\"",
+        "button.btn \"Aktifkan\""
+      ],
+      "tepiKiriTerbanyak": [
+        "10px(2)",
+        "28px(2)",
+        "88px(2)",
+        "8px(1)",
+        "158px(1)",
+        "298px(1)"
+      ],
+      "jumlahGambar": 0,
+      "kataJudulTerpanjang": 1,
+      "jumlahSvg": 10,
+      "warnaAksen": 0,
+      "grupKartuSeragam": 0,
+      "jumlahKartuSeragam": 0,
+      "kandidatFokus": [
+        "h1 \"Proyek\"",
+        "a.btn \"Run baru\""
+      ],
+      "blokWarnaJenuhLayarPertamaPersen": 0,
+      "token": {
+        "aktif": true,
+        "warnaDiLuar": 0,
+        "radiusDiLuar": 0,
+        "hurufDiLuar": 0,
+        "fontDiLuar": 0
+      }
+    },
+    "issues": []
+  }
+]

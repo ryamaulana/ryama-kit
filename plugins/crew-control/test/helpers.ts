@@ -4,6 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Harness, type HarnessOptions } from '../src/harness/index.js';
+import { FreeFlow } from '../src/conductor/free-flow.js';
 import { Store } from '../src/store/index.js';
 import type { Message, Run } from '../src/contract/index.js';
 
@@ -43,8 +44,9 @@ export async function setupHarness(opts: Partial<HarnessOptions> = {}) {
   const port = (hookServer.address() as { port: number }).port;
   harness = new Harness({
     store, hookBaseUrl: `http://127.0.0.1:${port}`, bin: process.execPath, binArgs: [FAKE],
-    finishGraceMs: 150, stopSoftMs: 3000, stopKillMs: 6000, ...opts,
+    stopSoftMs: 3000, stopKillMs: 6000, ...opts,
   });
+  new FreeFlow({ harness, graceMs: 150 });
   const close = () => { harness.shutdown(); hookServer.close(); };
   const run = (id: string): Run => store.getRun(id)!;
   const messages = (id: string): Message[] => store.listMessages(id);

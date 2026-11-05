@@ -15,7 +15,6 @@ export interface HarnessOptions {
   bin?: string; // default "claude"
   binArgs?: string[]; // argumen sebelum argumen claude (dipakai tes dengan claude tiruan)
   maxRuns?: number;
-  finishGraceMs?: number; // jeda menunggu giliran baru setelah `result` sebelum sesi ditutup
   stopSoftMs?: number; // setelah Stop: tutup stdin bila claude belum berhenti
   stopKillMs?: number; // setelah Stop: matikan paksa seluruh pohon proses
 }
@@ -33,7 +32,6 @@ export interface Live {
   pending: Map<string, { requestId: string; input: unknown }>; // messageId -> permintaan claude yang menunggu
   queued: { messageId: string; text: string }[]; // pesan pemilik saat Jeda
   lastResult?: Record<string, any>;
-  finishTimer?: NodeJS.Timeout;
   stopTimers: NodeJS.Timeout[];
   stderrTail: string;
   seq: number;

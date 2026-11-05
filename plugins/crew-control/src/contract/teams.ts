@@ -13,6 +13,7 @@ export const TeamCommand = z.object({
   needsText: z.boolean(),
   placeholder: Text(200),
 }).strict();
+export type TeamCommand = z.infer<typeof TeamCommand>;
 
 export const TeamManifest = z.object({
   schema: z.literal(1),

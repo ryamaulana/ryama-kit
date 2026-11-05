@@ -1,0 +1,25 @@
+.cmenu { position: relative; }
+.cmenu__btn {
+  display: inline-flex; align-items: center; gap: var(--sp-4); min-height: var(--sp-32); padding: 0 var(--sp-8) 0 var(--sp-12);
+  border: 0; border-radius: var(--radius-s); background: transparent; color: var(--text-2); cursor: pointer; white-space: nowrap;
+  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.cmenu__btn:hover, .cmenu__btn[aria-expanded="true"] { background: var(--sunk); color: var(--text); }
+.cmenu__btn svg { width: var(--sp-16); height: var(--sp-16); }
+.cmenu__list {
+  position: absolute; top: calc(100% + var(--sp-8)); z-index: 20; width: calc(var(--sp-48) * 6); margin: 0; padding: var(--sp-4);
+  list-style: none; background: var(--surface); border: var(--line-w) solid var(--line); border-radius: var(--radius-m); box-shadow: var(--shadow-pop);
+}
+.cmenu__list:focus { outline: none; }
+.cmenu__list:focus-visible { outline: var(--focus-w) solid var(--focus); outline-offset: var(--focus-w); }
+.cmenu__list--start { left: 0; }
+.cmenu__list--end { right: 0; }
+.cmenu__opt {
+  position: relative; display: grid; gap: 0; padding: var(--sp-8) var(--sp-32) var(--sp-8) var(--sp-12);
+  border-radius: var(--radius-s); cursor: pointer;
+}
+.cmenu__opt.is-active { background: var(--sunk); }
+.cmenu__name { font-weight: var(--fw-semibold); }
+.cmenu__desc { font-size: var(--fs-13); color: var(--text-2); }
+.cmenu__check { position: absolute; right: var(--sp-12); top: var(--sp-12); color: var(--text); }
+.cmenu__check svg { width: var(--sp-16); height: var(--sp-16); }

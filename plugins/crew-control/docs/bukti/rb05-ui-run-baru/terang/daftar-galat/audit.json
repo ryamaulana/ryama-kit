@@ -1,0 +1,78 @@
+[
+  {
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    },
+    "counts": {
+      "high": 0,
+      "medium": 0,
+      "low": 2
+    },
+    "stats": {
+      "ukuranHuruf": [
+        12,
+        13,
+        14,
+        16,
+        18
+      ],
+      "keluargaHuruf": [
+        "Overpass",
+        "Overpass Mono"
+      ],
+      "nilaiSpasi": 8,
+      "spasiDiLuarSkalaPersen": 0,
+      "radius": [
+        4,
+        8
+      ],
+      "bayangan": 0,
+      "warnaTeks": 7,
+      "tombolSolidDiLayarPertama": 3,
+      "elemenTerkuat": [
+        "h1 \"Proyek\"",
+        "b.pl-kpi__num \"1\"",
+        "b.pl-kpi__num \"1\""
+      ],
+      "tepiKiriTerbanyak": [
+        "144px(14)",
+        "456px(14)",
+        "956px(14)",
+        "696px(11)",
+        "1148px(9)",
+        "1042px(4)"
+      ],
+      "jumlahGambar": 0,
+      "kataJudulTerpanjang": 2,
+      "jumlahSvg": 14,
+      "warnaAksen": 3,
+      "grupKartuSeragam": 5,
+      "jumlahKartuSeragam": 63,
+      "kandidatFokus": [
+        "h1 \"Proyek\"",
+        "b.pl-kpi__num \"1\""
+      ],
+      "blokWarnaJenuhLayarPertamaPersen": 0,
+      "token": {
+        "aktif": true,
+        "warnaDiLuar": 0,
+        "radiusDiLuar": 0,
+        "hurufDiLuar": 0,
+        "fontDiLuar": 0
+      }
+    },
+    "issues": [
+      {
+        "sev": "low",
+        "rule": "kartu-seragam",
+        "detail": "5 grup kartu identik (63 kartu); pastikan ada hierarki, bukan template (antislop-ui: Copy-Paste Feature Cards)"
+      },
+      {
+        "sev": "low",
+        "rule": "titik-fokus",
+        "detail": "dua kandidat fokus hampir sama kuat di layar pertama: h1 \"Proyek\" vs b.pl-kpi__num \"1\""
+      }
+    ]
+  }
+]

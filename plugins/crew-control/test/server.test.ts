@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import http from 'node:http';
 import path from 'node:path';
+import { FreeFlow } from '../src/conductor/free-flow.js';
 import { Harness } from '../src/harness/index.js';
 import { createApp } from '../src/server.js';
 import { Store } from '../src/store/index.js';
@@ -23,8 +24,9 @@ async function setup() {
   const store = new Store(':memory:');
   const port = await freePort();
   const harness = new Harness({
-    store, hookBaseUrl: `http://127.0.0.1:${port}`, bin: process.execPath, binArgs: [FAKE], finishGraceMs: 150, maxRuns: 1,
+    store, hookBaseUrl: `http://127.0.0.1:${port}`, bin: process.execPath, binArgs: [FAKE], maxRuns: 1,
   });
+  new FreeFlow({ harness, graceMs: 150 });
   const app = createApp({ store, harness, workRoot: root, maxRuns: 1 });
   await app.listen({ port, host: '127.0.0.1' });
   const base = `http://127.0.0.1:${port}`;
@@ -151,7 +153,7 @@ test('chat berkelanjutan lewat HTTP: pesan ke run yang sudah selesai melanjutkan
   const r = await s.api('POST', `/api/runs/${id}/messages`, { text: 'pesan susulan' });
   assert.equal(r.status, 201, JSON.stringify(r.body));
   assert.equal(r.body.kind, 'owner');
-  await waitFor(() => s.store.getRun(id)?.status === 'done' && s.store.listMessages(id).some((m) => m.text.startsWith('lanjut:sess-fake:pesan susulan:haiku')), 8000, 'giliran lanjutan');
+  await waitFor(() => s.store.getRun(id)?.status === 'done' && s.store.listMessages(id).some((m) => m.text.startsWith(`lanjut:${s.store.getRun(id)!.sessionId}:pesan susulan:haiku`)), 8000, 'giliran lanjutan');
   const detail = await s.api('GET', `/api/runs/${id}`);
   assert.equal(detail.body.run.status, 'done');
   // run yang tidak ada tetap 404
@@ -230,4 +232,26 @@ test('teks agent apa adanya (tanpa diubah) dan dikirim sebagai JSON + nosniff', 
   assert.equal(r.headers.get('x-content-type-options'), 'nosniff');
   const d: any = await r.json();
   assert.equal(d.messages.find((m: any) => m.kind === 'agent').text, '<img src=x onerror=alert(1)> **tebal**');
+});
+
+test('folders: POST membuat folder (git init), project muncul, galat seragam', async (t) => {
+  const s = await setup(); t.after(s.close);
+  const top = await s.api('GET', '/api/folders');
+  assert.equal(top.body.project, null);
+  assert.equal(top.body.folders[0].activeRunId, null);
+  const made = await s.api('POST', '/api/folders', { parent: s.dir, name: 'baru' });
+  assert.equal(made.status, 201);
+  assert.equal(made.body.name, 'baru');
+  assert.ok(fs.existsSync(path.join(s.dir, 'baru', '.git')));
+  assert.equal((await s.api('POST', '/api/folders', { parent: s.dir, name: 'baru' })).status, 409);
+  assert.equal((await s.api('POST', '/api/folders', { parent: s.dir, name: 'a/b' })).body.error.code, 'invalid_folder_name');
+  assert.equal((await s.api('POST', '/api/folders', { parent: path.dirname(s.root), name: 'x' })).body.error.code, 'project_outside_root');
+  fs.mkdirSync(path.join(s.dir, 'docs'));
+  fs.writeFileSync(path.join(s.dir, 'docs', 'backlog.json'), JSON.stringify({ items: [{ id: 'a', status: 'todo' }] }));
+  const run = await s.api('POST', '/api/runs', { project: s.dir, prompt: '[ok]' });
+  const l = await s.api('GET', '/api/folders?path=' + encodeURIComponent(s.dir));
+  assert.equal(l.body.project.hasOpenBacklog, true);
+  assert.match(l.body.project.id, /^[0-9a-f]{12}$/);
+  const parent = await s.api('GET', '/api/folders');
+  assert.equal(parent.body.folders.find((f: any) => f.name === 'app').activeRunId, run.body.id);
 });

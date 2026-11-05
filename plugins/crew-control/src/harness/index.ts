@@ -9,11 +9,14 @@ import { decide } from '../policy.js';
 import { projectKey } from '../projects.js';
 import { HarnessError, type HarnessOptions, type Live } from './session.js';
 import { QuestionsInput, clip, nowIso, summarize } from './stream.js';
+import { liveStatus } from '../conductor/status.js';
 import { LIMIT_DEFAULTS, killTree as killTreeOf, type ResolvedOptions } from './limits.js';
 
 export { HarnessError, type HarnessOptions } from './session.js';
 
 export class Harness {
+  /** Pengamat giliran (FreeFlow): activity = ada kemajuan/pesan baru, result = giliran selesai, end = proses berhenti. */
+  onTurn?: (runId: string, ev: 'activity' | 'result' | 'end') => void;
   private live = new Map<string, Live>();
   private byKey = new Map<string, Live>();
   private byToken = new Map<string, Live>();
@@ -36,6 +39,18 @@ export class Harness {
     return this.launch(run, req.prompt, null);
   }
 
+  /** Id run aktif di folder ini, atau null. */
+  activeRunId(projectDir: string): string | null { return this.byKey.get(projectKey(projectDir))?.run.id ?? null; }
+
+  /** Tutup stdin sesi: claude keluar dengan tenang setelah giliran selesai. */
+  closeSession(runId: string): void {
+    const l = this.live.get(runId);
+    if (l) this.endStdin(l);
+  }
+
+  /** Sesi milik proses Harness yang masih hidup (hook desktop dari sesi ini diabaikan, F10). */
+  isOwnSession(sessionId: string): boolean { return [...this.live.values()].some((l) => l.run.sessionId === sessionId); }
+
   /** Jalankan proses claude untuk run ini (baru, atau melanjutkan sesi `resumeId` setelah giliran sebelumnya selesai). */
   private launch(run: Run, firstText: string, resumeId: string | null): Run {
     const key = projectKey(run.project);
@@ -44,6 +59,8 @@ export class Harness {
     if (this.live.size >= this.o.maxRuns) {
       throw new HarnessError('capacity', `Sudah ada ${this.live.size} run aktif (batas ${this.o.maxRuns}).`, 409);
     }
+    // T2 (SPIKE): id sesi diberikan sendiri agar diketahui sebelum proses jalan; lanjut sesi tetap lewat --resume.
+    if (!resumeId) run = { ...run, sessionId: crypto.randomUUID() };
     const token = crypto.randomBytes(16).toString('hex');
     const settings = {
       hooks: { PreToolUse: [{ matcher: '*', hooks: [{ type: 'http', url: `${this.o.hookBaseUrl}/hook/${token}`, timeout: 3600 }] }] },
@@ -52,7 +69,7 @@ export class Harness {
       ...this.o.binArgs,
       '-p', '--input-format', 'stream-json', '--output-format', 'stream-json', '--verbose',
       ...(run.model ? ['--model', run.model] : []),
-      ...(resumeId ? ['--resume', resumeId] : []),
+      ...(resumeId ? ['--resume', resumeId] : ['--session-id', run.sessionId!]),
       '--permission-mode', 'default', '--permission-prompt-tool', 'stdio',
       '--settings', JSON.stringify(settings),
     ];
@@ -132,7 +149,12 @@ export class Harness {
   sendMessage(runId: string, text: string): Message {
     if (!this.live.has(runId)) {
       const old = this.store.getRun(runId);
-      if (old && old.sessionId && TERMINAL_STATUSES.includes(old.status)) return this.continueRun(old, text);
+      if (old && TERMINAL_STATUSES.includes(old.status)) {
+        const latest = this.store.listRuns(old.project, 1)[0];
+        if (latest && latest.id !== old.id) throw new HarnessError('run_read_only', 'Run ini bukan run terakhir proyek.', 409, { latestRunId: latest.id });
+        if (old.status !== 'done') throw new HarnessError('run_read_only', 'Hanya run yang selesai yang bisa dilanjutkan dengan pesan.', 409, { latestRunId: old.id });
+        if (old.sessionId) return this.continueRun(old, text);
+      }
     }
     const l = this.activeOrThrow(runId);
     const base = this.newMessage(runId, 'owner', text);
@@ -229,7 +251,7 @@ export class Harness {
   }
   private sendUser(l: Live, text: string) {
     l.lastResult = undefined; // giliran baru dimulai; `result` lama tidak lagi menentukan akhir
-    clearTimeout(l.finishTimer);
+    this.onTurn?.(l.run.id, 'activity');
     this.write(l, { type: 'user', message: { role: 'user', content: text }, parent_tool_use_id: null, session_id: '' });
   }
   private endStdin(l: Live) {
@@ -255,7 +277,7 @@ export class Harness {
 
   private onAssistant(l: Live, m: any) {
     l.lastResult = undefined;
-    clearTimeout(l.finishTimer);
+    this.onTurn?.(l.run.id, 'activity');
     const sub = m.parent_tool_use_id != null;
     for (const c of m.message?.content ?? []) {
       if (c.type === 'text' && !sub && typeof c.text === 'string' && c.text.trim()) {
@@ -273,7 +295,7 @@ export class Harness {
       return;
     }
     l.lastResult = undefined;
-    clearTimeout(l.finishTimer);
+    this.onTurn?.(l.run.id, 'activity');
     const tool = String(req.tool_name);
     const input = req.input ?? {};
     if (tool === 'AskUserQuestion') {
@@ -327,9 +349,8 @@ export class Harness {
         cacheRead: u.cache_read_input_tokens ?? 0, cacheWrite: u.cache_creation_input_tokens ?? 0,
       },
     });
-    // Beri waktu bila pesan pemilik membuka giliran baru; bila tidak, tutup sesi (prompt bebas: run selesai).
-    clearTimeout(l.finishTimer);
-    l.finishTimer = setTimeout(() => this.endStdin(l), l.stopRequested ? 0 : this.o.finishGraceMs);
+    if (l.stopRequested) this.endStdin(l);
+    else this.onTurn?.(l.run.id, 'result');
   }
 
   // ---------- status dan penutupan ----------
@@ -341,14 +362,14 @@ export class Harness {
   private sync(l: Live) {
     if (l.exited) return;
     const pending = l.pending.size;
-    const status = l.paused ? 'paused' : pending ? 'needs_owner' : 'running';
+    const status = liveStatus({ paused: l.paused, pending });
     if (status !== l.run.status || pending !== l.run.pending) this.patch(l, { status, pending });
   }
 
   private finalize(l: Live, code: number | null) {
     if (l.exited) return;
     l.exited = true;
-    clearTimeout(l.finishTimer);
+    this.onTurn?.(l.run.id, 'end');
     l.stopTimers.forEach(clearTimeout);
     l.waiters.splice(0).forEach((r) => r());
     for (const mid of l.pending.keys()) this.cancelMessage(mid);

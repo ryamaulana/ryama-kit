@@ -1,0 +1,74 @@
+[
+  {
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    },
+    "counts": {
+      "high": 0,
+      "medium": 0,
+      "low": 1
+    },
+    "stats": {
+      "ukuranHuruf": [
+        12,
+        13,
+        14,
+        16,
+        18
+      ],
+      "keluargaHuruf": [
+        "Overpass",
+        "Overpass Mono"
+      ],
+      "nilaiSpasi": 7,
+      "spasiDiLuarSkalaPersen": 0,
+      "radius": [
+        4,
+        8
+      ],
+      "bayangan": 0,
+      "warnaTeks": 4,
+      "tombolSolidDiLayarPertama": 3,
+      "elemenTerkuat": [
+        "h1.page-head__title \"Run baru\"",
+        "span.nav-rail__badge \"1\"",
+        "button.nr-chip \"Mulai dari ide\""
+      ],
+      "tepiKiriTerbanyak": [
+        "28px(3)",
+        "10px(2)",
+        "80px(2)",
+        "410px(2)",
+        "8px(1)",
+        "408px(1)"
+      ],
+      "jumlahGambar": 0,
+      "kataJudulTerpanjang": 2,
+      "jumlahSvg": 12,
+      "warnaAksen": 1,
+      "grupKartuSeragam": 0,
+      "jumlahKartuSeragam": 0,
+      "kandidatFokus": [
+        "h1.page-head__title \"Run baru\"",
+        "span.nav-rail__badge \"1\""
+      ],
+      "blokWarnaJenuhLayarPertamaPersen": 0,
+      "token": {
+        "aktif": true,
+        "warnaDiLuar": 0,
+        "radiusDiLuar": 0,
+        "hurufDiLuar": 0,
+        "fontDiLuar": 0
+      }
+    },
+    "issues": [
+      {
+        "sev": "low",
+        "rule": "copy-tombol",
+        "detail": "tombol 6 kata (ideal 1-3): \"Folder: 01_Workspace › clients › toconnect\"",
+        "at": "button.nr-folder__btn \"Folder: 01_Workspace › clien\""
+      }
+    ]
+  }
+]
