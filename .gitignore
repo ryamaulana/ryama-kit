@@ -1,2 +1,4 @@
 node_modules/
-.claude/
+.claude/*
+!.claude/hooks/
+!.claude/settings.json
