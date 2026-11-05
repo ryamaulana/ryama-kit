@@ -1,0 +1,7 @@
+{
+  "sumber": "sintetis",
+  "catatan": "Format lama CLI: teks|epoch detik. 1793872800 = 2026-11-05 10:00 UTC (dihitung tangan: 20762 hari + 10 jam).",
+  "now": "2026-11-05T06:00:00.000Z",
+  "event": { "type": "result", "subtype": "success", "is_error": true, "result": "Claude AI usage limit reached|1793872800" },
+  "expected": { "resetAt": "2026-11-05T10:00:00.000Z" }
+}

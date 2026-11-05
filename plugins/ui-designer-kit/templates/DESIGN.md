@@ -21,17 +21,22 @@ Token mesin: `docs/design-tokens.css` (semua halaman hanya memakai `var(--...)` 
 ## Rancangan layar
 <!-- Ditulis SEBELUM kode, maks 8 baris per layar. -->
 ### <nama layar>
-- Tugas pengguna:
+- Jenis layar (tugas / dashboard / pemasaran):
+- Tugas pengguna (dashboard: pertanyaan layar; pemasaran: aksi yang diinginkan dari pengunjung):
 - Titik fokus (satu) dan alasannya:
 - Urutan baca: 1. 2. 3.
 - Blok dari atas ke bawah (+ alasan satu frasa):
 - Konsep terlihat di:
 - Sengaja tidak ada:
 
-## Dial taste (1-10)
-- DESIGN_VARIANCE:
-- MOTION_INTENSITY:
-- VISUAL_DENSITY:
+## Dial per jenis area (1-10)
+<!-- Token dan nada sama untuk semua jenis; dial dan komposisi boleh berbeda per jenis.
+     Isi hanya jenis yang ada di proyek (lihat UX.md bagian Penggolongan). -->
+| Jenis | DESIGN_VARIANCE | MOTION_INTENSITY | VISUAL_DENSITY | antislop ENERGY / RHYTHM / MOTION | Alasan singkat |
+|---|---|---|---|---|---|
+| Layar tugas | | | | | |
+| Dashboard | | | | | |
+| Pemasaran | | | | | |
 
 ## Warna
 | Token | Light | Dark | Dipakai untuk |

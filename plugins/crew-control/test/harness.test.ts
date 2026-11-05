@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { HarnessError } from '../src/harness.js';
+import { HarnessError } from '../src/harness/index.js';
 import { setupHarness, tmpProject, waitFor } from './helpers.js';
 
 const thrown = (f: () => unknown) => { try { f(); } catch (e) { return e as HarnessError; } throw new Error('tidak melempar'); };

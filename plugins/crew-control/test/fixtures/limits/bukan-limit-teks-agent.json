@@ -1,0 +1,7 @@
+{
+  "sumber": "sintetis",
+  "catatan": "Agent biasa mengutip pesan limit dalam jawabannya (model nyata, tanpa error): bukan limit.",
+  "now": "2026-11-05T06:00:00.000Z",
+  "event": { "type": "assistant", "message": { "model": "claude-opus-5-5", "role": "assistant", "content": [{ "type": "text", "text": "Pesan seperti \"You've hit your session limit · resets 8pm (Asia/Jakarta)\" dikenali oleh limits.ts." }] } },
+  "expected": null
+}

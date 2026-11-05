@@ -1,0 +1,21 @@
+/* Token aplikasi: satu sumber, docs/design-tokens.css (DESIGN.md arah B). Jangan menulis nilai di sini. */
+@import "../../../../docs/design-tokens.css";
+
+/* Font lokal (tanpa CDN): Overpass variabel 400-700 + Overpass Mono 400 */
+@font-face {
+  font-family: "Overpass";
+  src: url("./fonts/overpass-latin-wght.woff2") format("woff2");
+  font-weight: 400 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Overpass Mono";
+  src: url("./fonts/overpass-mono-latin-400.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+
+/* Kontrol bawaan peramban (scrollbar, input) ikut tema */
+:root { color-scheme: light dark; }
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"] { color-scheme: dark; }

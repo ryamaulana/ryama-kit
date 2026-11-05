@@ -1,0 +1,462 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>(1) Butuh input · flow-viewer</title>
+<link rel="stylesheet" href="tokens.css">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: var(--font-ui); font-size: var(--fs-14); line-height: var(--lh-body);
+    font-variant-numeric: tabular-nums;
+    display: grid; grid-template-rows: var(--bar-h) var(--board-h) auto 1fr;
+    height: 100vh; overflow: hidden;
+  }
+  button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+  :focus-visible { outline: var(--ring-w) solid var(--accent); outline-offset: 2px; border-radius: var(--radius-s); }
+  .sign { font-family: var(--font-sign); }
+  .mono { font-family: var(--font-mono); font-size: var(--fs-13); }
+  .muted { color: var(--text-muted); }
+  .faint { color: var(--text-faint); }
+  .ico { width: 16px; height: 16px; flex: none; stroke: currentColor; fill: none; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+  .skip { color: var(--text); font-weight: var(--fw-medium); position: absolute; left: var(--sp-2); top: var(--sp-2); z-index: 10; background: var(--surface); padding: var(--sp-2) var(--sp-3); border-radius: var(--radius-s); transform: translateY(-200%); }
+  .skip:focus { transform: none; }
+  h1, h2, h3, .notice-q { text-wrap: balance; }
+  .sub { font-family: var(--font-sign); font-size: var(--fs-20); font-weight: var(--fw-bold); line-height: var(--lh-head); }
+  .sr { font-size: var(--fs-14); margin: 0; position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  /* Bilah atas */
+  .bar { display: flex; align-items: center; gap: var(--sp-6); padding: 0 var(--sp-4) 0 var(--sp-6); background: var(--surface); border-bottom: var(--line-w) solid var(--line); }
+  .proj { display: inline-flex; align-items: center; gap: var(--sp-2); font-family: var(--font-sign); font-size: var(--fs-16); font-weight: var(--fw-bold); padding: var(--sp-1) var(--sp-2); margin-left: calc(var(--sp-2) * -1); border-radius: var(--radius-s); }
+  .proj:hover { background: var(--surface-sunk); }
+  .views { display: flex; height: 100%; gap: var(--sp-4); }
+  .views a { display: flex; align-items: center; color: var(--text-muted); text-decoration: none; font-weight: var(--fw-medium); border-bottom: 2px solid transparent; padding-top: 2px; }
+  .views a[aria-current="page"] { color: var(--text); border-bottom-color: var(--text); }
+  .views a:hover { color: var(--text); }
+  .bar-end { margin-left: auto; display: flex; align-items: center; gap: var(--sp-2); }
+  .conn { display: inline-flex; align-items: center; gap: var(--sp-2); color: var(--text-muted); font-size: var(--fs-13); margin-right: var(--sp-3); }
+  .conn .dot { width: 8px; height: 8px; border-radius: var(--radius-round); background: var(--st-run); }
+  .sample { font-size: var(--fs-12); color: var(--text-faint); margin-right: var(--sp-3); }
+  .icon-btn { display: inline-flex; align-items: center; gap: var(--sp-2); height: 32px; padding: 0 var(--sp-2); border-radius: var(--radius-s); color: var(--text-muted); font-size: var(--fs-13); }
+  .icon-btn:hover { background: var(--surface-sunk); color: var(--text); }
+
+  /* Papan keberangkatan */
+  .board { display: grid; grid-template-columns: 2fr 1fr 1fr; background: var(--surface-sunk); border-bottom: var(--line-w) solid var(--line); }
+  .cell { padding: var(--sp-3) var(--sp-6); display: flex; flex-direction: column; justify-content: center; gap: var(--sp-1); min-width: 0; }
+  .cell + .cell { border-left: var(--line-w) solid var(--line); }
+  .cell-label { font-size: var(--fs-12); color: var(--text-muted); }
+  .answer { display: flex; align-items: center; gap: var(--sp-3); }
+  .signal { width: 32px; height: 32px; border-radius: var(--radius-s); background: var(--st-input); color: var(--on-st-input); display: grid; place-items: center; flex: none; }
+  .signal .ico { width: 20px; height: 20px; stroke-width: 2.25; }
+  .big { font-family: var(--font-sign); font-size: var(--fs-26); font-weight: var(--fw-bold); line-height: var(--lh-head); letter-spacing: -0.01em; }
+  .who { display: flex; gap: var(--sp-6); font-size: var(--fs-14); min-width: 0; }
+  .who > * { display: inline-flex; align-items: center; gap: var(--sp-2); white-space: nowrap; }
+  .who b { font-weight: var(--fw-bold); }
+  .who .warn { color: var(--st-warn); }
+  .who .run-mark { width: 8px; height: 8px; border-radius: var(--radius-round); background: var(--st-run); }
+  .prog { display: flex; align-items: center; gap: var(--sp-4); }
+  .rail { position: relative; flex: 1; max-width: 160px; height: var(--track-w); background: var(--track); border-radius: var(--radius-round); }
+  .rail i { position: absolute; left: 0; top: 0; bottom: 0; width: 12%; background: var(--st-run); border-radius: var(--radius-round); }
+  .rail b { position: absolute; left: 12%; top: 50%; width: 12px; height: 12px; margin: -6px 0 0 -6px; border-radius: var(--radius-round); background: var(--surface); border: var(--ring-w) solid var(--st-run); }
+  .meta { font-size: var(--fs-13); color: var(--text-muted); }
+  .token-btn { text-align: left; display: flex; flex-direction: column; gap: var(--sp-1); border-radius: var(--radius-s); }
+  .token-btn:hover .sub { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; }
+
+  /* Kotak pemberitahuan */
+  .notice { display: grid; grid-template-columns: 8px 1fr auto; background: var(--surface); border-bottom: var(--line-w) solid var(--line); }
+  .notice-bar { background: var(--st-input); }
+  .notice-body { padding: var(--sp-3) var(--sp-6); display: flex; flex-direction: column; gap: var(--sp-1); }
+  .notice-head { display: flex; align-items: baseline; gap: var(--sp-3); }
+  .notice-q { font-family: var(--font-sign); font-size: var(--fs-20); font-weight: var(--fw-bold); line-height: var(--lh-head); }
+  .options { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--sp-1) var(--sp-6); color: var(--text-muted); }
+  .options li::before { content: attr(data-n) ". "; color: var(--text-faint); }
+  .notice-act { display: flex; align-items: center; gap: var(--sp-4); padding: 0 var(--sp-6); }
+  .notice-act p { margin: 0; font-weight: var(--fw-medium); }
+  .btn-sec { height: 36px; padding: 0 var(--sp-4); border: var(--line-w) solid var(--track); border-radius: var(--radius-s); font-weight: var(--fw-medium); background: var(--surface); }
+  .btn-sec:hover { background: var(--surface-sunk); }
+
+  /* Bawah: peta + panel */
+  .work { display: grid; grid-template-columns: 1fr var(--panel-w); min-height: 0; }
+  .map { position: relative; min-width: 0; min-height: 0; overflow: hidden; }
+  .map-tools { position: absolute; inset: 0 0 auto 0; height: var(--sp-12); display: flex; align-items: center; gap: var(--sp-4); padding: 0 var(--sp-6); z-index: 2; }
+  .map-tools .ctx { font-size: var(--fs-13); color: var(--text-muted); }
+  .map-tools .ctx b { color: var(--text); font-weight: var(--fw-medium); }
+  .zoom { margin-left: auto; display: flex; gap: var(--sp-1); background: var(--surface); border: var(--line-w) solid var(--line); border-radius: var(--radius-s); padding: 2px; }
+  .zoom button { height: 28px; min-width: 28px; padding: 0 var(--sp-2); border-radius: var(--radius-s); display: inline-flex; align-items: center; justify-content: center; gap: var(--sp-1); font-size: var(--fs-13); color: var(--text-muted); }
+  .zoom button:hover { background: var(--surface-sunk); color: var(--text); }
+  .canvas { position: absolute; left: var(--sp-4); top: var(--sp-12); width: 1000px; height: 600px; transform-origin: 0 0; transition: transform var(--dur-move) var(--ease); }
+  .canvas > svg { position: absolute; inset: 0; overflow: visible; }
+  .trk { fill: none; stroke-width: var(--track-w); stroke-linejoin: round; }
+  .trk.idle { stroke: var(--track); }
+  .trk.done { stroke: var(--st-run); }
+  .st { stroke-width: 3; }
+  .st.done { fill: var(--surface); stroke: var(--st-run); }
+  .st.run { fill: var(--st-run); stroke: var(--st-run); }
+  .st.input { fill: var(--st-input); stroke: var(--st-input); }
+  .st.diam { fill: var(--surface); stroke: var(--st-warn); stroke-dasharray: 4 3; }
+  .st.wait { fill: var(--surface); stroke: var(--track); }
+  .sel-ring { fill: none; stroke: var(--accent); stroke-width: var(--ring-w); }
+  .glyph { fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .glyph.on-run { stroke: var(--surface); }
+  .glyph.on-done { stroke: var(--st-run); }
+  .glyph.on-input { stroke: var(--on-st-input); }
+  .glyph.on-diam { stroke: var(--st-warn); }
+
+  .mover { position: absolute; left: 0; top: 0; width: 12px; height: 12px; border-radius: var(--radius-round); background: var(--surface); border: var(--ring-w) solid var(--st-run);
+    offset-path: path("M296 288 H520 L544 264 V168 L568 144 H612"); offset-rotate: 0deg; animation: travel 3.2s var(--ease) infinite; }
+  @keyframes travel { 0% { offset-distance: 0%; opacity: 0; } 8% { opacity: 1; } 88% { opacity: 1; } 100% { offset-distance: 100%; opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .mover { animation: none; offset-distance: 92%; } .canvas { transition: none; } }
+
+  .lbl { position: absolute; text-align: left; background: var(--surface); border: var(--line-w) solid var(--line); border-radius: var(--radius-s); padding: var(--sp-2) var(--sp-3); display: flex; flex-direction: column; gap: 2px; }
+  .lbl:hover { border-color: var(--track); }
+  .lbl.right { width: 336px; height: 78px; justify-content: center; }
+  .lbl.below { width: var(--label-w); }
+  .lbl[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 var(--line-w) var(--accent); }
+  .lbl-head { display: flex; align-items: baseline; gap: var(--sp-2); }
+  .lbl-name { font-family: var(--font-sign); font-size: var(--fs-16); font-weight: var(--fw-bold); line-height: var(--lh-head); }
+  .stat { display: inline-flex; align-items: center; gap: var(--sp-1); font-size: var(--fs-13); font-weight: var(--fw-medium); }
+  .stat .ico { width: 14px; height: 14px; stroke-width: 2; }
+  .stat.run { color: var(--st-run); }
+  .stat.input { color: var(--text); }
+  .stat.input .chip { background: var(--st-input); color: var(--on-st-input); border-radius: var(--radius-s); padding: 0 var(--sp-1); }
+  .stat.diam { color: var(--st-warn); }
+  .stat.done { color: var(--st-idle); }
+  .lbl-meta { margin-left: auto; font-size: var(--fs-12); color: var(--text-faint); white-space: nowrap; }
+  .lbl-act { font-size: var(--fs-14); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .lbl-snip { font-size: var(--fs-13); color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .wait-lbl { position: absolute; display: flex; align-items: center; gap: var(--sp-2); height: 28px; padding: 0 var(--sp-1); border-radius: var(--radius-s); }
+  .wait-lbl .lbl-name { font-size: var(--fs-16); color: var(--text-muted); font-weight: var(--fw-medium); }
+  .wait-lbl:hover .lbl-name { color: var(--text); }
+
+  /* Panel samping */
+  .panel { background: var(--surface); border-left: var(--line-w) solid var(--line); box-shadow: var(--shadow-1); display: grid; grid-template-rows: auto 1fr; min-height: 0; position: relative; z-index: 3; }
+  .rel { display: flex; gap: var(--sp-1); padding: 0 var(--sp-3); border-bottom: var(--line-w) solid var(--line); overflow-x: auto; }
+  .rel button { height: 40px; padding: 0 var(--sp-2); display: inline-flex; align-items: center; gap: var(--sp-1); color: var(--text-muted); font-size: var(--fs-13); font-weight: var(--fw-medium); border-bottom: 2px solid transparent; white-space: nowrap; }
+  .rel button:hover { color: var(--text); }
+  .rel button[aria-selected="true"] { color: var(--text); border-bottom-color: var(--text); }
+  .badge { min-width: 18px; height: 18px; padding: 0 var(--sp-1); border-radius: var(--radius-round); background: var(--st-input); color: var(--on-st-input); font-size: var(--fs-12); font-weight: var(--fw-bold); display: inline-grid; place-items: center; }
+  .pane { overflow-y: auto; min-height: 0; }
+  .dhead { padding: var(--sp-4) var(--sp-6) var(--sp-3); display: flex; align-items: flex-start; gap: var(--sp-3); }
+  .dname { font-family: var(--font-sign); font-size: var(--fs-26); font-weight: var(--fw-bold); line-height: var(--lh-head); margin: 0; }
+  .drole { font-size: var(--fs-13); color: var(--text-muted); margin: 2px 0 0; }
+  .dstat { margin-left: auto; padding-top: var(--sp-1); }
+  .close { width: 32px; height: 32px; display: grid; place-items: center; border-radius: var(--radius-s); color: var(--text-muted); margin: calc(var(--sp-1) * -1) calc(var(--sp-2) * -1) 0 0; }
+  .close:hover { background: var(--surface-sunk); color: var(--text); }
+  .warnbox { margin: 0 var(--sp-6); display: grid; grid-template-columns: 4px 1fr; background: var(--surface-sunk); border-radius: var(--radius-s); overflow: hidden; }
+  .warnbox > i { background: var(--st-input); }
+  .warnbox.w-diam > i { background: var(--st-warn); }
+  .warnbox.w-ok > i { background: var(--st-run); }
+  .warnbox > div { padding: var(--sp-3) var(--sp-4); display: flex; flex-direction: column; gap: var(--sp-1); }
+  .warnbox p { margin: 0; }
+  .warnbox .q { font-weight: var(--fw-medium); font-size: var(--fs-16); line-height: var(--lh-body); }
+  .link { min-height: 24px; display: inline-flex; align-items: center; color: var(--accent); font-weight: var(--fw-medium); text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; align-self: flex-start; }
+  .link:hover { text-decoration-thickness: 2px; }
+  .nums { display: grid; grid-template-columns: repeat(3, 1fr); margin: var(--sp-4) var(--sp-6) 0; background: var(--surface-sunk); border-radius: var(--radius-s); }
+  .nums div { padding: var(--sp-2) var(--sp-3); display: flex; flex-direction: column; }
+  .nums div + div { border-left: var(--line-w) solid var(--line); }
+  .nums dt { font-size: var(--fs-12); color: var(--text-muted); }
+  .nums dd { margin: 0; font-family: var(--font-sign); font-size: var(--fs-20); font-weight: var(--fw-bold); line-height: var(--lh-head); }
+  .sec { margin: var(--sp-6) var(--sp-6) 0; padding-top: var(--sp-3); border-top: var(--line-w) solid var(--line); }
+  .sec:last-child { padding-bottom: var(--sp-8); }
+  .sec h3 { margin: 0 0 var(--sp-2); font-family: var(--font-sign); font-size: var(--fs-16); font-weight: var(--fw-bold); }
+  .sec p { margin: 0; }
+  .kv { display: grid; grid-template-columns: auto 1fr; gap: var(--sp-1) var(--sp-4); margin: 0; }
+  .kv dt { color: var(--text-muted); }
+  .kv dd { margin: 0; }
+  .steps { list-style: none; margin: 0; padding: 0; position: relative; }
+  .steps::before { content: ""; position: absolute; left: 5px; top: var(--sp-2); bottom: var(--sp-2); width: 2px; background: var(--st-run); }
+  .steps li { position: relative; display: grid; grid-template-columns: 1fr auto; gap: var(--sp-3); padding: var(--sp-1) 0 var(--sp-1) var(--sp-6); }
+  .steps li::before { content: ""; position: absolute; left: 0; top: 9px; width: 12px; height: 12px; border-radius: var(--radius-round); background: var(--surface); border: 2px solid var(--st-run); box-sizing: border-box; }
+  .steps li.now::before { background: var(--st-input); border-color: var(--st-input); }
+  .steps .t { font-size: var(--fs-12); color: var(--text-faint); padding-top: 2px; }
+  .files { list-style: none; margin: 0; padding: 0; }
+  .files li { display: flex; gap: var(--sp-3); padding: var(--sp-1) 0; }
+  .files .d { margin-left: auto; font-size: var(--fs-13); color: var(--text-muted); }
+  .note { color: var(--text-muted); }
+</style>
+</head>
+<body>
+<a class="skip" href="#pane">Lewati ke detail agent</a>
+<h1 class="sr">flow-viewer · Live</h1>
+
+<header class="bar">
+  <button class="proj" type="button" aria-haspopup="menu" aria-label="Pindah proyek, sekarang flow-viewer">
+    flow-viewer
+    <svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>
+  </button>
+  <nav class="views" aria-label="Tampilan">
+    <a href="#live" aria-current="page">Live</a>
+    <a href="#riwayat">Riwayat</a>
+  </nav>
+  <div class="bar-end">
+    <span class="sample">Mockup arah B · data contoh</span>
+    <span class="conn"><span class="dot" aria-hidden="true"></span>Terhubung · diperbarui 14.07</span>
+    <button class="icon-btn" type="button" aria-pressed="true" id="sound">
+      <svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6v4h2.5L9 13V3L5.5 6z"/><path d="M11.5 5.5a3.5 3.5 0 010 5"/></svg>
+      <span>Bunyi aktif</span>
+    </button>
+    <button class="icon-btn" type="button" id="theme">
+      <svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M13 9.5A5.5 5.5 0 016.5 3a5.5 5.5 0 106.5 6.5z"/></svg>
+      <span>Tema gelap</span>
+    </button>
+  </div>
+</header>
+
+<section class="board" aria-label="Indikator run">
+  <div class="cell">
+    <span class="cell-label">Siapa kerja</span>
+    <div class="answer">
+      <span class="signal" aria-hidden="true"><svg class="ico" viewBox="0 0 20 20"><path d="M7.5 7.5a2.5 2.5 0 114 2c-.9.6-1.5 1.2-1.5 2.2"/><path d="M10 15h.01"/></svg></span>
+      <p class="big" style="margin:0">Butuh input: jawab di Claude</p>
+    </div>
+    <div class="who">
+      <span><span class="run-mark" aria-hidden="true"></span><b>fe</b> Menulis <span class="mono">public/js/live/board.js</span></span>
+      <span class="warn"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 1.5"/></svg><b>ui-designer</b> diam 12 mnt</span>
+    </div>
+  </div>
+  <div class="cell">
+    <span class="cell-label">Progres</span>
+    <div class="prog">
+      <span class="sub">12%</span>
+      <span class="rail" role="img" aria-label="12 persen"><i></i><b></b></span>
+    </div>
+    <span class="meta">Backlog 9 dari 77 item · 42 mnt</span>
+  </div>
+  <div class="cell">
+    <span class="cell-label">Token</span>
+    <button class="token-btn" type="button" data-tab="Token">
+      <span class="sub">1,84 jt setara</span>
+      <span class="meta">+18% dari pembanding (run 3 Nov, 21.40)</span>
+    </button>
+  </div>
+</section>
+
+<section class="notice" role="status" aria-label="Pemberitahuan">
+  <span class="notice-bar" aria-hidden="true"></span>
+  <div class="notice-body">
+    <div class="notice-head">
+      <span class="notice-q">Riwayat menyimpan berapa run per proyek?</span>
+      <span class="meta">Pertanyaan dari be · 14.05</span>
+    </div>
+    <ul class="options">
+      <li data-n="1">200 run, yang terlama dihapus otomatis (rekomendasi)</li>
+      <li data-n="2">500 run</li>
+      <li data-n="3">Tanpa batas, kamu hapus sendiri</li>
+    </ul>
+  </div>
+  <div class="notice-act">
+    <p>Jawab di aplikasi Claude.</p>
+    <button class="btn-sec" type="button" data-tab="Percakapan">Lihat percakapan</button>
+  </div>
+</section>
+
+<div class="work">
+  <section class="map" aria-label="Peta agent run ini">
+    <div class="map-tools">
+      <span class="ctx">Flow <b>run</b> · prompt <span class="mono">/fullstack-dev:run 5</span> · mulai 13.25</span>
+      <div class="zoom" role="group" aria-label="Zoom peta">
+        <button type="button" data-zoom="-1" aria-label="Perkecil"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8h9"/></svg></button>
+        <button type="button" data-zoom="1" aria-label="Perbesar"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8h9M8 3.5v9"/></svg></button>
+        <button type="button" data-zoom="0">Pas layar</button>
+      </div>
+    </div>
+
+    <div class="canvas" id="canvas">
+      <svg width="1000" height="600" viewBox="0 0 1000 600" aria-hidden="true">
+        <!-- jalur belum dilalui dulu, jalur terlalui di atasnya -->
+        <path class="trk idle" d="M296 288 H520 L544 312 V312 L568 336 H624"/>
+        <path class="trk idle" d="M296 288 H520 L544 312 V408 L568 432 H624"/>
+        <path class="trk idle" d="M296 288 H520 L544 312 V504 L568 528 H624"/>
+        <path class="trk done" d="M48 288 H296"/>
+        <path class="trk done" d="M296 288 H520 L544 264 V72 L568 48 H624"/>
+        <path class="trk done" d="M296 288 H520 L544 264 V168 L568 144 H624"/>
+        <path class="trk done" d="M296 288 H520 L544 264 V264 L568 240 H624"/>
+
+        <!-- Claude (Sesi utama) -->
+        <circle class="st run" cx="48" cy="288" r="13"/>
+        <path class="glyph on-run" d="M44 282 L52 288 L44 294"/>
+        <!-- backlog: selesai -->
+        <circle class="st done" cx="296" cy="288" r="9"/>
+        <path class="glyph on-done" d="M292 288 l3 3 l5 -6"/>
+        <!-- ui-designer: diam -->
+        <circle class="st diam" cx="624" cy="48" r="9"/>
+        <path class="glyph on-diam" d="M621.5 44.5 v7 M626.5 44.5 v7"/>
+        <!-- fe: berjalan -->
+        <circle class="st run" cx="624" cy="144" r="9"/>
+        <path class="glyph on-run" d="M621.5 140 L627.5 144 L621.5 148"/>
+        <!-- be: butuh input, terpilih -->
+        <circle class="sel-ring" cx="624" cy="240" r="15"/>
+        <circle class="st input" cx="624" cy="240" r="9"/>
+        <path class="glyph on-input" d="M621.5 237.5 a2.5 2.5 0 1 1 3.5 2.3 c-.6.3 -1 .7 -1 1.4 M624 244.5 v.1"/>
+        <!-- menunggu -->
+        <circle class="st wait" cx="624" cy="336" r="9"/>
+        <circle class="st wait" cx="624" cy="432" r="9"/>
+        <circle class="st wait" cx="624" cy="528" r="9"/>
+      </svg>
+      <span class="mover" aria-hidden="true"></span>
+
+      <button class="lbl below" type="button" data-agent="claude" style="left:34px; top:312px">
+        <span class="lbl-head"><span class="lbl-name">Claude</span><span class="stat run"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 4l6 4-6 4z"/></svg>Berjalan</span></span>
+        <span class="lbl-act">Sesi utama · opus</span>
+        <span class="lbl-snip">Skill: fullstack-dev:run, backlog</span>
+        <span class="lbl-snip">Tool: Bash 12 · Agent 4 · Read 9</span>
+        <span class="lbl-meta" style="margin-left:0">42 mnt · 1,22 jt setara</span>
+      </button>
+
+      <button class="lbl below" type="button" data-agent="backlog" style="left:286px; top:312px">
+        <span class="lbl-head"><span class="lbl-name">backlog</span><span class="stat done"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7"/></svg>Selesai</span></span>
+        <span class="lbl-act">5 item siap dibagi</span>
+        <span class="lbl-snip">t09b, t17a, t20b, t21a, t22a</span>
+        <span class="lbl-meta" style="margin-left:0">2 mnt · 38 rb · haiku</span>
+      </button>
+
+      <button class="lbl right" type="button" data-agent="ui-designer" style="left:648px; top:9px">
+        <span class="lbl-head"><span class="lbl-name">ui-designer</span><span class="stat diam"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 1.5"/></svg>Diam 12 mnt</span><span class="lbl-meta">26 mnt · 274 rb · opus</span></span>
+        <span class="lbl-act">Terakhir: Menjalankan audit 1440 · 13.55</span>
+        <span class="lbl-snip">Item t20b, kotak pemberitahuan</span>
+      </button>
+
+      <button class="lbl right" type="button" data-agent="fe" style="left:648px; top:105px">
+        <span class="lbl-head"><span class="lbl-name">fe</span><span class="stat run"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 4l6 4-6 4z"/></svg>Berjalan</span><span class="lbl-meta">6 mnt · 96 rb · sonnet</span></span>
+        <span class="lbl-act">Menulis <span class="mono">public/js/live/board.js</span></span>
+        <span class="lbl-snip">Item t17a, pita indikator</span>
+      </button>
+
+      <button class="lbl right" type="button" data-agent="be" aria-pressed="true" style="left:648px; top:201px">
+        <span class="lbl-head"><span class="lbl-name">be</span><span class="stat input"><span class="chip">Butuh input</span></span><span class="lbl-meta">18 mnt · 212 rb · sonnet</span></span>
+        <span class="lbl-act">Bertanya: Riwayat menyimpan berapa run per proyek?</span>
+        <span class="lbl-snip">Item t09b, batas simpan Riwayat · 6 dari 6 tes lulus</span>
+      </button>
+
+      <button class="wait-lbl" type="button" data-agent="ui-critic" style="left:644px; top:322px"><span class="lbl-name">ui-critic</span><span class="faint">Menunggu · review screenshot</span></button>
+      <button class="wait-lbl" type="button" data-agent="qa" style="left:644px; top:418px"><span class="lbl-name">qa</span><span class="faint">Menunggu · tes acceptance</span></button>
+      <button class="wait-lbl" type="button" data-agent="cyber" style="left:644px; top:514px"><span class="lbl-name">cyber</span><span class="faint">Menunggu · review keamanan</span></button>
+    </div>
+  </section>
+
+  <aside class="panel" aria-label="Panel samping">
+    <div class="rel" role="tablist" aria-label="Data proyek">
+      <button role="tab" type="button" aria-selected="false" data-tab="Percakapan">Percakapan <span class="badge" aria-label="1 pertanyaan terbuka">1</span></button>
+      <button role="tab" type="button" aria-selected="false" data-tab="Backlog">Backlog</button>
+      <button role="tab" type="button" aria-selected="false" data-tab="File">File <span class="faint">3</span></button>
+      <button role="tab" type="button" aria-selected="false" data-tab="Skill">Skill</button>
+      <button role="tab" type="button" aria-selected="false" data-tab="Token">Token</button>
+      <button role="tab" type="button" aria-selected="false" data-tab="Log">Log</button>
+    </div>
+    <div class="pane" id="pane" tabindex="-1"></div>
+  </aside>
+</div>
+
+<template id="detail-be">
+  <div class="dhead">
+    <div>
+      <h2 class="dname">be</h2>
+      <p class="drole">API, DB, logic · item t09b</p>
+    </div>
+    <span class="dstat stat input"><span class="chip">Butuh input</span></span>
+    <button class="close" type="button" aria-label="Tutup detail agent"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
+  </div>
+  <div class="warnbox"><i aria-hidden="true"></i><div>
+    <span class="meta">Menunggu jawabanmu sejak 14.05</span>
+    <p class="q">Riwayat menyimpan berapa run per proyek?</p>
+    <button class="link" type="button" data-tab="Percakapan">Lihat percakapan</button>
+  </div></div>
+  <dl class="nums">
+    <div><dt>Durasi</dt><dd>18 mnt</dd></div>
+    <div><dt>Setara</dt><dd>212 rb</dd></div>
+    <div><dt>Putaran</dt><dd>14</dd></div>
+  </dl>
+  <section class="sec">
+    <h3>Hasil terakhir</h3>
+    <p>Batas simpan per proyek sudah ditambahkan di <span class="mono">server/store.js</span>. 6 dari 6 tes lulus. Run lama belum dihapus sampai kamu memilih batasnya.</p>
+  </section>
+  <section class="sec">
+    <h3>Langkah kerja</h3>
+    <ol class="steps">
+      <li><span>Membaca <span class="mono">docs/ARCHITECTURE.md</span></span><span class="t">13.49</span></li>
+      <li><span>Mengubah <span class="mono">server/store.js</span></span><span class="t">13.58</span></li>
+      <li><span>Menjalankan <span class="mono">npm test</span>: 6 lulus</span><span class="t">14.02</span></li>
+      <li class="now"><span>Bertanya ke kamu</span><span class="t">14.05</span></li>
+    </ol>
+  </section>
+  <section class="sec">
+    <h3>Model dan skill</h3>
+    <dl class="kv">
+      <dt>Model</dt><dd>sonnet, sama dengan yang tertulis di definisi</dd>
+      <dt>Skill</dt><dd>tdd, ponytail · keduanya terbukti dipakai</dd>
+    </dl>
+  </section>
+  <section class="sec">
+    <h3>File berubah</h3>
+    <ul class="files">
+      <li><span class="mono">server/store.js</span><span class="d">+84 −12</span></li>
+      <li><span class="mono">test/store.test.js</span><span class="d">+40</span></li>
+    </ul>
+  </section>
+</template>
+
+<script>
+  const agents = {
+    claude: { name: 'Claude', role: 'Sesi utama · opus', stat: ['run', 'Berjalan'], box: ['w-ok', 'Menjalankan backlog.js dan membagi 5 item ke agent.'], nums: ['42 mnt', '1,22 jt', '31'] },
+    backlog: { name: 'backlog', role: 'urutan kerja berdependensi', stat: ['done', 'Selesai'], box: ['w-ok', '5 item siap dibagi: t09b, t17a, t20b, t21a, t22a.'], nums: ['2 mnt', '38 rb', '3'] },
+    'ui-designer': { name: 'ui-designer', role: 'referensi, DESIGN.md, visual · item t20b', stat: ['diam', 'Diam 12 mnt'], box: ['w-diam', 'Tidak ada event baru sejak 13.55 (Menjalankan audit 1440). Status tetap Berjalan.'], nums: ['26 mnt', '274 rb', '22'] },
+    fe: { name: 'fe', role: 'wiring dan logic frontend · item t17a', stat: ['run', 'Berjalan'], box: ['w-ok', 'Menulis public/js/live/board.js.'], nums: ['6 mnt', '96 rb', '5'] },
+    'ui-critic': { name: 'ui-critic', role: 'review screenshot', stat: ['done', 'Menunggu'], box: ['w-ok', 'Belum jalan di run ini.'], nums: ['-', '-', '-'] },
+    qa: { name: 'qa', role: 'tes acceptance (Playwright)', stat: ['done', 'Menunggu'], box: ['w-ok', 'Belum jalan di run ini.'], nums: ['-', '-', '-'] },
+    cyber: { name: 'cyber', role: 'review keamanan', stat: ['done', 'Menunggu'], box: ['w-ok', 'Belum jalan di run ini.'], nums: ['-', '-', '-'] }
+  };
+  const pane = document.getElementById('pane');
+  const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  function showAgent(id) {
+    document.querySelectorAll('[data-agent]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.agent === id)));
+    document.querySelectorAll('.rel [role=tab]').forEach((t) => t.setAttribute('aria-selected', 'false'));
+    if (id === 'be') { pane.replaceChildren(document.getElementById('detail-be').content.cloneNode(true)); return; }
+    const a = agents[id];
+    pane.innerHTML = `<div class="dhead"><div><h2 class="dname">${esc(a.name)}</h2><p class="drole">${esc(a.role)}</p></div>
+      <span class="dstat stat ${a.stat[0]}">${esc(a.stat[1])}</span>
+      <button class="close" type="button" aria-label="Tutup detail agent"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg></button></div>
+      <div class="warnbox ${a.box[0]}"><i aria-hidden="true"></i><div><p class="q">${esc(a.box[1])}</p></div></div>
+      <dl class="nums"><div><dt>Durasi</dt><dd>${a.nums[0]}</dd></div><div><dt>Setara</dt><dd>${a.nums[1]}</dd></div><div><dt>Putaran</dt><dd>${a.nums[2]}</dd></div></dl>
+      <section class="sec"><h3>Rincian</h3><p class="note">Rincian lengkap hanya dibuat untuk be di mockup ini.</p></section>`;
+  }
+  function showTab(name) {
+    document.querySelectorAll('.rel [role=tab]').forEach((t) => t.setAttribute('aria-selected', String(t.dataset.tab === name)));
+    document.querySelectorAll('[data-agent]').forEach((b) => b.setAttribute('aria-pressed', 'false'));
+    pane.innerHTML = name === 'Percakapan'
+      ? `<section class="sec" style="border-top:0"><h3>Pertanyaan terbuka</h3><p><b>be</b> · 14.05</p><p>Riwayat menyimpan berapa run per proyek?</p>
+         <ul class="options" style="flex-direction:column;margin-top:8px"><li data-n="1">200 run, yang terlama dihapus otomatis (rekomendasi)</li><li data-n="2">500 run</li><li data-n="3">Tanpa batas, kamu hapus sendiri</li></ul>
+         <p style="margin-top:8px"><b>Jawab di aplikasi Claude.</b></p></section>`
+      : `<section class="sec" style="border-top:0"><h3>${esc(name)}</h3><p class="note">Isi tab ini belum dibuat di mockup arah B. Pilih sebuah agent di peta untuk melihat detailnya.</p></section>`;
+    pane.focus();
+  }
+  document.addEventListener('click', (e) => {
+    const ag = e.target.closest('[data-agent]'); if (ag) return showAgent(ag.dataset.agent);
+    const tab = e.target.closest('[data-tab]'); if (tab) return showTab(tab.dataset.tab);
+    if (e.target.closest('.close')) return showTab('Percakapan');
+    const z = e.target.closest('[data-zoom]');
+    if (z) {
+      const c = document.getElementById('canvas');
+      const cur = Number(c.dataset.s || 1);
+      const s = z.dataset.zoom === '0' ? 1 : Math.min(1.4, Math.max(0.6, cur + Number(z.dataset.zoom) * 0.1));
+      c.dataset.s = s; c.style.transform = `scale(${s})`;
+    }
+  });
+  const theme = document.getElementById('theme');
+  theme.addEventListener('click', () => {
+    const dark = document.documentElement.dataset.theme !== 'dark';
+    if (dark) document.documentElement.dataset.theme = 'dark'; else delete document.documentElement.dataset.theme;
+    theme.querySelector('span').textContent = dark ? 'Tema terang' : 'Tema gelap';
+  });
+  const sound = document.getElementById('sound');
+  sound.addEventListener('click', () => {
+    const on = sound.getAttribute('aria-pressed') !== 'true';
+    sound.setAttribute('aria-pressed', String(on));
+    sound.querySelector('span').textContent = on ? 'Bunyi aktif' : 'Bunyi mati';
+  });
+  showAgent('be');
+</script>
+</body>
+</html>

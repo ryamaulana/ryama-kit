@@ -2,10 +2,10 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { z } from 'zod';
-import { ModelId } from './contract.js';
-import { Harness } from './harness.js';
+import { ModelId } from './contract/index.js';
+import { Harness } from './harness/index.js';
 import { createApp } from './server.js';
-import { Store } from './store.js';
+import { Store } from './store/index.js';
 
 const list = (s?: string) => (s ?? '').split(',').map((x) => x.trim()).filter(Boolean);
 const env = z.object({
@@ -16,6 +16,7 @@ const env = z.object({
   CREW_DEFAULT_MODEL: ModelId.default('sonnet'),
   CREW_MAX_RUNS: z.coerce.number().int().min(1).max(3).default(1),
   CREW_CLAUDE_BIN: z.string().default('claude'),
+  CREW_TEAM_DIRS: z.string().optional(), // default: folder induk plugin ini (plugins/)
   CREW_ALLOWED_HOSTS: z.string().optional(),
   CREW_ALLOWED_ORIGINS: z.string().optional(),
 }).parse(process.env);
@@ -34,6 +35,8 @@ const harness = new Harness({
 const app = createApp({
   store, harness, workRoot: env.CREW_WORK_ROOT, maxRuns: env.CREW_MAX_RUNS, defaultModel: env.CREW_DEFAULT_MODEL,
   webDir: path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'web'),
+  distDir: path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'web', 'dist'),
+  teamDirs: list(env.CREW_TEAM_DIRS).length ? list(env.CREW_TEAM_DIRS) : [path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..')],
   allowedHosts: list(env.CREW_ALLOWED_HOSTS), allowedOrigins: list(env.CREW_ALLOWED_ORIGINS),
 });
 

@@ -1,0 +1,128 @@
+[
+  {
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    },
+    "counts": {
+      "high": 0,
+      "medium": 2,
+      "low": 8
+    },
+    "stats": {
+      "ukuranHuruf": [
+        12,
+        13,
+        14,
+        16,
+        18,
+        24,
+        30,
+        40
+      ],
+      "keluargaHuruf": [
+        "Bricolage Grotesque",
+        "Atkinson Hyperlegible Next",
+        "ui-monospace"
+      ],
+      "nilaiSpasi": 9,
+      "spasiDiLuarSkalaPersen": 1,
+      "radius": [
+        2
+      ],
+      "bayangan": 1,
+      "warnaTeks": 6,
+      "tombolSolidDiLayarPertama": 15,
+      "elemenTerkuat": [
+        "span.big \"12%\"",
+        "span.big \"1,84 jt\"",
+        "span#whoText \"Butuh input: jawab di Claude\""
+      ],
+      "tepiKiriTerbanyak": [
+        "1066px(22)",
+        "662px(10)",
+        "350px(8)",
+        "24px(5)",
+        "38px(5)",
+        "850px(4)"
+      ],
+      "jumlahGambar": 0,
+      "kataJudulTerpanjang": 3,
+      "jumlahSvg": 25,
+      "warnaAksen": 3,
+      "grupKartuSeragam": 0,
+      "jumlahKartuSeragam": 0,
+      "kandidatFokus": [
+        "span.big \"12%\"",
+        "span.big \"1,84 jt\""
+      ],
+      "blokWarnaJenuhLayarPertamaPersen": 9,
+      "token": {
+        "aktif": true,
+        "warnaDiLuar": 0,
+        "radiusDiLuar": 0,
+        "hurufDiLuar": 0,
+        "fontDiLuar": 0
+      }
+    },
+    "issues": [
+      {
+        "sev": "medium",
+        "rule": "titik-fokus",
+        "detail": "15 tombol/tautan berlatar solid di layar pertama; terlalu banyak yang berebut perhatian (biasanya 1-2 aksi utama)"
+      },
+      {
+        "sev": "medium",
+        "rule": "keluarga-huruf",
+        "detail": "3 keluarga huruf (Bricolage Grotesque | Atkinson Hyperlegible Next | ui-monospace); maksimal 2"
+      },
+      {
+        "sev": "low",
+        "rule": "copy-tombol",
+        "detail": "tombol 6 kata (ideal 1-3): \"Prompt14.02 “Lanjutkan backlog bagian Ujian berwaktu.”\"",
+        "at": "button.node \"Prompt14.02 “Lanjutkan backl\""
+      },
+      {
+        "sev": "low",
+        "rule": "copy-tombol",
+        "detail": "tombol 16 kata (ideal 1-3): \"Butuh input Claude Sesi utama Bertanya: aturan saat timer habis Tool: \"",
+        "at": "button.node \"Butuh input Claude Sesi utam\""
+      },
+      {
+        "sev": "low",
+        "rule": "copy-tombol",
+        "detail": "tombol 18 kata (ideal 1-3): \"Selesai backlog Memilih 3 item siap Bagian Ujian berwaktu: endpoint si\"",
+        "at": "button.node \"Selesai backlog Memilih 3 it\""
+      },
+      {
+        "sev": "low",
+        "rule": "copy-tombol",
+        "detail": "tombol 17 kata (ideal 1-3): \"Selesai ui-designer Layar ujian dirancang Timer di kanan atas, tetap t\"",
+        "at": "button.node \"Selesai ui-designer Layar uj\""
+      },
+      {
+        "sev": "low",
+        "rule": "copy-tombol",
+        "detail": "tombol 14 kata (ideal 1-3): \"Selesai be Endpoint sisa waktu siap GET /api/tryout/:id/sisa-waktu, 6 \"",
+        "at": "button.node \"Selesai be Endpoint sisa wak\""
+      },
+      {
+        "sev": "low",
+        "rule": "copy-tombol",
+        "detail": "tombol 20 kata (ideal 1-3): \"BerjalanPutaran 2 fe Edit src/components/TryoutTimer.tsx Putaran 1: ti\"",
+        "at": "button.node \"BerjalanPutaran 2 fe Edit sr\""
+      },
+      {
+        "sev": "low",
+        "rule": "copy-tombol",
+        "detail": "tombol 7 kata (ideal 1-3): \"Menunggu ui-critic Belum jalan di run ini.\"",
+        "at": "button.node \"Menunggu ui-critic Belum jal\""
+      },
+      {
+        "sev": "low",
+        "rule": "titik-fokus",
+        "detail": "dua kandidat fokus hampir sama kuat di layar pertama: span.big \"12%\" vs span.big \"1,84 jt\""
+      }
+    ]
+  }
+]

@@ -1,0 +1,9 @@
+{
+  "schema": 1, "id": "rusak", "name": "Tim Tiruan", "agentDirs": ["agents"],
+  "orchestrator": { "id": "orkestrator", "label": "Orkestrator" },
+  "flow": { "nodes": ["tiruan-agent"], "edges": [] },
+  "commands": [{ "id": "bebas", "label": "Prompt bebas", "kind": "session", "template": "{rahasia}", "needsText": true, "placeholder": "Apa?" }],
+  "backlog": { "file": "docs/backlog.json", "cli": ["node", "{home}/x.js"] },
+  "milestoneKinds": ["Akhir"],
+  "evidence": { "contract": "SKILL.md", "dir": "docs/bukti" }
+}

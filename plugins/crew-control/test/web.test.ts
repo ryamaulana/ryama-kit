@@ -3,9 +3,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { Harness } from '../src/harness.js';
+import { Harness } from '../src/harness/index.js';
 import { createApp } from '../src/server.js';
-import { Store } from '../src/store.js';
+import { Store } from '../src/store/index.js';
 import { allowedActions, applyEvent, buildQuestionAnswer, describeAnswer, emptyState, isSendKey } from '../web/lib.js';
 import { FAKE, tmpProject } from './helpers.js';
 

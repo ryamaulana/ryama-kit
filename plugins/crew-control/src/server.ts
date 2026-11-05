@@ -1,16 +1,18 @@
 // Server HTTP: validasi di batas (zod dari contract.ts), format galat seragam, SSE, hook claude.
 import fs from 'node:fs';
 import path from 'node:path';
+import fastifyStatic from '@fastify/static';
 import Fastify, { type FastifyInstance, type FastifyReply } from 'fastify';
 import { z, type ZodType } from 'zod';
 import {
   AnswerRequest, ApiError, Config, EmptyBody, FolderListing, Message, MODELS, OwnerMessageRequest, Run, RunDetail, RunList,
-  StartRunRequest, TERMINAL_STATUSES, type ModelId,
-} from './contract.js';
-import { HarnessError, type Harness } from './harness.js';
+  StartRunRequest, TERMINAL_STATUSES, Team, type ModelId,
+} from './contract/index.js';
+import { createCatalog } from './teams/catalog.js';
+import { HarnessError, type Harness } from './harness/index.js';
 import { browseFolder, listProjects, PathError, resolveProject } from './projects.js';
 import { isAllowedHost, isAllowedOrigin, isAllowedPeer, isLoopback } from './security.js';
-import type { Store } from './store.js';
+import type { Store } from './store/index.js';
 
 export interface AppOptions {
   store: Store;
@@ -18,10 +20,15 @@ export interface AppOptions {
   workRoot: string;
   maxRuns: number;
   defaultModel?: ModelId; // default 'sonnet'
+  /** Folder tim (CREW_TEAM_DIRS): tiap subfolder = satu plugin tim. */
+  teamDirs?: string[];
+  defaultBatchSize?: number; // default 5
   allowedHosts?: string[];
   allowedOrigins?: string[];
   /** Folder berkas tampilan (index.html, app.js, lib.js). Tanpa ini, hanya API yang dilayani. */
   webDir?: string;
+  /** Hasil build Vite (web/dist), dilayani di /app/. Tanpa ini, tidak dilayani. */
+  distDir?: string;
 }
 
 const err = (reply: FastifyReply, status: number, code: string, message: string, details?: Record<string, unknown>) =>
@@ -43,6 +50,7 @@ function parse<T>(schema: ZodType<T>, data: unknown): T {
 export function createApp(o: AppOptions): FastifyInstance {
   const app = Fastify({ bodyLimit: 64 * 1024, logger: false });
   const { store, harness } = o;
+  const catalog = createCatalog(o.teamDirs ?? []);
 
   // ---- Lapisan keamanan (semua rute) ----
   app.addHook('onRequest', async (req, reply) => {
@@ -69,6 +77,11 @@ export function createApp(o: AppOptions): FastifyInstance {
   });
   app.setNotFoundHandler((_req, reply) => err(reply, 404, 'not_found', 'Rute tidak ditemukan.'));
 
+  if (o.distDir && fs.existsSync(o.distDir)) {
+    // Tanpa daftar isi folder dan tanpa dotfile.
+    void app.register(fastifyStatic, { root: o.distDir, prefix: '/app/', index: 'app.html', list: false, dotfiles: 'deny', wildcard: true });
+  }
+
   // ---- Berkas tampilan: hanya nama berkas di webDir (satu tingkat), tanpa path dari klien ----
   if (o.webDir) {
     const types: Record<string, string> = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8' };
@@ -88,7 +101,14 @@ export function createApp(o: AppOptions): FastifyInstance {
   app.get('/api/config', async (_req, reply) =>
     ok(reply, Config, {
       workRoot: o.workRoot, projects: listProjects(o.workRoot), models: MODELS, defaultModel, maxRuns: o.maxRuns, permissionMode: 'A3',
+      defaultBatchSize: o.defaultBatchSize ?? 5, teams: catalog.list(),
     }));
+
+  app.get('/api/teams/:id', async (req, reply) => {
+    const team = catalog.get((req.params as { id: string }).id);
+    if (!team) throw new HarnessError('not_found', 'Tim tidak ditemukan.', 404);
+    return ok(reply, Team, team);
+  });
 
   // Jelajah bertahap: tanpa ?path = folder kerja. Path divalidasi seperti proyek (di dalam folder kerja, symlink diselesaikan).
   app.get('/api/folders', async (req, reply) => {

@@ -1,0 +1,152 @@
+[
+  {
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    },
+    "counts": {
+      "high": 0,
+      "medium": 3,
+      "low": 11
+    },
+    "stats": {
+      "ukuranHuruf": [
+        12,
+        13,
+        14,
+        16,
+        20,
+        26,
+        34
+      ],
+      "keluargaHuruf": [
+        "Instrument Sans",
+        "Newsreader",
+        "ui-monospace"
+      ],
+      "nilaiSpasi": 7,
+      "spasiDiLuarSkalaPersen": 0,
+      "radius": [
+        2,
+        4
+      ],
+      "bayangan": 0,
+      "warnaTeks": 8,
+      "tombolSolidDiLayarPertama": 10,
+      "elemenTerkuat": [
+        "h1.answer \"Butuh input: jawab di Claude\"",
+        "span.fig \"12%\"",
+        "span.fig \"1,84 jtsetara\""
+      ],
+      "tepiKiriTerbanyak": [
+        "1066px(28)",
+        "548px(12)",
+        "288px(8)",
+        "808px(7)",
+        "24px(6)",
+        "28px(6)"
+      ],
+      "jumlahGambar": 0,
+      "kataJudulTerpanjang": 5,
+      "jumlahSvg": 29,
+      "warnaAksen": 4,
+      "grupKartuSeragam": 0,
+      "jumlahKartuSeragam": 0,
+      "kandidatFokus": [
+        "h1.answer \"Butuh input: jawab di Claude\"",
+        "span.fig \"12%\""
+      ],
+      "blokWarnaJenuhLayarPertamaPersen": 2,
+      "token": {
+        "aktif": true,
+        "warnaDiLuar": 0,
+        "radiusDiLuar": 0,
+        "hurufDiLuar": 0,
+        "fontDiLuar": 0
+      }
+    },
+    "issues": [
+      {
+        "sev": "medium",
+        "rule": "titik-fokus",
+        "detail": "10 tombol/tautan berlatar solid di layar pertama; terlalu banyak yang berebut perhatian (biasanya 1-2 aksi utama)"
+      },
+      {
+        "sev": "medium",
+        "rule": "warna-aksen",
+        "detail": "4 kelompok warna jenuh (aksen + status); idealnya 1 aksen ditambah warna status"
+      },
+      {
+        "sev": "medium",
+        "rule": "keluarga-huruf",
+        "detail": "3 keluarga huruf (Instrument Sans | Newsreader | ui-monospace); maksimal 2"
+      },
+      {
+        "sev": "low",
+        "rule": "copy-tombol",
+        "detail": "tombol 11 kata (ideal 1-3): \"Progres 12% Backlog 9 dari 77 itemDurasi 42 mnt 19 dtk\"",
+        "at": "button.cell \"Progres 12% Backlog 9 dari 7\""
+      },
+      {
+        "sev": "low",
+        "rule": "copy-tombol",
+        "detail": "tombol 10 kata (ideal 1-3): \"Token 1,84 jtsetara +18% dari pembandingRun 3 Nov: 1,56 jt\"",
+        "at": "button.cell \"Token 1,84 jtsetara +18% dar\""
+      },
+      {
+        "sev": "low",
+        "rule": "copy-tombol",
+        "detail": "tombol 12 kata (ideal 1-3): \"Prompt kamu10.02 Tambahkan ringkasan keranjang di halaman kasir: subto\"",
+        "at": "button.node \"Prompt kamu10.02 Tambahkan r\""
+      },
+      {
+        "sev": "low",
+        "rule": "copy-tombol",
+        "detail": "tombol 21 kata (ideal 1-3): \"ClaudeSesi utamaButuh input Bertanya: pajak terpisah atau termasuk? Me\"",
+        "at": "button.node \"ClaudeSesi utamaButuh input \""
+      },
+      {
+        "sev": "low",
+        "rule": "copy-tombol",
+        "detail": "tombol 17 kata (ideal 1-3): \"uxSelesai Alur dan langkah Ringkasan keranjang: 3 state (kosong, beris\"",
+        "at": "button.node \"uxSelesai Alur dan langkah R\""
+      },
+      {
+        "sev": "low",
+        "rule": "copy-tombol",
+        "detail": "tombol 15 kata (ideal 1-3): \"architectSelesai Arsitektur dan tugas Komponen CartSummary di src/comp\"",
+        "at": "button.node \"architectSelesai Arsitektur \""
+      },
+      {
+        "sev": "low",
+        "rule": "copy-tombol",
+        "detail": "tombol 18 kata (ideal 1-3): \"ui-designerSelesai Referensi, DESIGN.md, visual Mockup ringkasan keran\"",
+        "at": "button.node \"ui-designerSelesai Referensi\""
+      },
+      {
+        "sev": "low",
+        "rule": "copy-tombol",
+        "detail": "tombol 19 kata (ideal 1-3): \"beDiam 12 mnt Sejak Bash npm test Menambah hitung pajak di cart.ts; te\"",
+        "at": "button.node \"beDiam 12 mnt Sejak Bash npm\""
+      },
+      {
+        "sev": "low",
+        "rule": "copy-tombol",
+        "detail": "tombol 15 kata (ideal 1-3): \"feBerjalan Edit CartSummary.tsx Menyambung CartSummary ke data keranja\"",
+        "at": "button.node \"feBerjalan Edit CartSummary.\""
+      },
+      {
+        "sev": "low",
+        "rule": "copy-tombol",
+        "detail": "tombol 7 kata (ideal 1-3): \"ui-criticMenunggu Menunggu be dan fe menunggu data\"",
+        "at": "button.node \"ui-criticMenunggu Menunggu b\""
+      },
+      {
+        "sev": "low",
+        "rule": "copy-tombol",
+        "detail": "tombol 5 kata (ideal 1-3): \"qaMenunggu Menunggu ui-critic menunggu data\"",
+        "at": "button.node \"qaMenunggu Menunggu ui-criti\""
+      }
+    ]
+  }
+]

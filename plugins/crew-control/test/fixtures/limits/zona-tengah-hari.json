@@ -1,0 +1,7 @@
+{
+  "sumber": "nyata (teks); now sintetis",
+  "catatan": "12:20pm = 12:20 siang WIB = 05:20 UTC.",
+  "now": "2026-07-18T04:00:00.000Z",
+  "event": { "type": "assistant", "error": "rate_limit", "message": { "model": "<synthetic>", "role": "assistant", "content": [{ "type": "text", "text": "You've hit your session limit · resets 12:20pm (Asia/Jakarta)" }] } },
+  "expected": { "resetAt": "2026-07-18T05:20:00.000Z" }
+}

@@ -6,7 +6,7 @@ Marketplace plugin pribadi untuk Claude Code. Install sekali, kepake di semua pr
 ryama-kit/
 ├── .claude-plugin/marketplace.json   # daftar plugin
 ├── plugins/
-│   ├── ui-designer-kit/              # agent ui-designer + Playwright MCP + template DESIGN.md
+│   ├── ui-designer-kit/              # agent ui-designer + template DESIGN.md (Playwright MCP dinonaktifkan: .mcp.json.disabled)
 │   ├── fullstack-dev/                # prd, architect, fe, be, ui-critic, cyber, qa + commands + hooks
 │   └── flow-viewer/                  # graf live ala n8n di localhost:4777
 ├── install-global.sh                 # install semuanya secara global
@@ -25,7 +25,7 @@ Yang terpasang dan lokasinya:
 |---|---|
 | design-taste-frontend, web-design-guidelines | `~/.claude/skills/` |
 | awesome-design-md + INDEX.md | `~/.claude/design-library/` |
-| plugin ui-designer-kit (agent + Playwright MCP) | user settings, scope `user` |
+| plugin ui-designer-kit (agent + template) | user settings, scope `user` |
 
 Cek: `claude plugin list` harus menampilkan `ui-designer-kit@ryama-kit` dengan status enabled.
 
@@ -62,7 +62,7 @@ Dokumen kerja per project ada di `docs/`: PRD.md, ARCHITECTURE.md, TASKS.md, DES
 | Agent | Tugas | Model |
 |---|---|---|
 | prd | PRD + acceptance criteria, mengikuti skill prd dan prd-review | opus |
-| ux | keputusan UX otomatis (langkah paling sedikit, modal/panel/halaman, navigasi, state) -> docs/UX.md | opus |
+| ux | keputusan UX otomatis per jenis layar: layar tugas (`ux-designer`, langkah paling sedikit), dashboard (`dashboard-design`: pertanyaan, angka, masalah, aksi), pemasaran (`product-marketing`, `cro`, `copywriting`); navigasi, state -> docs/UX.md | opus |
 | architect | ARCHITECTURE.md (+ threat model) + KEPUTUSAN.md untuk pemilik; TASKS.md hanya bila tanpa backlog | opus |
 | backlog | backlog berdependensi (docs/backlog.json), triase ide dan bug terhadap PRD | sonnet |
 | ui-designer (ui-designer-kit) | konsep -> rancangan layar -> token -> bangun sekali -> cek sekali; jalur cepat untuk edit kecil | opus |
@@ -74,7 +74,7 @@ Dokumen kerja per project ada di `docs/`: PRD.md, ARCHITECTURE.md, TASKS.md, DES
 
 Command (scope): `/fullstack-dev:build <all|boilerplate|ui-only|fe-only|be-only|review>`,
 pintasan `/fullstack-dev:boilerplate`, `:ui-only`, `:fe-only`, `/fullstack-dev:prd-check`, dan
-**`/fullstack-dev:ui-direction`** (brief selera -> satu desainer menulis 3 konsep -> 3 desainer membangun paralel, 1 layar kunci desktop -> kamu pilih satu -> arah terpilih dilengkapi dan dinilai kritikus). Orkestrator hanya kurir: kata-katamu diteruskan apa adanya, keputusan visual milik ui-designer. `ui-only` menolak jalan sebelum ada `docs/DESIGN.md` berstatus Approved.
+**`/fullstack-dev:ui-direction`** (brief selera -> satu desainer menulis 3 konsep -> 3 desainer membangun paralel, 1 layar kunci desktop -> kamu pilih satu -> arah terpilih dilengkapi satu layar per jenis layar (tugas, dashboard, pemasaran) dan dinilai kritikus). Orkestrator hanya kurir: kata-katamu diteruskan apa adanya, keputusan visual milik ui-designer. `ui-only` menolak jalan sebelum ada `docs/DESIGN.md` berstatus Approved.
 
 ### Alur yang disarankan (pemilik: ide, jawaban PRD, referensi, penilaian arah)
 Satu pintu: **`/fullstack-dev:start <ide atau lanjut>`**. Urutannya PRD (dicari dulu di mana pun ia berada) -> UX -> arah desain (3 opsi dari referensimu) -> arsitektur + ringkasan keputusan -> backlog -> build. Persetujuanmu diminta di UX, arah desain, dan keputusan arsitektur.
@@ -110,4 +110,4 @@ Riwayat run disimpan otomatis ke `~/.claude/flow-viewer/history.db` (SQLite bawa
 Install: `claude plugin install flow-viewer@ryama-kit` (butuh node).
 
 ## Skill milik kit (`skills/`)
-`prd`, `prd-review`, `design-principles`, `ui-craft` (aturan + skrip audit terukur), `ux-writing` dan `ux-designer` (disalin dari repo MIT, lihat SOURCE.txt), `ux-writing-id`, `project-context`, `backlog` (aturan + skrip) ada di folder `skills/` dan dipakai agent lewat `skills:`. Skrip install membuat junction/symlink dari `~/.claude/skills/<nama>` ke folder ini, jadi sumbernya satu dan ikut ter-commit ke git. Setelah menambah skill baru di `skills/`, jalankan ulang `install-global`.
+`prd`, `prd-review`, `design-principles`, `ui-craft` (aturan + skrip audit terukur), `ux-writing`, `ux-designer`, `product-marketing`, `cro`, `copywriting`, `dashboard-design` (disalin dari repo MIT, lihat SOURCE.txt), `ux-writing-id`, `project-context`, `backlog` (aturan + skrip) ada di folder `skills/` dan dipakai agent lewat `skills:`. Skrip install membuat junction/symlink dari `~/.claude/skills/<nama>` ke folder ini, jadi sumbernya satu dan ikut ter-commit ke git. Setelah menambah skill baru di `skills/`, jalankan ulang `install-global`.

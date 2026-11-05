@@ -1,0 +1,126 @@
+/* Arah C "Lembar cetak" - token mesin (konsep-3, 2026-11-04).
+   Font di-host sendiri (woff2, OFL, dari paket @fontsource-variable): Bricolage Grotesque, Atkinson Hyperlegible Next. */
+
+@font-face {
+  font-family: "Bricolage Grotesque";
+  src: url("fonts/bricolage-grotesque-latin-standard-normal.woff2") format("woff2-variations");
+  font-weight: 200 800;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Atkinson Hyperlegible Next";
+  src: url("fonts/atkinson-hyperlegible-next-latin-wght-normal.woff2") format("woff2-variations");
+  font-weight: 200 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: light;
+
+  /* Warna: peran */
+  --bg: #FBFAF7;
+  --surface: #FFFFFF;
+  --surface-sunk: #F1EFEA;
+  --text: #161616;
+  --text-muted: #4F4F4F;
+  --text-faint: #666666;
+  --line: #161616;
+  --line-soft: #D6D3CB;
+  --accent: #161616;
+  --on-accent: #FFFFFF;
+
+  /* Tinta status: warna selalu bersama ikon + teks */
+  --ink-run: #0E5A47;
+  --ink-run-tint: #D7EAE2;
+  --on-ink-run: #FFFFFF;
+  --ink-input: #E4572E;
+  --on-ink-input: #161616;
+  --ink-input-text: #B23A17;
+  --ink-fail: #161616;
+  --on-ink-fail: #FFFFFF;
+  --ink-warn: #F2C14E;
+  --on-ink-warn: #161616;
+  --ink-idle: #666666;
+  --scrim: rgba(22, 22, 22, 0.45);
+
+  /* Huruf */
+  --font-display: "Bricolage Grotesque", "Segoe UI Variable Display", "Segoe UI", sans-serif;
+  --font-ui: "Atkinson Hyperlegible Next", "Segoe UI", system-ui, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  --fs-12: 12px;
+  --fs-13: 13px;
+  --fs-14: 14px;
+  --fs-16: 16px;
+  --fs-18: 18px;
+  --fs-24: 24px;
+  --fs-30: 30px;
+  --fs-40: 40px;
+  --lh-body: 1.5;
+  --lh-head: 1.1;
+  --fw-regular: 400;
+  --fw-bold: 700;
+  --fw-display: 800;
+  --ls-num: -0.02em;
+
+  /* Spasi */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-12: 48px;
+  --sp-16: 64px;
+
+  /* Bentuk */
+  --radius-0: 0;
+  --radius-s: 2px;
+  --line-w: 2px;
+  --line-w-soft: 1px;
+  --shadow-block: 4px 4px 0 var(--text);
+
+  /* Tata letak */
+  --bar-h: 48px;
+  --strip-h: 120px;
+  --panel-w: 400px;
+  --panel-w-narrow: 340px;
+  --node-w: 248px;
+  --node-band: 28px;
+
+  /* Gerak */
+  --dur-micro: 150ms;
+  --dur-swap: 220ms;
+  --ease: cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #1B1B19;
+  --surface: #242422;
+  --surface-sunk: #2C2C29;
+  --text: #F2F0EA;
+  --text-muted: #BDBAB2;
+  --text-faint: #9C9990;
+  --line: #F2F0EA;
+  --line-soft: #3A3A37;
+  --accent: #F2F0EA;
+  --on-accent: #1B1B19;
+  --ink-run: #5CC4A3;
+  --ink-run-tint: #1D3A31;
+  --on-ink-run: #161616;
+  --ink-input: #FF8A65;
+  --on-ink-input: #161616;
+  --ink-input-text: #FF8A65;
+  --ink-fail: #F2F0EA;
+  --on-ink-fail: #161616;
+  --ink-warn: #F2C14E;
+  --on-ink-warn: #161616;
+  --ink-idle: #9C9990;
+  --scrim: rgba(0, 0, 0, 0.6);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --dur-micro: 0ms; --dur-swap: 0ms; }
+}

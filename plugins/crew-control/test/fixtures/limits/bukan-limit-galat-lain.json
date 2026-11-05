@@ -1,0 +1,7 @@
+{
+  "sumber": "sintetis",
+  "catatan": "result galat yang bukan limit: bukan limit.",
+  "now": "2026-11-05T06:00:00.000Z",
+  "event": { "type": "result", "subtype": "error_during_execution", "is_error": true, "result": "API Error: 500 Internal server error" },
+  "expected": null
+}

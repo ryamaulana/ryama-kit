@@ -4,10 +4,10 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import http from 'node:http';
 import path from 'node:path';
-import { Harness } from '../src/harness.js';
+import { Harness } from '../src/harness/index.js';
 import { createApp } from '../src/server.js';
-import { Store } from '../src/store.js';
-import { ApiError, RunEvent } from '../src/contract.js';
+import { Store } from '../src/store/index.js';
+import { ApiError, RunEvent } from '../src/contract/index.js';
 import { FAKE, tmpProject, waitFor } from './helpers.js';
 
 async function freePort() {

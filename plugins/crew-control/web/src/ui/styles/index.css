@@ -1,0 +1,3 @@
+/* Diimpor sekali di web/src/main.tsx */
+@import "./tokens.css";
+@import "./base.css";

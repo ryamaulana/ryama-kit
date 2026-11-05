@@ -15,7 +15,7 @@ for (let i = 1; i < argv.length; i++) {
 const FILE = path.resolve(flags.file || 'docs/backlog.json');
 const MD = path.join(path.dirname(FILE), 'BACKLOG.md');
 const STATUS = ['todo', 'running', 'done', 'failed', 'rejected', 'parked'];
-const VAL = { high: 0, mid: 1, low: 2 };
+const VAL = { urgent: -1, high: 0, mid: 1, low: 2 };
 const MODELS = ['opus', 'sonnet', 'haiku'];
 const die = (m) => { console.error('ERROR: ' + m); process.exit(1); };
 const list = (s) => (s ? String(s).split(',').map((x) => x.trim()).filter(Boolean) : []);
@@ -56,11 +56,11 @@ function save(db) {
 }
 const byId = (db) => Object.fromEntries(db.items.map((i) => [i.id, i]));
 const isReady = (db, it) => { const m = byId(db); return it.status === 'todo' && (it.needs || []).every((n) => m[n] && (m[n].status === 'done')); };
-// Urutan siap: verifikasi dulu (QA/keamanan/review tidak menumpuk di ujung), lalu irisan yang sudah dimulai (supaya selesai dan bisa di-QA), lalu nilai, lalu urutan rencana.
+// Urutan siap: item mendesak (value urgent: permintaan pemilik "paling awal", bug keamanan di kode yang sedang dipakai) dulu, lalu verifikasi (QA/keamanan/review tidak menumpuk di ujung), lalu irisan yang sudah dimulai (supaya selesai dan bisa di-QA), lalu nilai, lalu urutan rencana.
 const VERIFY = new Set(['qa', 'sec', 'review', 'review-kode', 'audit-akhir']);
 const sorter = (db) => {
   const started = new Set(db.items.filter((i) => i.slice && (i.status === 'done' || i.status === 'running')).map((i) => i.slice));
-  const rank = (i) => (VERIFY.has(i.type) ? 0 : i.slice && started.has(i.slice) ? 1 : 2);
+  const rank = (i) => (i.value === 'urgent' ? -1 : VERIFY.has(i.type) ? 0 : i.slice && started.has(i.slice) ? 1 : 2);
   return (a, b) => (rank(a) - rank(b)) || (VAL[a.value || 'mid'] - VAL[b.value || 'mid']) || (db.items.indexOf(a) - db.items.indexOf(b));
 };
 const readyList = (db) => db.items.filter((i) => isReady(db, i)).sort(sorter(db));
@@ -171,7 +171,10 @@ switch (cmd) {
   case 'retry': { const db = load(), it = find(db, pos[0]); it.status = 'todo'; it.attempts = 0; save(db); console.log('diulang: ' + it.id); break; }
   case 'unpark': { const db = load(), it = find(db, pos[0]); if (it.status !== 'parked') die(it.id + ' tidak sedang diparkir'); it.status = 'todo'; save(db); console.log('dikeluarkan dari parkiran: ' + it.id); break; }
   case 'reject': { const db = load(), it = find(db, pos[0]); it.status = 'rejected'; it.reason = String(flags.reason || ''); save(db); console.log('ditolak: ' + it.id); break; }
-  case 'validate': { const db = load(); const p = problems(db); if (p.length) { console.log('TIDAK VALID:\n- ' + p.join('\n- ')); process.exit(1); } console.log(`valid: ${db.items.length} item`); break; }
+  case 'validate': { const db = load(); const p = problems(db); if (p.length) { console.log('TIDAK VALID:\n- ' + p.join('\n- ')); process.exit(1); } console.log(`valid: ${db.items.length} item`);
+    const big = db.items.filter((i) => i.status === 'todo' && i.size === 'l' && ['be', 'fe', 'qa'].includes(i.agent) && !/pecah|tidak bisa dipecah|indivisible/i.test(i.notes || ''));
+    if (big.length) console.log(`peringatan: ${big.length} item l (be/fe/qa) belum dipecah per seam: ${big.map((i) => i.id).join(', ')} (aturan 3 skill backlog; atau tulis alasan di notes)`);
+    break; }
   case 'md': { const db = load(); save(db); console.log('diperbarui: ' + MD); break; }
   case 'status': { const db = load(); const n = (s) => db.items.filter((i) => i.status === s).length; console.log(JSON.stringify({ total: db.items.length, done: n('done'), running: n('running'), ready: readyList(db).length, failed: n('failed'), todo: n('todo') })); break; }
   default: console.log('Perintah: init | import <file|-> | add | list | ready | next | start <id> | done <id> --evidence | fail <id> --reason | decide <id> --answer | reject <id> | retry <id> | set <id> --model | validate | md | status'); process.exit(cmd ? 1 : 0);

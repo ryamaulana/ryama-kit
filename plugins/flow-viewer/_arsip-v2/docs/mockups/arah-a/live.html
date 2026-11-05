@@ -1,0 +1,624 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#F6F3EC">
+<link rel="preload" href="fonts/newsreader-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/instrument-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<title>(1) Butuh input · kasir-warung · Flow Viewer</title>
+<link rel="stylesheet" href="tokens.css">
+<style>
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: var(--fs-14);
+  line-height: var(--lh-body);
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; text-align: inherit; }
+:focus-visible { outline: var(--line-strong) solid var(--accent); outline-offset: var(--line-strong); }
+.ico { width: var(--sp-4); height: var(--sp-4); flex: none; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.ico-l { width: var(--sp-6); height: var(--sp-6); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Kerangka */
+.app {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--panel-w);
+  grid-template-rows: var(--bar-h) minmax(0, 1fr);
+  height: 100vh;
+}
+
+/* Bilah atas */
+.bar {
+  grid-column: 1 / -1;
+  display: flex; align-items: center; gap: var(--sp-6);
+  padding: 0 var(--sp-6);
+  background: var(--bg);
+  border-bottom: var(--line) solid var(--rule);
+}
+.proj { position: relative; }
+.proj-btn { display: inline-flex; align-items: center; gap: var(--sp-2); font-size: var(--fs-16); font-weight: var(--fw-bold); padding: var(--sp-1) var(--sp-2); margin-left: calc(var(--sp-2) * -1); border-radius: var(--radius-s); }
+.proj-btn:hover { background: var(--surface-sunk); }
+.proj-menu {
+  position: absolute; top: calc(100% + var(--sp-1)); left: calc(var(--sp-2) * -1); z-index: 20;
+  min-width: calc(var(--panel-w) - var(--sp-12) * 2);
+  background: var(--surface); border: var(--line-strong) solid var(--rule-strong); border-radius: var(--radius-m);
+  padding: var(--sp-1) 0; margin: 0; list-style: none;
+}
+.proj-menu[hidden] { display: none; }
+.proj-menu a { display: flex; justify-content: space-between; gap: var(--sp-4); padding: var(--sp-2) var(--sp-3); color: var(--text); text-decoration: none; }
+.proj-menu a:hover { background: var(--surface-sunk); }
+.proj-menu .m-state { color: var(--text-muted); font-size: var(--fs-13); }
+.proj-menu .m-state.is-input { color: var(--st-input); }
+.views { display: flex; gap: var(--sp-4); align-self: stretch; }
+.views a { display: flex; align-items: center; color: var(--text-muted); text-decoration: none; border-bottom: var(--line-strong) solid transparent; padding-top: var(--line-strong); }
+.views a:hover { color: var(--text); }
+.views a[aria-current="page"] { color: var(--text); font-weight: var(--fw-bold); border-bottom-color: var(--rule-strong); }
+.bar-end { margin-left: auto; display: flex; align-items: center; gap: var(--sp-4); }
+.fresh { color: var(--text-faint); font-size: var(--fs-13); display: inline-flex; align-items: center; gap: var(--sp-2); }
+.fresh .ico { color: var(--st-run); }
+.tool { display: inline-flex; align-items: center; gap: var(--sp-2); padding: var(--sp-1) var(--sp-2); border-radius: var(--radius-s); color: var(--text-muted); font-size: var(--fs-13); }
+.tool:hover { background: var(--surface-sunk); color: var(--text); }
+
+/* Kolom kiri */
+.main { grid-column: 1; grid-row: 2; display: flex; flex-direction: column; min-height: 0; }
+
+/* Pita */
+.strip {
+  display: grid; grid-template-columns: 56% minmax(0, 1fr) minmax(0, 1fr);
+  min-height: var(--strip-h);
+  background: var(--surface-sunk);
+  border-bottom: var(--line-strong) solid var(--rule-strong);
+}
+.cell { padding: var(--sp-3) var(--sp-6); display: flex; flex-direction: column; justify-content: center; gap: var(--sp-1); min-width: 0; }
+.cell + .cell { border-left: var(--line) solid var(--rule); }
+.cell-label { font-size: var(--fs-12); color: var(--text-faint); }
+.answer {
+  margin: 0; display: flex; align-items: center; gap: var(--sp-3);
+  font-family: var(--font-news); font-size: var(--fs-34); line-height: var(--lh-head); letter-spacing: var(--ls-head);
+  font-weight: var(--fw-medium); color: var(--st-input);
+  transition: opacity var(--dur-swap) var(--ease);
+}
+.who-line { font-size: var(--fs-14); color: var(--text-muted); display: flex; flex-wrap: wrap; gap: 0 var(--sp-2); }
+.who-line b { color: var(--text); font-weight: var(--fw-bold); }
+.who-line .sep { color: var(--text-faint); }
+.linkish, .ghost { padding: var(--sp-1) 0; }
+.linkish { color: var(--st-warn); text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: var(--line); }
+.linkish:hover { color: var(--text); }
+.cell-btn { text-align: left; }
+.cell-btn:hover { background: var(--bg); }
+.fig { font-family: var(--font-news); font-size: var(--fs-26); line-height: var(--lh-head); letter-spacing: var(--ls-head); font-weight: var(--fw-medium); }
+.sub > span { display: block; }
+.fig small { font-family: var(--font-ui); font-size: var(--fs-13); font-weight: var(--fw-regular); color: var(--text-muted); letter-spacing: 0; margin-left: var(--sp-1); }
+.sub { font-size: var(--fs-13); color: var(--text-muted); }
+
+/* Kotak pemberitahuan */
+.notice {
+  position: relative;
+  background: var(--st-input-tint);
+  padding: var(--sp-4) var(--sp-6) var(--sp-4);
+  border-bottom: var(--line) solid var(--rule);
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--sp-2) var(--sp-8);
+}
+.notice::before {
+  content: ""; position: absolute; left: 0; right: 0; top: var(--sp-1);
+  height: calc(var(--sp-1) + var(--line) * 1);
+  border-top: var(--line) solid var(--st-input); border-bottom: var(--line) solid var(--st-input);
+}
+.n-meta { grid-column: 1 / -1; margin-top: var(--sp-2); display: flex; align-items: center; gap: var(--sp-2); font-size: var(--fs-13); color: var(--text); font-weight: var(--fw-bold); }
+.n-meta .ico { color: var(--st-input); }
+.n-meta span { color: var(--text-muted); font-weight: var(--fw-regular); }
+.n-q { margin: 0; font-family: var(--font-news); font-size: var(--fs-20); line-height: var(--lh-head); letter-spacing: var(--ls-head); font-weight: var(--fw-medium); max-width: 62ch; text-wrap: balance; }
+.n-opts { margin: var(--sp-2) 0 0; padding-left: var(--sp-6); display: flex; flex-wrap: wrap; gap: 0 var(--sp-8); font-size: var(--fs-14); }
+.n-opts li { padding-left: var(--sp-1); }
+.n-opts li::marker { color: var(--text-muted); }
+.n-act { align-self: end; display: flex; flex-direction: column; align-items: flex-end; gap: var(--sp-1); text-align: right; }
+.n-act strong { font-size: var(--fs-14); }
+.ghost { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: var(--line); font-size: var(--fs-14); }
+.ghost:hover { text-decoration-thickness: var(--line-strong); }
+
+/* Grafik */
+.graph { flex: 1; min-height: 0; overflow: auto; }
+.graph-inner { position: relative; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); min-height: 100%; }
+.edges { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; overflow: visible; }
+.edges path { fill: none; stroke: var(--rule); stroke-width: 1.5; }
+.edges path.done { stroke: var(--text-faint); }
+.edges path.live { stroke: var(--st-run); stroke-width: 2.5; stroke-dasharray: var(--len); stroke-dashoffset: var(--len); animation: fill-line 900ms var(--ease) forwards; }
+@keyframes fill-line { to { stroke-dashoffset: 0; } }
+@media (prefers-reduced-motion: reduce) { .edges path.live { animation: none; stroke-dashoffset: 0; } }
+.col { position: relative; padding: 0 var(--sp-3) var(--sp-6); display: flex; flex-direction: column; align-items: center; gap: var(--sp-6); }
+.col + .col { border-left: var(--line) solid var(--rule); }
+.col-head { align-self: stretch; display: flex; justify-content: space-between; align-items: baseline; padding: var(--sp-3) var(--sp-1) var(--sp-2); border-bottom: var(--line) solid var(--rule); font-size: var(--fs-13); font-weight: var(--fw-bold); position: relative; z-index: 1; background: var(--bg); }
+.col-head span { font-weight: var(--fw-regular); color: var(--text-faint); font-size: var(--fs-12); }
+
+.node {
+  position: relative; z-index: 1;
+  width: var(--node-w); display: flex; flex-direction: column; gap: var(--sp-1);
+  padding: var(--sp-3);
+  background: var(--surface); border: var(--line) solid var(--rule); border-radius: var(--radius-m);
+}
+.node:hover { border-color: var(--text-faint); }
+.node[aria-pressed="true"] { outline: var(--line-strong) solid var(--accent); outline-offset: calc(var(--line) * -1); border-color: var(--accent); }
+.node-head { display: flex; justify-content: space-between; align-items: center; gap: var(--sp-2); }
+.node-name { font-weight: var(--fw-bold); font-size: var(--fs-14); }
+.node-name small { font-weight: var(--fw-regular); color: var(--text-faint); font-size: var(--fs-12); margin-left: var(--sp-1); }
+.st { display: inline-flex; align-items: center; gap: var(--sp-1); font-size: var(--fs-12); font-weight: var(--fw-medium); white-space: nowrap; }
+.st-run { color: var(--st-run); }
+.st-input { color: var(--st-input); }
+.st-warn { color: var(--st-warn); }
+.st-fail { color: var(--st-fail); }
+.st-idle { color: var(--st-idle); }
+.node-act { font-size: var(--fs-13); color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.node-act code, .mono { font-family: var(--font-mono); font-size: var(--fs-12); }
+.node-quote {
+  font-family: var(--font-news); font-style: italic; font-size: var(--fs-14); line-height: var(--lh-body); color: var(--text);
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.node-nums { display: flex; gap: var(--sp-2); font-size: var(--fs-12); color: var(--text-muted); border-top: var(--line) solid var(--rule); padding-top: var(--sp-2); margin-top: var(--sp-1); }
+.node-nums b { color: var(--text); font-weight: var(--fw-medium); }
+.node.is-warn { border-color: var(--st-warn); }
+.node.is-input { border-color: var(--st-input); }
+.node.is-quiet { padding: var(--sp-2) var(--sp-3); background: var(--bg); }
+.node.is-quiet .node-name { color: var(--text-muted); font-weight: var(--fw-medium); }
+.node.is-prompt { background: var(--bg); }
+.node.is-prompt .node-quote { -webkit-line-clamp: 3; }
+
+/* Panel */
+.panel { grid-column: 2; grid-row: 2; border-left: var(--line) solid var(--rule); background: var(--surface); display: flex; flex-direction: column; min-height: 0; }
+.rail { display: flex; border-bottom: var(--line) solid var(--rule); padding: 0 var(--sp-3); background: var(--bg); }
+.rail button { display: inline-flex; align-items: center; gap: var(--sp-1); padding: var(--sp-3) var(--sp-2); color: var(--text-muted); font-size: var(--fs-13); border-bottom: var(--line-strong) solid transparent; margin-bottom: calc(var(--line) * -1); }
+.rail button:hover { color: var(--text); }
+.rail button[aria-pressed="true"] { color: var(--text); font-weight: var(--fw-bold); border-bottom-color: var(--rule-strong); }
+.badge { display: inline-block; min-width: var(--sp-4); padding: 0 var(--sp-1); border-radius: var(--radius-s); font-size: var(--fs-12); line-height: var(--lh-body); text-align: center; font-weight: var(--fw-bold); background: var(--surface-sunk); color: var(--text-muted); }
+.badge.warn { background: var(--st-input-tint); color: var(--text); }
+.pane { flex: 1; overflow: auto; overscroll-behavior: contain; padding: var(--sp-6); }
+.pane[hidden] { display: none; }
+
+/* Detail agent */
+.d-top { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--sp-3); }
+.d-kicker { font-size: var(--fs-12); color: var(--text-faint); }
+.d-title { margin: 0; font-family: var(--font-news); font-size: var(--fs-26); line-height: var(--lh-head); letter-spacing: var(--ls-head); font-weight: var(--fw-medium); }
+.d-dek { margin: var(--sp-1) 0 0; color: var(--text-muted); display: flex; flex-wrap: wrap; gap: 0 var(--sp-2); align-items: center; }
+.close { display: inline-flex; padding: var(--sp-1); border-radius: var(--radius-s); color: var(--text-muted); }
+.close:hover { background: var(--surface-sunk); color: var(--text); }
+.ralat { margin: var(--sp-4) 0 0; padding: var(--sp-2) var(--sp-3); border-left: var(--line-strong) solid var(--st-warn); border-right: var(--line-strong) solid var(--st-warn); background: var(--st-warn-tint); display: flex; flex-direction: column; align-items: flex-start; gap: 0; }
+.ralat p { margin: 0; color: var(--text); font-weight: var(--fw-medium); display: flex; align-items: center; gap: var(--sp-2); }
+.ralat p .ico { color: var(--st-warn); }
+.ralat .ghost { font-size: var(--fs-13); white-space: nowrap; }
+.d-answer { margin: var(--sp-4) 0 0; font-family: var(--font-news); font-size: var(--fs-20); line-height: var(--lh-head); letter-spacing: var(--ls-head); }
+.score { margin: var(--sp-4) 0 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: var(--line-strong) solid var(--rule-strong); border-bottom: var(--line) solid var(--rule); }
+.score div { padding: var(--sp-2) 0; }
+.score div + div { padding-left: var(--sp-3); border-left: var(--line) solid var(--rule); }
+.score dt { font-size: var(--fs-12); color: var(--text-faint); }
+.score dd { margin: 0; font-size: var(--fs-16); font-weight: var(--fw-bold); }
+.score dd small { font-size: var(--fs-12); font-weight: var(--fw-regular); color: var(--text-muted); }
+.sec { border-bottom: var(--line) solid var(--rule); }
+.sec summary { list-style: none; display: flex; justify-content: space-between; align-items: center; padding: var(--sp-3) 0; font-weight: var(--fw-bold); cursor: pointer; }
+.sec summary::-webkit-details-marker { display: none; }
+.sec summary .ico { color: var(--text-faint); transition: transform var(--dur-micro) var(--ease); }
+.sec[open] summary .ico { transform: rotate(180deg); }
+.sec summary span { font-weight: var(--fw-regular); color: var(--text-faint); }
+.sec .body { padding: 0 0 var(--sp-4); color: var(--text-muted); }
+.sec .body p { margin: 0; }
+.rows { list-style: none; margin: 0; padding: 0; }
+.rows li { display: flex; justify-content: space-between; gap: var(--sp-3); padding: var(--sp-2) 0; border-top: var(--line) solid var(--rule); color: var(--text); }
+.rows li:first-child { border-top: 0; }
+.rows .num { color: var(--text-muted); white-space: nowrap; font-size: var(--fs-13); }
+.rows .add { color: var(--st-run); }
+.rows .err { color: var(--st-fail); }
+.rows .path { font-family: var(--font-mono); font-size: var(--fs-13); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rows.is-hl { outline: var(--line-strong) solid var(--accent); outline-offset: var(--sp-1); }
+
+/* Tab data */
+.p-lead { margin: 0 0 var(--sp-4); font-family: var(--font-news); font-size: var(--fs-20); line-height: var(--lh-head); letter-spacing: var(--ls-head); }
+.msg { padding: var(--sp-3) 0; border-top: var(--line) solid var(--rule); }
+.msg:first-of-type { border-top: 0; padding-top: 0; }
+.msg-who { font-size: var(--fs-12); color: var(--text-faint); }
+.msg p { margin: var(--sp-1) 0 0; }
+.msg.is-open { background: var(--st-input-tint); border-top: var(--line-strong) solid var(--st-input); padding: var(--sp-3); }
+.msg.is-open .msg-who { color: var(--st-input); font-weight: var(--fw-bold); }
+.msg ol { margin: var(--sp-2) 0 0; padding-left: var(--sp-6); }
+.tbl { width: 100%; border-collapse: collapse; }
+.tbl th { text-align: left; font-size: var(--fs-12); color: var(--text-faint); font-weight: var(--fw-regular); padding: 0 0 var(--sp-2); border-bottom: var(--line) solid var(--rule-strong); }
+.tbl td { padding: var(--sp-2) 0; border-bottom: var(--line) solid var(--rule); height: var(--sp-12); }
+.tbl .r { text-align: right; }
+.tbl tfoot td { font-weight: var(--fw-bold); border-bottom: 0; }
+.share { display: block; height: var(--sp-1); background: var(--rule); margin-top: var(--sp-1); }
+.share i { display: block; height: 100%; background: var(--text-muted); }
+.rubric { padding: var(--sp-3) 0; border-top: var(--line) solid var(--rule); display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0 var(--sp-3); }
+.rubric b { font-weight: var(--fw-bold); }
+.rubric .meta { color: var(--text-muted); font-size: var(--fs-13); }
+.rubric .count { text-align: right; font-size: var(--fs-13); color: var(--text-muted); }
+.log { list-style: none; margin: 0; padding: 0; }
+.log li { display: grid; grid-template-columns: var(--sp-12) var(--sp-12) minmax(0, 1fr); gap: var(--sp-2); padding: var(--sp-1) 0; font-size: var(--fs-13); border-top: var(--line) solid var(--rule); }
+.log time { color: var(--text-faint); }
+.log .who { color: var(--text-muted); }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-input" viewBox="0 0 16 16"><path d="M2.5 3.5h11v7h-6l-3 2.5v-2.5h-2z"/><path d="M6.6 5.6a1.5 1.5 0 1 1 1.9 1.4c-.4.2-.5.4-.5.8"/><path d="M8 9.1v.1"/></symbol>
+  <symbol id="i-run" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5"/><path d="M6.8 5.6l3 2.4-3 2.4z"/></symbol>
+  <symbol id="i-warn" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5"/><path d="M8 5v3.2l2 1.3"/></symbol>
+  <symbol id="i-done" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5"/><path d="M5.6 8.2l1.7 1.7 3.2-3.4"/></symbol>
+  <symbol id="i-idle" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5" stroke-dasharray="2 2"/></symbol>
+  <symbol id="i-skip" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5"/><path d="M4.2 11.8l7.6-7.6"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 16 16"><path d="M4.5 6.5L8 10l3.5-3.5"/></symbol>
+  <symbol id="i-close" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></symbol>
+  <symbol id="i-sound" viewBox="0 0 16 16"><path d="M2.5 6h2.5l3.5-3v10l-3.5-3h-2.5z"/><path d="M11 5.5a3.5 3.5 0 0 1 0 5"/></symbol>
+  <symbol id="i-theme" viewBox="0 0 16 16"><path d="M12.8 9.6A5.2 5.2 0 1 1 6.4 3.2a4.2 4.2 0 0 0 6.4 6.4z"/></symbol>
+  <symbol id="i-link" viewBox="0 0 16 16"><circle cx="8" cy="8" r="2.5"/></symbol>
+</svg>
+
+<div class="app">
+  <header class="bar">
+    <div class="proj">
+      <button class="proj-btn" id="projBtn" aria-haspopup="true" aria-expanded="false" aria-controls="projMenu">kasir-warung <svg aria-hidden="true" class="ico"><use href="#i-chev"/></svg></button>
+      <ul class="proj-menu" id="projMenu" hidden>
+        <li><a href="#" aria-current="true">kasir-warung <span class="m-state is-input">Butuh input</span></a></li>
+        <li><a href="#">katalog-batik <span class="m-state">Tidak berjalan</span></a></li>
+        <li><a href="#">Semua proyek <span class="m-state">3 proyek</span></a></li>
+      </ul>
+    </div>
+    <nav class="views" aria-label="Tampilan">
+      <a href="#" aria-current="page">Live</a>
+      <a href="#riwayat">Riwayat</a>
+    </nav>
+    <div class="bar-end">
+      <span class="fresh"><svg aria-hidden="true" class="ico"><use href="#i-link"/></svg><span>Terhubung, diperbarui <time id="fresh">10.44.18</time></span></span>
+      <button class="tool" id="soundBtn" aria-pressed="true"><svg aria-hidden="true" class="ico"><use href="#i-sound"/></svg><span>Bunyi aktif</span></button>
+      <button class="tool" id="themeBtn" aria-pressed="false"><svg aria-hidden="true" class="ico"><use href="#i-theme"/></svg><span>Tema gelap</span></button>
+    </div>
+  </header>
+
+  <main class="main">
+    <section class="strip" aria-label="Keadaan run">
+      <div class="cell">
+        <span class="cell-label">Siapa kerja</span>
+        <h1 class="answer"><svg aria-hidden="true" class="ico ico-l"><use href="#i-input"/></svg>Butuh input: jawab di Claude</h1>
+        <p class="who-line" style="margin:0">
+          <span><b>fe</b> berjalan: Edit CartSummary.tsx</span>
+          <span class="sep" aria-hidden="true">·</span>
+          <button class="linkish" data-open="be">be diam 12 mnt</button>
+        </p>
+      </div>
+      <button class="cell cell-btn" data-tab="backlog" aria-label="Progres 12 persen, buka Backlog">
+        <span class="cell-label">Progres</span>
+        <span class="fig">12%</span>
+        <span class="sub"><span>Backlog 9 dari 77 item</span><span>Durasi <span id="dur">42 mnt 18 dtk</span></span></span>
+      </button>
+      <button class="cell cell-btn" data-tab="token" aria-label="Token 1,84 juta setara, buka tab Token">
+        <span class="cell-label">Token</span>
+        <span class="fig">1,84 jt<small>setara</small></span>
+        <span class="sub"><span>+18% dari pembanding</span><span>Run 3 Nov: 1,56 jt</span></span>
+      </button>
+    </section>
+
+    <section class="notice" aria-label="Pemberitahuan terbuka" role="status">
+      <div class="n-meta"><svg aria-hidden="true" class="ico"><use href="#i-input"/></svg>Pertanyaan dari Sesi utama <span>· 10.42, 2 mnt lalu</span></div>
+      <div>
+        <p class="n-q">Ringkasan keranjang menampilkan pajak di baris sendiri, atau harga sudah termasuk pajak?</p>
+        <ol class="n-opts">
+          <li>Pajak di baris sendiri (PPN 11%)</li>
+          <li>Harga sudah termasuk pajak</li>
+          <li>Sembunyikan pajak di layar kasir</li>
+        </ol>
+      </div>
+      <div class="n-act">
+        <strong>Jawab di aplikasi Claude.</strong>
+        <button class="ghost" data-tab="chat" data-hl="1">Lihat percakapan</button>
+      </div>
+    </section>
+
+    <section class="graph" aria-label="Grafik agent, alur build">
+      <div class="graph-inner" id="graph">
+        <svg class="edges" id="edges" aria-hidden="true"></svg>
+
+        <div class="col">
+          <div class="col-head">Mulai <span>prompt dan sesi utama</span></div>
+          <button class="node is-prompt" data-node="prompt" data-tab="chat" aria-pressed="false">
+            <span class="node-head"><span class="node-name">Prompt kamu</span><span class="st st-idle">10.02</span></span>
+            <span class="node-quote">Tambahkan ringkasan keranjang di halaman kasir: subtotal, pajak, diskon, total.</span>
+          </button>
+          <button class="node is-input" data-node="main" aria-pressed="false">
+            <span class="node-head"><span class="node-name">Claude<small>Sesi utama</small></span><span class="st st-input"><svg aria-hidden="true" class="ico"><use href="#i-input"/></svg>Butuh input</span></span>
+            <span class="node-act">Bertanya: pajak terpisah atau termasuk?</span>
+            <span class="node-quote">Menjalankan alur build: ux, architect, ui-designer, be, fe, lalu pemeriksaan.</span>
+            <span class="node-nums"><b>834 rb</b><span>42 mnt</span><span>opus</span></span>
+          </button>
+        </div>
+
+        <div class="col">
+          <div class="col-head">Rencana <span>2 selesai</span></div>
+          <button class="node" data-node="ux" aria-pressed="false">
+            <span class="node-head"><span class="node-name">ux</span><span class="st st-idle"><svg aria-hidden="true" class="ico"><use href="#i-done"/></svg>Selesai</span></span>
+            <span class="node-act">Alur dan langkah</span>
+            <span class="node-quote">Ringkasan keranjang: 3 state (kosong, berisi, diskon), pajak per baris.</span>
+            <span class="node-nums"><b>164 rb</b><span>7 mnt</span><span>sonnet</span></span>
+          </button>
+          <button class="node" data-node="architect" aria-pressed="false">
+            <span class="node-head"><span class="node-name">architect</span><span class="st st-idle"><svg aria-hidden="true" class="ico"><use href="#i-done"/></svg>Selesai</span></span>
+            <span class="node-act">Arsitektur dan tugas</span>
+            <span class="node-quote">Komponen CartSummary di src/components; endpoint /api/cart dipakai ulang.</span>
+            <span class="node-nums"><b>96 rb</b><span>4 mnt</span><span>sonnet</span></span>
+          </button>
+        </div>
+
+        <div class="col">
+          <div class="col-head">Bangun <span>2 berjalan</span></div>
+          <button class="node" data-node="ui-designer" aria-pressed="false">
+            <span class="node-head"><span class="node-name">ui-designer</span><span class="st st-idle"><svg aria-hidden="true" class="ico"><use href="#i-done"/></svg>Selesai</span></span>
+            <span class="node-act">Referensi, DESIGN.md, visual</span>
+            <span class="node-quote">Mockup ringkasan keranjang memakai token yang ada; tidak ada token baru.</span>
+            <span class="node-nums"><b>318 rb</b><span>11 mnt</span><span>opus</span></span>
+          </button>
+          <button class="node is-warn" data-node="be" aria-pressed="true">
+            <span class="node-head"><span class="node-name">be</span><span class="st st-warn"><svg aria-hidden="true" class="ico"><use href="#i-warn"/></svg>Diam 12 mnt</span></span>
+            <span class="node-act">Sejak <code>Bash npm test</code></span>
+            <span class="node-quote">Menambah hitung pajak di cart.ts; tes cart.test.ts sedang dijalankan.</span>
+            <span class="node-nums"><b>241 rb</b><span>15 mnt</span><span>sonnet</span></span>
+          </button>
+          <button class="node" data-node="fe" aria-pressed="false">
+            <span class="node-head"><span class="node-name">fe</span><span class="st st-run"><svg aria-hidden="true" class="ico"><use href="#i-run"/></svg>Berjalan</span></span>
+            <span class="node-act">Edit <code>CartSummary.tsx</code></span>
+            <span class="node-quote">Menyambung CartSummary ke data keranjang; baris pajak menunggu jawaban.</span>
+            <span class="node-nums"><b>187 rb</b><span>9 mnt</span><span>sonnet</span></span>
+          </button>
+        </div>
+
+        <div class="col">
+          <div class="col-head">Periksa <span>belum mulai</span></div>
+          <button class="node" data-node="ui-critic" aria-pressed="false">
+            <span class="node-head"><span class="node-name">ui-critic</span><span class="st st-idle"><svg aria-hidden="true" class="ico"><use href="#i-idle"/></svg>Menunggu</span></span>
+            <span class="node-act">Menunggu be dan fe</span>
+            <span class="node-nums"><b>menunggu data</b></span>
+          </button>
+          <button class="node" data-node="qa" aria-pressed="false">
+            <span class="node-head"><span class="node-name">qa</span><span class="st st-idle"><svg aria-hidden="true" class="ico"><use href="#i-idle"/></svg>Menunggu</span></span>
+            <span class="node-act">Menunggu ui-critic</span>
+            <span class="node-nums"><b>menunggu data</b></span>
+          </button>
+          <button class="node is-quiet" data-node="cyber" aria-pressed="false">
+            <span class="node-head"><span class="node-name">cyber</span><span class="st st-idle"><svg aria-hidden="true" class="ico"><use href="#i-skip"/></svg>Dilewati</span></span>
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <aside class="panel" aria-label="Panel samping">
+    <nav class="rail" aria-label="Data proyek">
+      <button data-tab="chat" aria-pressed="false">Percakapan <span class="badge warn" aria-label="1 pertanyaan terbuka">1</span></button>
+      <button data-tab="backlog" aria-pressed="false">Backlog</button>
+      <button data-tab="file" aria-pressed="false">File <span class="badge" aria-label="4 file">4</span></button>
+      <button data-tab="skill" aria-pressed="false">Skill</button>
+      <button data-tab="token" aria-pressed="false">Token</button>
+      <button data-tab="log" aria-pressed="false">Log</button>
+    </nav>
+
+    <!-- Detail agent -->
+    <section class="pane" id="pane-detail" aria-labelledby="dTitle">
+      <div class="d-top">
+        <div>
+          <div class="d-kicker">Detail agent</div>
+          <h2 class="d-title" id="dTitle">be</h2>
+        </div>
+        <button class="close" id="dClose" aria-label="Tutup detail agent"><svg aria-hidden="true" class="ico"><use href="#i-close"/></svg></button>
+      </div>
+      <p class="d-dek" id="dDek"><span class="st st-run"><svg aria-hidden="true" class="ico"><use href="#i-run"/></svg>Berjalan</span><span>· API, DB, logic</span></p>
+      <div id="dWarn" class="ralat"><p><svg aria-hidden="true" class="ico"><use href="#i-warn"/></svg>Diam 12 mnt sejak Bash npm test</p><button class="ghost" id="toSteps">Lihat langkah terakhir</button></div>
+      <p class="d-answer" id="dAnswer">Sedang: Bash npm test, berjalan sejak 10.32.</p>
+      <dl class="score">
+        <div><dt>Durasi</dt><dd id="dDur">15 mnt</dd></div>
+        <div><dt>Token</dt><dd id="dTok">241 rb <small>setara</small></dd></div>
+        <div><dt>Putaran</dt><dd id="dTurn">1</dd></div>
+      </dl>
+      <div id="dMore">
+        <details class="sec" open><summary>Hasil <svg aria-hidden="true" class="ico"><use href="#i-chev"/></svg></summary><div class="body"><p>Belum ada hasil.</p></div></details>
+        <details class="sec" open><summary>File berubah <span>(2)</span> <svg aria-hidden="true" class="ico"><use href="#i-chev"/></svg></summary><div class="body">
+          <ul class="rows">
+            <li><span class="path">src/api/cart.ts</span><span class="num">diubah <span class="add">+41</span> <span class="err">−3</span></span></li>
+            <li><span class="path">src/api/cart.test.ts</span><span class="num">baru <span class="add">+66</span></span></li>
+          </ul>
+        </div></details>
+        <details class="sec"><summary>Tugas yang diberikan <svg aria-hidden="true" class="ico"><use href="#i-chev"/></svg></summary><div class="body"><p>Tambahkan hitung pajak (PPN 11%) dan diskon ke ringkasan keranjang di /api/cart. Pakai ulang endpoint yang ada. Tulis tes untuk keranjang kosong, berisi, dan berdiskon.</p></div></details>
+        <details class="sec" id="steps"><summary>Langkah kerja <span>(6)</span> <svg aria-hidden="true" class="ico"><use href="#i-chev"/></svg></summary><div class="body">
+          <ul class="rows" id="stepRows">
+            <li><span class="mono">Bash npm test</span><span class="num">10.32 · berjalan</span></li>
+            <li><span class="mono">Write cart.test.ts</span><span class="num">10.30</span></li>
+            <li><span class="mono">Edit cart.ts</span><span class="num">10.27</span></li>
+            <li><span class="mono">Read cart.ts</span><span class="num">10.24</span></li>
+            <li><span class="mono">Grep "subtotal"</span><span class="num">10.23</span></li>
+            <li><span class="mono">Read ARCHITECTURE.md</span><span class="num">10.22</span></li>
+          </ul>
+        </div></details>
+        <details class="sec"><summary>Skill <svg aria-hidden="true" class="ico"><use href="#i-chev"/></svg></summary><div class="body"><p>Termuat: tdd. Tidak ada skill yang belum terbukti.</p></div></details>
+        <details class="sec"><summary>Model dan izin <svg aria-hidden="true" class="ico"><use href="#i-chev"/></svg></summary><div class="body"><p>Diminta sonnet, terpakai sonnet (dari transkrip): Sesuai. Tool: Read, Edit, Write, Bash, Grep.</p></div></details>
+        <details class="sec"><summary>Pemakaian token <svg aria-hidden="true" class="ico"><use href="#i-chev"/></svg></summary><div class="body"><p>241 rb setara · konteks terakhir 58 rb dari 200 rb · 14 giliran.</p></div></details>
+        <details class="sec"><summary>Definisi agent <svg aria-hidden="true" class="ico"><use href="#i-chev"/></svg></summary><div class="body"><p>API, DB, logic. Sumber: agents/be.md.</p></div></details>
+      </div>
+    </section>
+
+    <section class="pane" id="pane-chat" hidden aria-label="Percakapan">
+      <p class="p-lead">1 pertanyaan terbuka dari Sesi utama.</p>
+      <div class="msg"><div class="msg-who">Kamu · 10.02</div><p>Tambahkan ringkasan keranjang di halaman kasir: subtotal, pajak, diskon, total.</p></div>
+      <div class="msg"><div class="msg-who">Claude · 10.03</div><p>Menjalankan alur build. ux dan architect lebih dulu, lalu ui-designer, be, dan fe.</p></div>
+      <div class="msg"><div class="msg-who">Claude · 10.31</div><p>ui-designer selesai. be dan fe mulai bekerja.</p></div>
+      <div class="msg is-open" id="openQ"><div class="msg-who">Claude · 10.42 · pertanyaan terbuka</div>
+        <p>Ringkasan keranjang menampilkan pajak di baris sendiri, atau harga sudah termasuk pajak?</p>
+        <ol><li>Pajak di baris sendiri (PPN 11%)</li><li>Harga sudah termasuk pajak</li><li>Sembunyikan pajak di layar kasir</li></ol>
+        <p><strong>Jawab di aplikasi Claude.</strong></p>
+      </div>
+    </section>
+
+    <section class="pane" id="pane-backlog" hidden aria-label="Backlog">
+      <p class="p-lead">Keranjang berjalan, 3 dari 9 item. Tidak ada keputusan menunggu.</p>
+      <div class="rubric"><b>Keranjang</b><span class="count">3 dari 9 item</span><span class="meta">Berjalan: ringkasan pajak dan diskon</span></div>
+      <div class="rubric"><b>Pembayaran</b><span class="count">0 dari 14 item</span><span class="meta">Menunggu Keranjang</span></div>
+      <div class="rubric"><b>Laporan harian</b><span class="count">0 dari 18 item</span><span class="meta">Menunggu Pembayaran</span></div>
+      <div class="rubric"><b>Stok</b><span class="count">0 dari 16 item</span><span class="meta">Belum mulai</span></div>
+      <div class="rubric"><b>Pengaturan toko</b><span class="count">0 dari 14 item</span><span class="meta">Belum mulai</span></div>
+      <details class="sec"><summary>Selesai <span>1 bagian, 6 item</span> <svg aria-hidden="true" class="ico"><use href="#i-chev"/></svg></summary><div class="body"><p>Fondasi: 6 dari 6 item.</p></div></details>
+    </section>
+
+    <section class="pane" id="pane-file" hidden aria-label="File berubah">
+      <p class="p-lead">4 file berubah di run ini.</p>
+      <ul class="rows">
+        <li><span class="path">src/components/CartSummary.tsx</span><span class="num">fe · <span class="add">+84</span> <span class="err">−12</span></span></li>
+        <li><span class="path">src/api/cart.test.ts</span><span class="num">be · <span class="add">+66</span></span></li>
+        <li><span class="path">src/api/cart.ts</span><span class="num">be · <span class="add">+41</span> <span class="err">−3</span></span></li>
+        <li><span class="path">docs/UX.md</span><span class="num">ux · <span class="add">+18</span> <span class="err">−2</span></span></li>
+      </ul>
+    </section>
+
+    <section class="pane" id="pane-skill" hidden aria-label="Skill">
+      <p class="p-lead">Semua skill yang diminta terbukti termuat.</p>
+      <ul class="rows">
+        <li><span>ux</span><span class="num">ux-designer, ux-writing-id</span></li>
+        <li><span>ui-designer</span><span class="num">antislop-ui, ui-craft</span></li>
+        <li><span>be</span><span class="num">tdd</span></li>
+        <li><span>fe</span><span class="num">ponytail</span></li>
+        <li><span>Sesi utama</span><span class="num">backlog</span></li>
+      </ul>
+    </section>
+
+    <section class="pane" id="pane-token" hidden aria-label="Token">
+      <p class="p-lead">1,84 jt setara, 18% di atas pembanding. Belum boros.</p>
+      <table class="tbl">
+        <thead><tr><th>Agent</th><th class="r">Setara</th><th class="r">Porsi</th></tr></thead>
+        <tbody>
+          <tr><td>Sesi utama<span class="share"><i style="width:45.3%"></i></span></td><td class="r">834 rb</td><td class="r">45,3%</td></tr>
+          <tr><td>ui-designer<span class="share"><i style="width:17.3%"></i></span></td><td class="r">318 rb</td><td class="r">17,3%</td></tr>
+          <tr><td>be<span class="share"><i style="width:13.1%"></i></span></td><td class="r">241 rb</td><td class="r">13,1%</td></tr>
+          <tr><td>fe<span class="share"><i style="width:10.2%"></i></span></td><td class="r">187 rb</td><td class="r">10,2%</td></tr>
+          <tr><td>ux<span class="share"><i style="width:8.9%"></i></span></td><td class="r">164 rb</td><td class="r">8,9%</td></tr>
+          <tr><td>architect<span class="share"><i style="width:5.2%"></i></span></td><td class="r">96 rb</td><td class="r">5,2%</td></tr>
+        </tbody>
+        <tfoot><tr><td>Total</td><td class="r">1,84 jt</td><td class="r">100%</td></tr></tfoot>
+      </table>
+    </section>
+
+    <section class="pane" id="pane-log" hidden aria-label="Log">
+      <p class="p-lead">Event terbaru di atas.</p>
+      <ul class="log">
+        <li><time>10.44</time><span class="who">fe</span><span class="mono">Edit CartSummary.tsx</span></li>
+        <li><time>10.42</time><span class="who">Claude</span><span>Pertanyaan ke kamu</span></li>
+        <li><time>10.38</time><span class="who">fe</span><span class="mono">Read cart.ts</span></li>
+        <li><time>10.32</time><span class="who">be</span><span class="mono">Bash npm test</span></li>
+        <li><time>10.31</time><span class="who">fe</span><span>Mulai</span></li>
+        <li><time>10.30</time><span class="who">be</span><span class="mono">Write cart.test.ts</span></li>
+      </ul>
+    </section>
+  </aside>
+</div>
+
+<script>
+(() => {
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+
+  /* Garis penghubung antar node (alur build dari flows.json) */
+  const edges = [
+    ['prompt', 'main', 'done'], ['main', 'ux', 'done'], ['ux', 'architect', 'done'],
+    ['ux', 'ui-designer', 'done'], ['architect', 'be', 'live'], ['ui-designer', 'fe', 'live'],
+    ['be', 'ui-critic', ''], ['fe', 'ui-critic', ''], ['ui-critic', 'qa', ''], ['ui-critic', 'cyber', '']
+  ];
+  const graph = $('#graph'), svg = $('#edges');
+  function drawEdges() {
+    const g = graph.getBoundingClientRect();
+    const box = id => { const r = $(`[data-node="${id}"]`).getBoundingClientRect(); return { l: r.left - g.left, r: r.right - g.left, t: r.top - g.top, b: r.bottom - g.top, cx: r.left - g.left + r.width / 2 }; };
+    svg.innerHTML = '';
+    for (const [a, b, kind] of edges) {
+      const A = box(a), B = box(b);
+      let d;
+      if (Math.abs(A.cx - B.cx) < 4) {
+        d = `M${A.cx},${A.b} L${B.cx},${B.t}`;
+      } else {
+        const y1 = A.t + 22, y2 = B.t + 22, mx = (A.r + B.l) / 2;
+        d = `M${A.r},${y1} C${mx},${y1} ${mx},${y2} ${B.l},${y2}`;
+      }
+      const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      p.setAttribute('d', d);
+      if (kind) p.setAttribute('class', kind);
+      svg.appendChild(p);
+      if (kind === 'live') p.style.setProperty('--len', Math.ceil(p.getTotalLength()));
+    }
+  }
+  drawEdges();
+  addEventListener('resize', drawEdges);
+  document.fonts && document.fonts.ready.then(drawEdges);
+
+  /* Panel: tab data proyek dan detail agent */
+  const agents = {
+    main: { title: 'Claude', kicker: 'Sesi utama', st: ['input', 'Butuh input'], role: 'opus · skill backlog', answer: 'Bertanya: pajak di baris sendiri atau sudah termasuk harga?', dur: '42 mnt', tok: '834 rb', turn: '1' },
+    ux: { title: 'ux', st: ['idle', 'Selesai'], role: 'Alur dan langkah', answer: 'Ringkasan keranjang: 3 state (kosong, berisi, diskon), pajak per baris.', dur: '7 mnt', tok: '164 rb', turn: '1' },
+    architect: { title: 'architect', st: ['idle', 'Selesai'], role: 'Arsitektur dan tugas', answer: 'Komponen CartSummary di src/components; endpoint /api/cart dipakai ulang.', dur: '4 mnt', tok: '96 rb', turn: '1' },
+    'ui-designer': { title: 'ui-designer', st: ['idle', 'Selesai'], role: 'Referensi, DESIGN.md, visual', answer: 'Mockup ringkasan keranjang memakai token yang ada; tidak ada token baru.', dur: '11 mnt', tok: '318 rb', turn: '2' },
+    fe: { title: 'fe', st: ['run', 'Berjalan'], role: 'Wiring dan logic frontend', answer: 'Sedang: Edit CartSummary.tsx.', dur: '9 mnt', tok: '187 rb', turn: '1' },
+    'ui-critic': { title: 'ui-critic', st: ['idle', 'Menunggu'], role: 'Review screenshot', answer: 'Belum jalan di run ini.', dur: '-', tok: 'menunggu data', turn: '0' },
+    qa: { title: 'qa', st: ['idle', 'Menunggu'], role: 'Tes acceptance (Playwright)', answer: 'Belum jalan di run ini.', dur: '-', tok: 'menunggu data', turn: '0' },
+    cyber: { title: 'cyber', st: ['idle', 'Dilewati'], role: 'Review keamanan', answer: 'Dilewati di alur build ini.', dur: '-', tok: 'menunggu data', turn: '0' }
+  };
+  const icon = { input: 'i-input', run: 'i-run', idle: 'i-done', warn: 'i-warn' };
+  const panes = $$('.pane'), railBtns = $$('.rail button'), nodes = $$('.node');
+  const beHTML = { dek: $('#dDek').innerHTML, answer: $('#dAnswer').textContent };
+
+  function showPane(id) {
+    panes.forEach(p => p.hidden = p.id !== 'pane-' + id);
+    railBtns.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.tab === id)));
+    if (id !== 'detail') nodes.forEach(n => n.setAttribute('aria-pressed', 'false'));
+  }
+  function openAgent(id) {
+    nodes.forEach(n => n.setAttribute('aria-pressed', String(n.dataset.node === id)));
+    const isBe = id === 'be';
+    $('#dWarn').hidden = !isBe; $('#dMore').hidden = !isBe;
+    if (isBe) {
+      $('#dTitle').textContent = 'be'; $('#dDek').innerHTML = beHTML.dek; $('#dAnswer').textContent = beHTML.answer;
+      $('#dDur').textContent = '15 mnt'; $('#dTok').innerHTML = '241 rb <small>setara</small>'; $('#dTurn').textContent = '1';
+    } else {
+      const a = agents[id];
+      $('#dTitle').textContent = a.title;
+      const ic = a.st[1] === 'Menunggu' ? 'i-idle' : a.st[1] === 'Dilewati' ? 'i-skip' : icon[a.st[0]];
+      $('#dDek').innerHTML = `<span class="st st-${a.st[0]}"><svg aria-hidden="true" class="ico"><use href="#${ic}"/></svg>${a.st[1]}</span><span>· ${a.role}</span>`;
+      $('#dAnswer').textContent = a.answer;
+      $('#dDur').textContent = a.dur; $('#dTok').innerHTML = a.tok === 'menunggu data' ? a.tok : `${a.tok} <small>setara</small>`; $('#dTurn').textContent = a.turn;
+    }
+    panes.forEach(p => p.hidden = p.id !== 'pane-detail');
+    railBtns.forEach(b => b.setAttribute('aria-pressed', 'false'));
+  }
+
+  document.addEventListener('click', e => {
+    const t = e.target.closest('[data-tab],[data-node],[data-open]');
+    if (!t) return;
+    if (t.dataset.node && t.dataset.node !== 'prompt') return openAgent(t.dataset.node);
+    if (t.dataset.open) return openAgent(t.dataset.open);
+    if (t.dataset.tab) {
+      showPane(t.dataset.tab);
+      if (t.dataset.hl) { const q = $('#openQ'); q.scrollIntoView({ block: 'nearest' }); q.tabIndex = -1; q.focus({ preventScroll: true }); }
+    }
+  });
+  $('#dClose').addEventListener('click', () => showPane('chat'));
+  $('#toSteps').addEventListener('click', () => { const s = $('#steps'); s.open = true; s.scrollIntoView({ block: 'start', behavior: 'smooth' }); $('#stepRows').classList.add('is-hl'); });
+
+  /* Bilah atas */
+  const pb = $('#projBtn'), pm = $('#projMenu');
+  pb.addEventListener('click', () => { const o = pm.hidden; pm.hidden = !o; pb.setAttribute('aria-expanded', String(o)); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !pm.hidden) { pm.hidden = true; pb.setAttribute('aria-expanded', 'false'); pb.focus(); } });
+  document.addEventListener('click', e => { if (!e.target.closest('.proj')) { pm.hidden = true; pb.setAttribute('aria-expanded', 'false'); } });
+  $('#soundBtn').addEventListener('click', e => { const b = e.currentTarget, on = b.getAttribute('aria-pressed') !== 'true'; b.setAttribute('aria-pressed', String(on)); $('span', b).textContent = on ? 'Bunyi aktif' : 'Bunyi mati'; });
+  $('#themeBtn').addEventListener('click', e => { const b = e.currentTarget, dark = b.getAttribute('aria-pressed') !== 'true'; b.setAttribute('aria-pressed', String(dark)); document.documentElement.dataset.theme = dark ? 'dark' : 'light'; $('span', b).textContent = dark ? 'Tema terang' : 'Tema gelap'; });
+
+  /* Durasi run berdetak per detik */
+  let sec = 42 * 60 + 18;
+  const dur = $('#dur');
+  setInterval(() => { sec++; dur.textContent = `${Math.floor(sec / 60)} mnt ${String(sec % 60).padStart(2, '0')} dtk`; }, 1000);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+{
+  "sumber": "sintetis",
+  "catatan": "Event result stream-json berstatus galat. 1 Nov 2026 hari akhir DST New York: 5pm EST (UTC-5) = 22:00 UTC, bukan 21:00.",
+  "now": "2026-11-01T12:00:00.000Z",
+  "event": { "type": "result", "subtype": "success", "is_error": true, "result": "You've hit your session limit · resets 5pm (America/New_York)" },
+  "expected": { "resetAt": "2026-11-01T22:00:00.000Z" }
+}

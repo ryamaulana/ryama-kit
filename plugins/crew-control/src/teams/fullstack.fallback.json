@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "id": "fullstack",
+  "name": "Fullstack",
+  "agentDirs": ["agents", "../ui-designer-kit/agents"],
+  "orchestrator": { "id": "orkestrator", "label": "Orkestrator" },
+  "flow": {
+    "nodes": ["prd", "ux", "architect", "backlog", "ui-designer", "fe", "be", "ui-critic", "qa", "cyber"],
+    "edges": [["prd","ux"],["ux","architect"],["architect","backlog"],["backlog","ui-designer"],
+              ["ui-designer","fe"],["ui-designer","be"],["fe","ui-critic"],["be","qa"],["ui-critic","qa"],["qa","cyber"]]
+  },
+  "commands": [
+    { "id": "ide", "label": "Mulai dari ide", "kind": "session", "template": "/fullstack-dev:start {prompt}", "needsText": true, "placeholder": "Aplikasi absensi untuk 3 cabang..." },
+    { "id": "bebas", "label": "Prompt bebas", "kind": "session", "template": "{prompt}", "needsText": true, "placeholder": "Apa yang mau dikerjakan?" }
+  ],
+  "backlog": { "file": "docs/backlog.json", "cli": ["node", "{home}/.claude/skills/backlog/backlog.js"] },
+  "milestoneKinds": ["Fondasi", "UI", "Backend", "Keamanan", "Akhir"],
+  "evidence": { "contract": "skills/kontrak-bukti/SKILL.md", "dir": "docs/bukti" }
+}

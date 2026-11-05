@@ -1,0 +1,6 @@
+{ "item": "f16-ui-kerangka", "entries": [
+  { "kind": "image", "path": "docs/bukti/f16-ui-kerangka/terang/audit-1440.png", "caption": "Kerangka (rel navigasi + kepala halaman) di 1440 px, tema terang, 2 butuh kamu" },
+  { "kind": "image", "path": "docs/bukti/f16-ui-kerangka/terang/audit-900.png", "caption": "Kerangka di 900 px, tema terang" },
+  { "kind": "image", "path": "docs/bukti/f16-ui-kerangka/gelap/audit-1440.png", "caption": "Kerangka di 1440 px, tema gelap" },
+  { "kind": "image", "path": "docs/bukti/f16-ui-kerangka/gelap/audit-900.png", "caption": "Kerangka di 900 px, tema gelap; Riwayat dan Kesehatan kit bertanda segera" }
+]}

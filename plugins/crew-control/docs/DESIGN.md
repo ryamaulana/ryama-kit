@@ -96,6 +96,13 @@ Library `~/.claude/design-library/` tidak dibuka; token diturunkan dari konsep d
 - **Keadaan (hash di URL mockup):** `#memuat` kerangka kartu sebesar kartu akhir · `#galat` satu catatan di atas + [Coba lagi] · `#kosong` "Belum ada milestone untuk direview." + tautan proyek · `#disetujui` baca saja + "Disetujui 4 Nov, 16.20". Interaksi: Minta perbaikan -> catatan di kartu -> tombol kepala menghitung; Setujui dengan catatan belum dikirim -> konfirmasi kecil; klik bukti -> lihat penuh dengan Sebelumnya/Berikutnya/Esc.
 - **Data:** DATA CONTOH (milestone UI 24 item, 5 batch, toconnect), berlabel di layar. Gambar bukti = screenshot `layar-proyek.html` arah ini, disimpan di `bukti-contoh/`.
 
+## Rancangan layar: Kerangka (NavRail + AppShell + PageHead), aplikasi `web/src/ui/`
+- Jenis: kerangka bersama semua layar laptop (≥ 900); dial Layar tugas. Porting `.rail` dari `layar-proyek.html`, tanpa perubahan bentuk.
+- Fokus: kerangka tidak merebut fokus layar; satu-satunya tombol tinta = [Run baru] (aksi global), lencana oranye Proyek = satu-satunya warna jenuh (Butuh kamu). Urutan baca: judul halaman → isi → rel.
+- Riwayat dan Kesehatan kit (Fase 3) tetap di rel dengan label "segera" 12 `--text-3` di bawah ikon, bukan tautan dan tidak bisa difokus; nama lengkap untuk pembaca layar "Riwayat, segera hadir". Pengaturan = tombol pembuka panel (aria-expanded).
+- Tidak ada: label teks di item aktif (rel 56 tetap ikon + tooltip), hamburger. < 900 (TabBar HP) di luar lingkup item ini; rel tetap tampil.
+- Audit tema gelap: skrip ui-craft hanya membaca nilai pertama tiap token, jadi token gelap diperiksa dengan salinan design-tokens.css yang blok gelapnya di depan (bukan nilai baru).
+
 ## Wujud arah per jenis layar
 - **Dashboard · (c) Daftar proyek (layar kunci berikutnya):**
   - Kepala: 5 angka dalam satu deret label + angka Overpass 600 (angka 0 diciutkan); [Run baru] tinta.

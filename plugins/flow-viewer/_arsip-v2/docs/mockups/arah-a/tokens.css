@@ -1,0 +1,127 @@
+/* Arah A "Halaman depan" - token mesin (konsep-3, 2026-11-04).
+   Font di-host sendiri (woff2, OFL, dari fontsource): Newsreader, Instrument Sans. */
+
+@font-face {
+  font-family: "Newsreader";
+  src: url("fonts/newsreader-latin-wght-normal.woff2") format("woff2");
+  font-weight: 200 800;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Newsreader";
+  src: url("fonts/newsreader-latin-wght-italic.woff2") format("woff2");
+  font-weight: 200 800;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Instrument Sans";
+  src: url("fonts/instrument-sans-latin-wght-normal.woff2") format("woff2");
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: light;
+
+  /* Warna: peran */
+  --bg: #F6F3EC;
+  --surface: #FFFDF8;
+  --surface-sunk: #EEE9DE;
+  --text: #1D1B17;
+  --text-muted: #5C574D;
+  --text-faint: #6E685B;
+  --rule: #D9D2C3;
+  --rule-strong: #1D1B17;
+  --accent: #2B4C7E;
+  --on-accent: #FFFDF8;
+
+  /* Status: warna selalu bersama ikon + teks */
+  --st-run: #1F6B5A;
+  --st-input: #C2410C;
+  --st-fail: #A3171D;
+  --st-warn: #8A5A00;
+  --st-idle: #6E685B;
+  --st-input-tint: #FBE9E0;
+  --st-fail-tint: #F7E3E3;
+  --st-warn-tint: #F5EBD6;
+  --st-run-tint: #E3EFEA;
+  --scrim: rgba(29, 27, 23, 0.4);
+
+  /* Huruf */
+  --font-news: "Newsreader", "Iowan Old Style", Georgia, serif;
+  --font-ui: "Instrument Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  --fs-12: 12px;
+  --fs-13: 13px;
+  --fs-14: 14px;
+  --fs-16: 16px;
+  --fs-20: 20px;
+  --fs-26: 26px;
+  --fs-34: 34px;
+  --lh-body: 1.5;
+  --lh-head: 1.15;
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-bold: 650;
+  --ls-head: -0.01em;
+
+  /* Spasi */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-12: 48px;
+
+  /* Bentuk */
+  --radius-s: 2px;
+  --radius-m: 4px;
+  --line: 1px;
+  --line-strong: 2px;
+  --shadow-none: none;
+
+  /* Tata letak */
+  --bar-h: 48px;
+  --strip-h: 112px;
+  --panel-w: 400px;
+  --panel-w-narrow: 340px;
+  --node-w: 232px;
+  --col-w: 264px;
+
+  /* Gerak */
+  --dur-micro: 160ms;
+  --dur-swap: 240ms;
+  --ease: cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #1A1916;
+  --surface: #22201C;
+  --surface-sunk: #2A2823;
+  --text: #EDE8DD;
+  --text-muted: #B3AC9D;
+  --text-faint: #958E7F;
+  --rule: #3A362F;
+  --rule-strong: #EDE8DD;
+  --accent: #8FB0E0;
+  --on-accent: #1A1916;
+  --st-run: #6BC2A8;
+  --st-input: #F08A5D;
+  --st-fail: #F07272;
+  --st-warn: #E0B04A;
+  --st-idle: #958E7F;
+  --st-input-tint: #3A2419;
+  --st-fail-tint: #3A1E1E;
+  --st-warn-tint: #352B17;
+  --st-run-tint: #1B2E28;
+  --scrim: rgba(0, 0, 0, 0.55);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --dur-micro: 0ms; --dur-swap: 0ms; }
+}

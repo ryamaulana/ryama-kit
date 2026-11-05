@@ -1,0 +1,7 @@
+{
+  "sumber": "nyata",
+  "catatan": "Teks dan waktu dari transkrip Claude Code 2.1.209 (assistant sintetis, error rate_limit), dibentuk ulang ke event stream-json. 8pm WIB = 13:00 UTC.",
+  "now": "2026-07-18T11:20:55.296Z",
+  "event": { "type": "assistant", "error": "rate_limit", "message": { "model": "<synthetic>", "role": "assistant", "content": [{ "type": "text", "text": "You've hit your session limit · resets 8pm (Asia/Jakarta)" }] } },
+  "expected": { "resetAt": "2026-07-18T13:00:00.000Z" }
+}

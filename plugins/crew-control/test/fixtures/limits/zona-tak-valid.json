@@ -1,0 +1,7 @@
+{
+  "sumber": "sintetis",
+  "catatan": "Zona tidak dikenal Intl: limit tetap dikenali, resetAt null.",
+  "now": "2026-11-05T06:00:00.000Z",
+  "event": { "type": "result", "subtype": "success", "is_error": true, "result": "You've hit your session limit · resets 5pm (Mars/Olympus)" },
+  "expected": { "resetAt": null }
+}

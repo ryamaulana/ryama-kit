@@ -108,3 +108,26 @@ Mode izin A3 yang dijalankan server: Write/Edit/Read/Glob/Grep di dalam folder p
 - Batas run bersamaan default 1 (rekomendasi KEPUTUSAN, menunggu jawaban pemilik); `CREW_MAX_RUNS` maks 3.
 - Hook Flow Viewer lama ikut menyala di sesi dashboard selama Flow Viewer hidup (catatan spike).
 - `node:sqlite` masih berlabel eksperimental di Node 22 (peringatan di log); tidak ada seed karena belum ada data contoh yang bermakna di irisan ini.
+
+## Cek T1/T2 (2026-11-05, item f12-spike-asumsi)
+
+Perintah (folder kerja kosong sementara, Claude Code 2.1.314, langganan):
+`claude -p "<suruh Task/Agent sekali menjalankan echo hai>" --model haiku --session-id <uuid baru> --output-format stream-json --verbose --allowedTools "Task,Agent,Bash(echo:*)" --max-turns 6`
+Keluaran nyata (34 baris; path rumah disamarkan, tanda tangan thinking dan daftar panjang di `init` dipotong): `test/fixtures/stream/subagent-background-haiku.jsonl`. Biaya ~0,025 USD (2 giliran haiku).
+
+### T1. Langkah subagent di stream-json: **terbukti**
+- Pesan `assistant` dan `user` milik subagent membawa `parent_tool_use_id` = `id` tool_use pemanggilnya (baris 18, 23, 24: `tool_use Bash`, `tool_result "hai"`, teks akhir). Pesan orkestrator membawa `parent_tool_use_id: null`. `message.model` ada di pesan subagent, jadi model per agent bisa dibaca dari stream juga.
+- Ada event status yang lebih rapi dari menebak: `system task_started` (`tool_use_id`, `task_id`, `subagent_type`, `description`, `is_backgrounded`, `spawn_depth`), `task_progress` (`last_tool_name`, `usage.total_tokens`, `tool_uses`), `task_updated` (`patch.status: completed`), `task_notification` (`status`, `summary`, `usage`), `background_tasks_changed` (`tasks` yang masih jalan).
+- Temuan yang mengubah rencana Harness:
+  1. Nama alat sekarang **`Agent`**, bukan `Task`. Parser wajib menerima keduanya.
+  2. Subagent jalan **di latar** secara bawaan (`is_backgrounded: true`): `tool_result` Agent kembali seketika berisi "Async agent launched successfully", jadi `tool_result` **bukan** tanda subagent selesai. Selesai = `task_notification` / `task_updated` berstatus `completed` (atau gagal) dengan `tool_use_id` yang sama.
+  3. Satu proses bisa mengeluarkan **lebih dari satu `result`**: orkestrator menutup giliran 1 (`result` baris 29) sebelum subagent selesai, lalu notifikasi tugas memicu giliran 2 di proses yang sama (`init` kedua baris 30, `result` kedua baris 33). Aturan FreeFlow "giliran selesai -> 2 dtk tanpa pesan -> tutup" harus ditambah: **jangan tutup selama `background_tasks_changed.tasks` terakhir tidak kosong**; tunggu `result` berikutnya.
+  4. Pesan orkestrator dan subagent berselang-seling (baris 21-24); status per agent dikunci per `parent_tool_use_id`, bukan urutan.
+- Aturan cadangan (bila suatu versi tidak lagi mengirim `parent_tool_use_id`): agent `berjalan` saat `task_started` (atau `tool_use` bernama `Agent`/`Task`); `selesai`/`gagal` dari `task_notification.status`; bila event `task_*` juga tidak ada, dari `tool_result` Agent/Task yang bukan teks "Async agent launched" (`is_error` = gagal). Langkah alat di dalam subagent lalu tidak terlihat; hanya ringkasan `last_tool_name` dari `task_progress` bila ada.
+
+### T2. `--session-id <uuid>`: **diterima**
+- `init.session_id` = uuid yang diberikan (`b3095d73-...`), begitu juga semua event lain termasuk `hook_started` yang keluar **sebelum** `init`, dan kedua `result`. Jadi Harness tahu id sesi sebelum proses jalan dan hook F10 bisa dicocokkan tanpa celah waktu. Cadangan (abaikan hook desktop yang `cwd`-nya sama dengan run Harness aktif sampai `init` tiba) tidak diperlukan, tetap dicatat bila suatu versi menolak flag ini.
+
+### Belum dicek (sengaja, hemat kuota)
+- Subagent latar depan (`run_in_background: false`) dan subagent bersarang (`spawn_depth` > 1): diduga sama (`parent_tool_use_id` + `task_*`), belum ada fixture.
+- `--session-id` dengan uuid yang sudah pernah dipakai: Harness wajib membuat uuid baru per `launch`; lanjut sesi tetap lewat `--resume`.

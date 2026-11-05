@@ -3,9 +3,9 @@ import http from 'node:http';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { Harness, type HarnessOptions } from '../src/harness.js';
-import { Store } from '../src/store.js';
-import type { Message, Run } from '../src/contract.js';
+import { Harness, type HarnessOptions } from '../src/harness/index.js';
+import { Store } from '../src/store/index.js';
+import type { Message, Run } from '../src/contract/index.js';
 
 export const FAKE = path.join(path.dirname(fileURLToPath(import.meta.url)), 'fake-claude.mjs');
 

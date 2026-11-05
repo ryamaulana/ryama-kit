@@ -1,0 +1,19 @@
+.app-shell {
+  display: grid; height: 100vh; min-height: 640px;
+  grid-template-columns: var(--rail-w) minmax(0, 1fr);
+}
+.app-shell__main { min-width: 0; min-height: 0; overflow: auto; display: flex; flex-direction: column; }
+.app-shell__main:focus { outline: none; }
+
+.page-head {
+  min-height: var(--topbar-h); padding: var(--sp-8) var(--sp-24);
+  display: flex; align-items: center; justify-content: space-between; gap: var(--sp-16);
+  border-bottom: var(--line-w) solid var(--line);
+}
+.page-head__text { min-width: 0; }
+.page-head__title { font-size: var(--fs-18); font-weight: var(--fw-bold); }
+.page-head__sub {
+  font-size: var(--fs-13); color: var(--text-2);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.page-head__actions { display: flex; align-items: center; gap: var(--sp-8); flex: none; }

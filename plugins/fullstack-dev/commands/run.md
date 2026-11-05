@@ -6,7 +6,7 @@ model: sonnet
 
 Jumlah item maksimal untuk run ini: $ARGUMENTS (kosong = 5; `1` = hanya item berikutnya).
 
-Baca skill `backlog` dan `project-context`. Butuh `docs/backlog.json`; kalau belum ada, berhenti dan jalankan `/fullstack-dev:backlog` dulu. Orkestrator tetap ringan: kamu hanya mengatur antrean dan tidak mengerjakan item sendiri.
+Baca skill `backlog` dan `project-context`. Butuh `docs/backlog.json` di folder sesi ini (skrip backlog bekerja relatif ke folder sesi). Kalau belum ada, cari dulu `**/docs/backlog.json` di subfolder (abaikan node_modules): bila ketemu, berhenti dan sebutkan path proyek itu, lalu minta pemilik membuka sesi Claude Code di folder proyek tersebut (proyek = folder tempat sesi dimulai); jangan menyarankan menulis PRD dari awal. Bila tidak ada di mana pun, berhenti dan jalankan `/fullstack-dev:backlog` dulu. Orkestrator tetap ringan: kamu hanya mengatur antrean dan tidak mengerjakan item sendiri.
 
 **Item yang tertinggal dari sesi lalu.** Sebelum mengambil item baru, `node "$HOME/.claude/skills/backlog/backlog.js" list --status running`. Item `running` di awal sesi berarti sesi sebelumnya berhenti di tengah (tidak ada agent yang masih jalan). Untuk tiap item itu, cek bukti yang diminta paketnya dengan perintah ber-output pendek (file ada, tes paket terkait lulus): lengkap → `done --evidence`; tidak lengkap → `retry <id>`, lalu item itu ikut batch ini dengan catatan "lanjutkan dari perubahan yang sudah ada di working tree, jangan mulai dari nol". Jangan membuang perubahan yang belum di-commit.
 

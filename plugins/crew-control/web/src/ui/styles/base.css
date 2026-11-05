@@ -1,0 +1,38 @@
+/* Gaya dasar seluruh aplikasi. Hanya var(--...) dari tokens.css. */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  font-family: var(--font-sans); font-size: var(--fs-14); line-height: var(--lh-body);
+  color: var(--text); background: var(--bg); font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+#root { height: 100%; }
+h1, h2, h3, p { margin: 0; }
+h1, h2, h3 { line-height: var(--lh-title); text-wrap: balance; }
+button, input, textarea, select { font: inherit; color: inherit; }
+button { touch-action: manipulation; }
+a { color: inherit; }
+
+:focus-visible { outline: var(--focus-w) solid var(--focus); outline-offset: var(--focus-w); }
+
+/* Utilitas bersama */
+.mono { font-family: var(--font-mono); }
+.vh {
+  position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);
+  white-space: nowrap; margin: 0; padding: 0; border: 0;
+}
+/* Pemisah "·" diganti bulatan 4 px (lihat DESIGN.md, Pelanggaran disengaja) */
+.sep {
+  display: inline-block; width: var(--sp-4); height: var(--sp-4); margin: 0 var(--sp-8);
+  border-radius: var(--radius-round); background: currentColor; vertical-align: middle;
+}
+.skip {
+  position: absolute; left: var(--sp-8); top: calc(var(--sp-48) * -1); z-index: 9;
+  background: var(--ink); color: var(--on-ink); padding: var(--sp-8) var(--sp-12);
+  border-radius: var(--radius-s); text-decoration: none;
+}
+.skip:focus { top: var(--sp-8); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0ms !important; animation-duration: 0ms !important; }
+}

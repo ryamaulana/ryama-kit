@@ -1,0 +1,126 @@
+[
+  {
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    },
+    "counts": {
+      "high": 0,
+      "medium": 2,
+      "low": 8
+    },
+    "stats": {
+      "ukuranHuruf": [
+        12,
+        13,
+        14,
+        16,
+        20,
+        26
+      ],
+      "keluargaHuruf": [
+        "Barlow",
+        "Barlow Semi Condensed",
+        "ui-monospace"
+      ],
+      "nilaiSpasi": 7,
+      "spasiDiLuarSkalaPersen": 0,
+      "radius": [
+        6
+      ],
+      "bayangan": 2,
+      "warnaTeks": 6,
+      "tombolSolidDiLayarPertama": 7,
+      "elemenTerkuat": [
+        "p.big \"Butuh input: jawab di Claude\"",
+        "h2.dname \"be\"",
+        "span.sub \"12%\""
+      ],
+      "tepiKiriTerbanyak": [
+        "1066px(12)",
+        "678px(9)",
+        "64px(5)",
+        "316px(4)",
+        "1090px(4)",
+        "1388px(4)"
+      ],
+      "jumlahGambar": 0,
+      "kataJudulTerpanjang": 3,
+      "jumlahSvg": 13,
+      "warnaAksen": 3,
+      "grupKartuSeragam": 0,
+      "jumlahKartuSeragam": 0,
+      "kandidatFokus": [
+        "p.big \"Butuh input: jawab di Claude\"",
+        "h2.dname \"be\""
+      ],
+      "blokWarnaJenuhLayarPertamaPersen": 0,
+      "token": {
+        "aktif": true,
+        "warnaDiLuar": 0,
+        "radiusDiLuar": 0,
+        "hurufDiLuar": 0,
+        "fontDiLuar": 0
+      }
+    },
+    "issues": [
+      {
+        "sev": "medium",
+        "rule": "titik-fokus",
+        "detail": "7 tombol/tautan berlatar solid di layar pertama; terlalu banyak yang berebut perhatian (biasanya 1-2 aksi utama)"
+      },
+      {
+        "sev": "medium",
+        "rule": "keluarga-huruf",
+        "detail": "3 keluarga huruf (Barlow | Barlow Semi Condensed | ui-monospace); maksimal 2"
+      },
+      {
+        "sev": "low",
+        "rule": "copy-ulang",
+        "detail": "kalimat yang sama muncul dua kali: \"Riwayat menyimpan berapa run per proyek?\"",
+        "at": "p.q \"Riwayat menyimpan berapa run\""
+      },
+      {
+        "sev": "low",
+        "rule": "copy-tombol",
+        "detail": "tombol 10 kata (ideal 1-3): \"1,84 jt setara +18% dari pembanding (run 3 Nov, 21.40)\"",
+        "at": "button.token-btn \"1,84 jt setara +18% dari pem\""
+      },
+      {
+        "sev": "low",
+        "rule": "copy-tombol",
+        "detail": "tombol 23 kata (ideal 1-3): \"ClaudeBerjalan Sesi utama · opus Skill: fullstack-dev:run, backlog Too\"",
+        "at": "button.lbl \"ClaudeBerjalan Sesi utama · \""
+      },
+      {
+        "sev": "low",
+        "rule": "copy-tombol",
+        "detail": "tombol 17 kata (ideal 1-3): \"backlogSelesai 5 item siap dibagi t09b, t17a, t20b, t21a, t22a 2 mnt ·\"",
+        "at": "button.lbl \"backlogSelesai 5 item siap d\""
+      },
+      {
+        "sev": "low",
+        "rule": "copy-tombol",
+        "detail": "tombol 19 kata (ideal 1-3): \"ui-designerDiam 12 mnt26 mnt · 274 rb · opus Terakhir: Menjalankan aud\"",
+        "at": "button.lbl \"ui-designerDiam 12 mnt26 mnt\""
+      },
+      {
+        "sev": "low",
+        "rule": "copy-tombol",
+        "detail": "tombol 13 kata (ideal 1-3): \"feBerjalan6 mnt · 96 rb · sonnet Menulis public/js/live/board.js Item \"",
+        "at": "button.lbl \"feBerjalan6 mnt · 96 rb · so\""
+      },
+      {
+        "sev": "low",
+        "rule": "copy-tombol",
+        "detail": "tombol 26 kata (ideal 1-3): \"beButuh input18 mnt · 212 rb · sonnet Bertanya: Riwayat menyimpan bera\"",
+        "at": "button.lbl \"beButuh input18 mnt · 212 rb\""
+      },
+      {
+        "sev": "low",
+        "rule": "titik-fokus",
+        "detail": "dua kandidat fokus hampir sama kuat di layar pertama: p.big \"Butuh input: jawab di Claude\" vs h2.dname \"be\""
+      }
+    ]
+  }
+]

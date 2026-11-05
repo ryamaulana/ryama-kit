@@ -1,0 +1,7 @@
+{
+  "sumber": "sintetis",
+  "catatan": "rate_limit_event berstatus allowed hanya info kuota: bukan limit.",
+  "now": "2026-11-05T06:00:00.000Z",
+  "event": { "type": "rate_limit_event", "rate_limit_info": { "status": "allowed", "resetsAt": 1793872800, "rateLimitType": "five_hour" } },
+  "expected": null
+}

@@ -1,0 +1,115 @@
+/* Arah B "Peta jalur" - token mesin (konsep-3, 2026-11-04).
+   Font di-host sendiri (woff2, OFL, dari fontsource): Barlow 400/500/600, Barlow Semi Condensed 500/600, di ./fonts. */
+
+@font-face { font-family: "Barlow"; font-weight: 400; font-style: normal; font-display: swap; src: url("fonts/barlow-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family: "Barlow"; font-weight: 500; font-style: normal; font-display: swap; src: url("fonts/barlow-latin-500-normal.woff2") format("woff2"); }
+@font-face { font-family: "Barlow"; font-weight: 600; font-style: normal; font-display: swap; src: url("fonts/barlow-latin-600-normal.woff2") format("woff2"); }
+@font-face { font-family: "Barlow Semi Condensed"; font-weight: 500; font-style: normal; font-display: swap; src: url("fonts/barlow-semi-condensed-latin-500-normal.woff2") format("woff2"); }
+@font-face { font-family: "Barlow Semi Condensed"; font-weight: 600; font-style: normal; font-display: swap; src: url("fonts/barlow-semi-condensed-latin-600-normal.woff2") format("woff2"); }
+
+:root {
+  color-scheme: light;
+
+  /* Warna: peran */
+  --bg: #EEF1F3;
+  --surface: #FFFFFF;
+  --surface-sunk: #E3E8EC;
+  --text: #14212B;
+  --text-muted: #4A5866;
+  --text-faint: #5F6D7A;
+  --line: #C9D1D8;
+  --track: #6F7D8A;
+  --accent: #1B4F8A;
+  --on-accent: #FFFFFF;
+
+  /* Status: warna selalu bersama ikon + teks */
+  --st-run: #0A7064;
+  --st-input: #F2A93B;
+  --on-st-input: #14212B;
+  --st-fail: #B42318;
+  --st-warn: #7A5B00;
+  --st-idle: #5F6D7A;
+  --st-run-tint: #DDEFEC;
+  --st-fail-tint: #FBE4E1;
+  --st-warn-tint: #F4ECD3;
+  --scrim: rgba(20, 33, 43, 0.4);
+
+  /* Huruf */
+  --font-sign: "Barlow Semi Condensed", "Bahnschrift", "Segoe UI", sans-serif;
+  --font-ui: "Barlow", "Segoe UI", system-ui, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  --fs-12: 12px;
+  --fs-13: 13px;
+  --fs-14: 14px;
+  --fs-16: 16px;
+  --fs-20: 20px;
+  --fs-26: 26px;
+  --fs-32: 32px;
+  --lh-body: 1.45;
+  --lh-head: 1.1;
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-bold: 600;
+
+  /* Spasi */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-12: 48px;
+
+  /* Bentuk */
+  --radius-s: 6px;
+  --radius-m: 10px;
+  --radius-round: 999px;
+  --line-w: 1px;
+  --track-w: 4px;
+  --ring-w: 3px;
+  --shadow-1: 0 6px 20px rgba(20, 33, 43, 0.12);
+
+  /* Tata letak */
+  --bar-h: 44px;
+  --board-h: 96px;
+  --panel-w: 400px;
+  --panel-w-narrow: 340px;
+  --station: 20px;
+  --label-w: 220px;
+  --station-gap: 248px;
+  --lane-gap: 168px;
+
+  /* Gerak */
+  --dur-micro: 140ms;
+  --dur-move: 280ms;
+  --ease: cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #151D24;
+  --surface: #1C262F;
+  --surface-sunk: #111820;
+  --text: #E6EDF2;
+  --text-muted: #A7B4BF;
+  --text-faint: #8796A3;
+  --line: #2C3944;
+  --track: #6E7F8E;
+  --accent: #7FB2E8;
+  --on-accent: #111820;
+  --st-run: #4CC3B3;
+  --st-input: #F2A93B;
+  --on-st-input: #14212B;
+  --st-fail: #F28B82;
+  --st-warn: #E5BF5A;
+  --st-idle: #8796A3;
+  --st-run-tint: #17322F;
+  --st-fail-tint: #3A1F1D;
+  --st-warn-tint: #33301C;
+  --scrim: rgba(0, 0, 0, 0.55);
+  --shadow-1: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --dur-micro: 0ms; --dur-move: 0ms; }
+}

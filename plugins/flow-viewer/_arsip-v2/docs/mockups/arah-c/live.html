@@ -1,0 +1,684 @@
+<!doctype html>
+<html lang="id" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#FBFAF7">
+<title>(1) Butuh input · tryouthub</title>
+<link rel="preload" href="fonts/bricolage-grotesque-latin-standard-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/atkinson-hyperlegible-next-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="tokens.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-ui);
+    font-size: var(--fs-14);
+    line-height: var(--lh-body);
+    font-variant-numeric: tabular-nums;
+    overflow: hidden;
+  }
+  button, select { font: inherit; color: inherit; }
+  a { color: inherit; }
+  :focus-visible { outline: var(--line-w) solid var(--accent); outline-offset: var(--line-w); }
+  .sr { font-size: var(--fs-14); line-height: var(--lh-head); position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .ico { width: var(--sp-4); height: var(--sp-4); flex: none; fill: none; stroke: currentColor; stroke-width: var(--line-w); stroke-linecap: square; stroke-linejoin: miter; }
+  .mono { font-family: var(--font-mono); font-size: var(--fs-13); }
+
+  /* Tombol */
+  .btn {
+    display: inline-flex; align-items: center; gap: var(--sp-2);
+    min-height: var(--sp-8); padding: 0 var(--sp-3);
+    background: var(--surface); border: var(--line-w) solid var(--line); border-radius: var(--radius-0);
+    font-weight: var(--fw-bold); font-size: var(--fs-13); cursor: pointer;
+    transition: background-color var(--dur-micro) var(--ease), transform var(--dur-micro) var(--ease);
+  }
+  .btn:hover { background: var(--surface-sunk); }
+  .btn:active { transform: translateY(var(--line-w-soft)); }
+  .btn[aria-pressed="false"] .on, .btn[aria-pressed="true"] .off { display: none; }
+  .link {
+    background: none; border: 0; padding: 0; cursor: pointer;
+    font-weight: var(--fw-bold); text-decoration: underline; text-decoration-thickness: var(--line-w); text-underline-offset: var(--sp-1);
+    white-space: nowrap; min-height: var(--sp-6); display: inline-flex; align-items: center;
+  }
+  .link:hover { text-decoration-color: var(--ink-run); }
+
+  /* Kerangka */
+  .app { display: grid; grid-template-rows: var(--bar-h) 1fr; height: 100vh; }
+  .bar {
+    display: flex; align-items: center; gap: var(--sp-4);
+    padding: 0 var(--sp-6);
+    background: var(--surface-sunk); border-bottom: var(--line-w) solid var(--line);
+  }
+  .wordmark { font-family: var(--font-display); font-weight: var(--fw-display); font-size: var(--fs-16); letter-spacing: var(--ls-num); margin: 0; }
+  .switch { position: relative; }
+  .switch-btn { border-color: var(--line); }
+  .menu {
+    position: absolute; top: calc(100% + var(--sp-1)); left: 0; z-index: 5; min-width: calc(var(--node-w) + var(--sp-8));
+    margin: 0; padding: var(--sp-1) 0; list-style: none;
+    background: var(--surface); border: var(--line-w) solid var(--line); box-shadow: var(--shadow-block);
+  }
+  .menu[hidden] { display: none; }
+  .menu a { display: flex; justify-content: space-between; gap: var(--sp-3); padding: var(--sp-2) var(--sp-3); text-decoration: none; }
+  .menu a:hover { background: var(--surface-sunk); }
+  .menu .muted { color: var(--text-muted); font-size: var(--fs-13); }
+  .flag { display: inline-flex; align-items: center; gap: var(--sp-1); font-size: var(--fs-13); font-weight: var(--fw-bold); }
+  .flag--fail { color: var(--text); }
+  .views { display: flex; height: 100%; margin-left: var(--sp-4); }
+  .views a, .views button {
+    display: flex; align-items: center; padding: 0 var(--sp-4);
+    font-weight: var(--fw-bold); text-decoration: none; background: none; border: 0; cursor: pointer;
+  }
+  .views [aria-current="page"] { background: var(--text); color: var(--bg); }
+  .views button:hover { background: var(--surface); }
+  .bar-end { margin-left: auto; display: flex; align-items: center; gap: var(--sp-3); }
+  .fresh { color: var(--text-muted); font-size: var(--fs-13); display: inline-flex; align-items: center; gap: var(--sp-2); }
+  .fresh .ico { color: var(--ink-run); }
+  .sample { display: inline-flex; align-items: center; gap: var(--sp-2); font-size: var(--fs-13); color: var(--text-muted); }
+  .sample select {
+    min-height: var(--sp-8); padding: 0 var(--sp-2);
+    background: var(--surface); border: var(--line-w) solid var(--line); border-radius: var(--radius-s);
+    color: var(--text); font-weight: var(--fw-bold);
+  }
+  .note { font-size: var(--fs-13); color: var(--text-muted); }
+
+  .work { display: grid; grid-template-columns: 1fr var(--panel-w); min-height: 0; }
+  .main { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+
+  /* Pita indikator */
+  .strip {
+    display: grid; grid-template-columns: 3fr 1fr 1fr; height: var(--strip-h); flex: none;
+    border-bottom: var(--line-w) solid var(--line);
+  }
+  .who {
+    display: flex; flex-direction: column; justify-content: center; gap: var(--sp-2);
+    padding: var(--sp-4) var(--sp-6);
+    transition: background-color var(--dur-swap) var(--ease), color var(--dur-swap) var(--ease);
+  }
+  .who[data-ink="input"] { background: var(--ink-input); color: var(--on-ink-input); }
+  .who[data-ink="fail"] { background: var(--ink-fail); color: var(--on-ink-fail); }
+  .who[data-ink="run"] { background: var(--ink-run-tint); color: var(--text); }
+  .who-line {
+    display: flex; align-items: center; gap: var(--sp-3); margin: 0;
+    font-family: var(--font-display); font-weight: var(--fw-display); font-size: var(--fs-30); line-height: var(--lh-head); letter-spacing: var(--ls-num);
+  }
+  .who-line .ico { width: var(--sp-8); height: var(--sp-8); stroke-width: var(--line-w); }
+  .who-sub { margin: 0; font-size: var(--fs-16); display: flex; flex-wrap: wrap; gap: var(--sp-1) var(--sp-4); }
+  .who-sub b { font-weight: var(--fw-bold); }
+  .cell {
+    display: flex; flex-direction: column; justify-content: center; gap: var(--sp-1);
+    padding: var(--sp-3) var(--sp-4); background: var(--surface);
+    border-left: var(--line-w) solid var(--line); min-width: 0;
+  }
+  .cell-label { font-size: var(--fs-13); color: var(--text-muted); font-weight: var(--fw-bold); }
+  .big { font-family: var(--font-display); font-weight: var(--fw-display); font-size: var(--fs-40); line-height: var(--lh-head); letter-spacing: var(--ls-num); }
+  .cell-row { display: flex; justify-content: space-between; gap: var(--sp-2); }
+  .cell-aside { font-weight: var(--fw-regular); }
+  .cell-meta { font-size: var(--fs-13); color: var(--text-muted); display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-1) var(--sp-2); }
+  .meter { height: var(--sp-1); background: var(--surface-sunk); }
+  .meter i { display: block; height: 100%; background: var(--ink-run); }
+  .tag {
+    display: inline-flex; align-items: center; gap: var(--sp-1);
+    min-height: var(--sp-6); padding: 0 var(--sp-2); border-radius: var(--radius-s); border: 0; cursor: pointer;
+    font-size: var(--fs-13); font-weight: var(--fw-bold);
+  }
+  .tag .ico { width: var(--sp-3); height: var(--sp-3); }
+  .tag--warn { background: var(--ink-warn); color: var(--on-ink-warn); }
+  .tag--warn:hover { text-decoration: underline; }
+
+  /* Kotak pemberitahuan */
+  .notice {
+    position: relative; flex: none;
+    margin: var(--sp-8) var(--sp-6) 0; padding: var(--sp-6) var(--sp-6) var(--sp-4);
+    background: var(--surface); border: var(--line-w) solid var(--line);
+    display: grid; grid-template-columns: 5fr 6fr; gap: var(--sp-6);
+  }
+  .notice[hidden] { display: none; }
+  .notice-tab {
+    position: absolute; top: calc(var(--sp-3) * -1); left: calc(var(--line-w) * -1);
+    display: inline-flex; align-items: center; gap: var(--sp-2);
+    padding: 0 var(--sp-3); font-size: var(--fs-13); font-weight: var(--fw-bold);
+    background: var(--ink-input); color: var(--on-ink-input);
+  }
+  .notice[data-ink="fail"] .notice-tab { background: var(--ink-fail); color: var(--on-ink-fail); }
+  .notice-q { margin: 0; font-family: var(--font-display); font-weight: var(--fw-bold); font-size: var(--fs-18); line-height: var(--lh-head); text-wrap: balance; }
+  .notice-from { margin: var(--sp-2) 0 0; font-size: var(--fs-13); color: var(--text-muted); }
+  .opts { margin: 0; padding: 0 0 0 var(--sp-6); font-size: var(--fs-14); }
+  .opts li { padding-left: var(--sp-1); }
+  .opts li::marker { font-weight: var(--fw-bold); }
+  .notice-act { display: flex; align-items: center; gap: var(--sp-4); margin: var(--sp-2) 0 0; font-weight: var(--fw-bold); }
+
+  /* Grafik */
+  .canvas { position: relative; flex: 1; min-height: 0; overflow: hidden; }
+  .graph {
+    position: relative; display: grid; transform-origin: 0 0;
+    grid-template-columns: repeat(3, var(--node-w)); column-gap: var(--sp-16); row-gap: var(--sp-8);
+    align-items: start; padding: var(--sp-6);
+    transition: transform var(--dur-swap) var(--ease);
+  }
+  .edges { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+  .edges path { fill: none; stroke: var(--line); stroke-width: var(--line-w); }
+  .edges path.on { stroke: var(--ink-run); }
+  .edges .head { fill: var(--line); stroke: none; }
+  .edges .head.on { fill: var(--ink-run); }
+
+  .node {
+    position: relative; z-index: 1; display: block; width: var(--node-w); padding: 0; text-align: left;
+    background: var(--surface); border: var(--line-w) solid var(--line); border-radius: var(--radius-0);
+    cursor: pointer; transition: box-shadow var(--dur-micro) var(--ease), transform var(--dur-micro) var(--ease);
+  }
+  .node:hover { transform: translate(calc(var(--line-w-soft) * -1), calc(var(--line-w-soft) * -1)); }
+  .node[aria-pressed="true"] { box-shadow: var(--shadow-block); }
+  .band {
+    display: flex; align-items: center; gap: var(--sp-2); height: var(--node-band); padding: 0 var(--sp-3);
+    font-size: var(--fs-13); font-weight: var(--fw-bold);
+    border-bottom: var(--line-w) solid var(--line);
+    transition: background-color var(--dur-swap) var(--ease), color var(--dur-swap) var(--ease);
+  }
+  .band .side { margin-left: auto; font-weight: var(--fw-regular); }
+  .band[data-s="run"] { background: var(--ink-run); color: var(--on-ink-run); }
+  .band[data-s="input"] { background: var(--ink-input); color: var(--on-ink-input); }
+  .band[data-s="fail"] { background: var(--ink-fail); color: var(--on-ink-fail); }
+  .band[data-s="done"] { background: var(--surface-sunk); color: var(--text); }
+  .band[data-s="wait"] { background: var(--surface); color: var(--text-muted); }
+  .node-body { display: block; padding: var(--sp-3); }
+  .node-name { display: block; font-family: var(--font-display); font-weight: var(--fw-display); font-size: var(--fs-18); line-height: var(--lh-head); letter-spacing: var(--ls-num); }
+  .node-role { display: block; font-size: var(--fs-12); color: var(--text-muted); }
+  .node-act { display: block; margin-top: var(--sp-2); font-size: var(--fs-13); font-weight: var(--fw-bold); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .node-snip {
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    margin-top: var(--sp-1); font-size: var(--fs-13); color: var(--text-muted);
+  }
+  .node-meta {
+    display: flex; gap: var(--sp-2); margin-top: var(--sp-2); padding-top: var(--sp-2);
+    border-top: var(--line-w-soft) solid var(--line-soft); font-size: var(--fs-12); color: var(--text-muted);
+  }
+  .node-meta b { color: var(--text); font-weight: var(--fw-bold); }
+  .node--prompt .node-body { font-size: var(--fs-13); }
+  .n-prompt { grid-column: 1; grid-row: 1; }
+  .n-claude { grid-column: 1; grid-row: 2; }
+  .n-backlog { grid-column: 2; grid-row: 1; }
+  .n-uid { grid-column: 2; grid-row: 2; }
+  .n-be { grid-column: 3; grid-row: 1; }
+  .n-fe { grid-column: 3; grid-row: 2; }
+  .n-critic { grid-column: 3; grid-row: 3; }
+
+  .zoom {
+    position: absolute; left: var(--sp-6); bottom: var(--sp-4); z-index: 2;
+    display: flex; background: var(--surface);
+  }
+  .zoom .btn + .btn { border-left: 0; }
+
+  /* Panel samping */
+  .panel { display: flex; flex-direction: column; min-height: 0; background: var(--surface); border-left: var(--line-w) solid var(--line); }
+  .rail { display: flex; flex: none; border-bottom: var(--line-w) solid var(--line); overflow-x: auto; }
+  .rail button {
+    display: inline-flex; align-items: center; gap: var(--sp-1); flex: none;
+    flex: 1 0 auto; justify-content: center;
+    min-height: var(--sp-12); padding: 0 var(--sp-2); background: none; border: 0; cursor: pointer;
+    font-size: var(--fs-13); font-weight: var(--fw-bold);
+  }
+  .rail button:hover { background: var(--surface-sunk); }
+  .rail button[aria-pressed="true"] { background: var(--text); color: var(--bg); }
+  .count { padding: 0 var(--sp-1); border-radius: var(--radius-s); font-size: var(--fs-12); background: var(--surface-sunk); color: var(--text); }
+  .count--act { background: var(--ink-input); color: var(--on-ink-input); }
+  .panel-scroll { flex: 1; min-height: 0; overflow-y: auto; }
+  .tabnote { padding: var(--sp-6); }
+  .tabnote[hidden], .detail[hidden] { display: none; }
+  .tabnote p { margin: 0 0 var(--sp-3); }
+
+  .d-head { border-bottom: var(--line-w) solid var(--line); }
+  .d-head .band { height: var(--sp-8); padding: 0 var(--sp-6); border-bottom: var(--line-w) solid var(--line); }
+  .d-title { display: flex; align-items: flex-start; gap: var(--sp-3); padding: var(--sp-4) var(--sp-6); }
+  .d-title h2 { margin: 0; font-family: var(--font-display); font-weight: var(--fw-display); font-size: var(--fs-24); line-height: var(--lh-head); letter-spacing: var(--ls-num); }
+  .d-title p { margin: var(--sp-1) 0 0; color: var(--text-muted); }
+  .d-title .btn { margin-left: auto; }
+  .d-block { padding: var(--sp-4) var(--sp-6); }
+  .warn {
+    display: flex; gap: var(--sp-3); align-items: flex-start; margin: 0 0 var(--sp-4);
+    padding: var(--sp-3); border: var(--line-w) solid var(--line);
+  }
+  .warn[hidden] { display: none; }
+  .warn-mark { display: grid; place-items: center; width: var(--sp-6); height: var(--sp-6); flex: none; background: var(--ink-warn); color: var(--on-ink-warn); }
+  .warn-mark .ico { width: var(--sp-4); height: var(--sp-4); }
+  .warn p { margin: 0; }
+  .warn small { display: block; font-size: var(--fs-13); color: var(--text-muted); }
+  .answer { margin: 0 0 var(--sp-4); font-size: var(--fs-18); line-height: var(--lh-head); font-weight: var(--fw-bold); }
+  .answer .mono { font-weight: var(--fw-regular); }
+  .nums { display: grid; grid-template-columns: repeat(3, 1fr); border: var(--line-w) solid var(--line); }
+  .nums div { padding: var(--sp-2) var(--sp-3); }
+  .nums div + div { border-left: var(--line-w) solid var(--line); }
+  .nums dt { font-size: var(--fs-12); color: var(--text-muted); font-weight: var(--fw-bold); }
+  .nums dd { margin: 0; font-family: var(--font-display); font-weight: var(--fw-display); font-size: var(--fs-24); line-height: var(--lh-head); letter-spacing: var(--ls-num); }
+  .nums .tot { display: block; font-family: var(--font-ui); font-weight: var(--fw-regular); font-size: var(--fs-12); color: var(--text-muted); letter-spacing: normal; }
+  .sec { margin: 0 var(--sp-6); border-top: var(--line-w) solid var(--line); }
+  .sec summary {
+    display: flex; align-items: center; gap: var(--sp-2); min-height: var(--sp-12); cursor: pointer; list-style: none;
+    font-weight: var(--fw-bold); font-size: var(--fs-14);
+  }
+  .sec summary::-webkit-details-marker { display: none; }
+  .sec summary .ico { margin-left: auto; transition: transform var(--dur-micro) var(--ease); }
+  .sec[open] summary .ico { transform: rotate(180deg); }
+  .sec-body { padding: 0 0 var(--sp-4); }
+  .sec-body p { margin: 0 0 var(--sp-2); }
+  .files { margin: 0; padding: 0; list-style: none; }
+  .files li { display: flex; align-items: baseline; gap: var(--sp-2); padding: var(--sp-2) 0; border-bottom: var(--line-w-soft) solid var(--line-soft); }
+  .files li:last-child { border-bottom: 0; }
+  .files .mono { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; flex: 1; }
+  .files .kind { font-size: var(--fs-12); color: var(--text-muted); }
+  .files .diff { font-size: var(--fs-12); font-weight: var(--fw-bold); white-space: nowrap; }
+  .plus { color: var(--ink-run); }
+  .minus { color: var(--ink-input-text); }
+  .quiet { color: var(--text-muted); font-size: var(--fs-13); }
+  .toast {
+    position: fixed; left: 50%; bottom: var(--sp-6); z-index: 9; transform: translateX(-50%);
+    padding: var(--sp-2) var(--sp-4); background: var(--text); color: var(--bg); font-weight: var(--fw-bold);
+    opacity: 0; transition: opacity var(--dur-micro) var(--ease); pointer-events: none;
+  }
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-run" viewBox="0 0 16 16"><path d="M4 2.5v11l9-5.5z"/></symbol>
+  <symbol id="i-input" viewBox="0 0 16 16"><path d="M5.5 5.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.5v.7"/><path d="M8 12.5v.5"/></symbol>
+  <symbol id="i-fail" viewBox="0 0 16 16"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9"/></symbol>
+  <symbol id="i-done" viewBox="0 0 16 16"><path d="M2.5 8.5l3.5 3.5 7.5-8"/></symbol>
+  <symbol id="i-wait" viewBox="0 0 16 16"><path d="M8 2.5v1M8 12.5v1M2.5 8h1M12.5 8h1"/><path d="M8 5v3.5l2 1.5"/></symbol>
+  <symbol id="i-warn" viewBox="0 0 16 16"><path d="M8 2l6.5 12h-13z"/><path d="M8 6.5v3.5M8 12v.5"/></symbol>
+  <symbol id="i-down" viewBox="0 0 16 16"><path d="M3.5 6l4.5 4.5L12.5 6"/></symbol>
+  <symbol id="i-link" viewBox="0 0 16 16"><path d="M2 8h11M9 4l4 4-4 4"/></symbol>
+</svg>
+
+<div class="app">
+  <header class="bar">
+    <p class="wordmark">Flow Viewer</p>
+    <div class="switch">
+      <button class="btn switch-btn" id="projBtn" aria-haspopup="true" aria-expanded="false" aria-controls="projMenu">
+        tryouthub <svg class="ico" aria-hidden="true"><use href="#i-down"/></svg>
+      </button>
+      <ul class="menu" id="projMenu" hidden>
+        <li><a href="#" aria-current="true"><span>tryouthub</span><span class="muted">dibuka</span></a></li>
+        <li><a href="#"><span>kasir-warung</span><span class="flag flag--fail"><svg class="ico" aria-hidden="true"><use href="#i-fail"/></svg>Gagal</span></a></li>
+        <li><a href="#"><span>catatan-panen</span><span class="muted">tidak aktif</span></a></li>
+      </ul>
+    </div>
+    <nav class="views" aria-label="Tampilan">
+      <a href="#" aria-current="page">Live</a>
+      <button type="button" data-toast="Riwayat tidak dibuat di mockup arah C.">Riwayat</button>
+    </nav>
+    <div class="bar-end">
+      <span class="fresh"><svg class="ico" aria-hidden="true"><use href="#i-done"/></svg>Tersambung · diperbarui 14.44</span>
+      <label class="sample">Data contoh
+        <select id="stateSel">
+          <option value="input">Butuh input</option>
+          <option value="fail">Gagal</option>
+          <option value="run">Berjalan normal</option>
+        </select>
+      </label>
+      <button class="btn" id="soundBtn" aria-pressed="true"><span class="on">Bunyi aktif</span><span class="off">Bunyi mati</span></button>
+      <button class="btn" id="themeBtn" aria-pressed="false"><span class="off">Tema gelap</span><span class="on">Tema terang</span></button>
+    </div>
+  </header>
+
+  <div class="work">
+    <main class="main">
+      <h1 class="sr">Live · tryouthub</h1>
+      <section class="strip" aria-label="Indikator run">
+        <div class="who" id="who" data-ink="input" aria-live="polite">
+          <p class="who-line"><svg class="ico" aria-hidden="true" id="whoIco"><use href="#i-input"/></svg><span id="whoText">Butuh input: jawab di Claude</span></p>
+          <p class="who-sub" id="whoSub"><span><b>fe</b> · Edit <span class="mono">src/components/TryoutTimer.tsx</span></span><span>Sesi utama menunggu sejak 14.42</span></p>
+        </div>
+        <div class="cell">
+          <span class="cell-label cell-row"><span>Progres</span><span class="cell-aside">Durasi 42 mnt</span></span>
+          <span class="big">12%</span>
+          <div class="meter" role="img" aria-label="12 persen"><i style="width:12%"></i></div>
+          <span class="cell-meta">Backlog 9 dari 77 item</span>
+        </div>
+        <div class="cell">
+          <span class="cell-label">Token setara</span>
+          <span class="big">1,84 jt</span>
+          <span class="cell-meta">
+            <button class="tag tag--warn" data-tab="token"><svg class="ico" aria-hidden="true"><use href="#i-warn"/></svg>Boros</button>
+            +62% dari pembanding
+          </span>
+        </div>
+      </section>
+
+      <section class="notice" id="notice" data-ink="input" aria-labelledby="noticeQ">
+        <span class="notice-tab" id="noticeTab"><svg class="ico" aria-hidden="true"><use href="#i-input"/></svg>Butuh input · 2 mnt lalu</span>
+        <div>
+          <p class="notice-q" id="noticeQ">Timer habis saat jawaban peserta belum tersimpan. Apa yang harus terjadi?</p>
+          <p class="notice-from" id="noticeFrom">Ditanya Sesi utama saat menyusun bagian Ujian berwaktu.</p>
+        </div>
+        <div>
+          <ol class="opts" id="noticeOpts">
+            <li>Simpan jawaban terakhir, lalu kumpulkan otomatis (rekomendasi)</li>
+            <li>Beri 30 detik untuk menyimpan sebelum dikumpulkan</li>
+            <li>Kumpulkan tanpa jawaban yang belum tersimpan</li>
+          </ol>
+          <p class="notice-act"><span id="noticeHint">Jawab di aplikasi Claude.</span><button class="link" id="noticeLink" data-tab="chat">Lihat percakapan</button></p>
+        </div>
+      </section>
+
+      <section class="canvas" aria-label="Grafik agent">
+        <div class="graph" id="graph">
+          <svg class="edges" id="edges" aria-hidden="true"></svg>
+
+          <button class="node node--prompt n-prompt" data-id="prompt" data-to="claude" aria-pressed="false">
+            <span class="band" data-s="done"><svg class="ico" aria-hidden="true"><use href="#i-done"/></svg>Prompt<span class="side">14.02</span></span>
+            <span class="node-body">“Lanjutkan backlog bagian Ujian berwaktu.”</span>
+          </button>
+
+          <button class="node n-claude" data-id="claude" data-to="backlog" aria-pressed="false">
+            <span class="band" data-s="input" id="bandClaude"><svg class="ico" aria-hidden="true"><use href="#i-input"/></svg><span class="lbl">Butuh input</span></span>
+            <span class="node-body">
+              <span class="node-name">Claude</span>
+              <span class="node-role">Sesi utama</span>
+              <span class="node-act" id="actClaude">Bertanya: aturan saat timer habis</span>
+              <span class="node-snip">Tool: Agent, AskUserQuestion</span>
+              <span class="node-meta"><b>610 rb</b><span>42 mnt</span><span>opus</span></span>
+            </span>
+          </button>
+
+          <button class="node n-backlog" data-id="backlog" data-to="be uid" aria-pressed="false">
+            <span class="band" data-s="done"><svg class="ico" aria-hidden="true"><use href="#i-done"/></svg>Selesai</span>
+            <span class="node-body">
+              <span class="node-name">backlog</span>
+              <span class="node-act">Memilih 3 item siap</span>
+              <span class="node-snip">Bagian Ujian berwaktu: endpoint sisa waktu, timer, layar ujian.</span>
+              <span class="node-meta"><b>88 rb</b><span>3 mnt</span><span>sonnet</span></span>
+            </span>
+          </button>
+
+          <button class="node n-uid" data-id="uid" data-to="fe" aria-pressed="false">
+            <span class="band" data-s="done"><svg class="ico" aria-hidden="true"><use href="#i-done"/></svg>Selesai</span>
+            <span class="node-body">
+              <span class="node-name">ui-designer</span>
+              <span class="node-act">Layar ujian dirancang</span>
+              <span class="node-snip">Timer di kanan atas, tetap terlihat saat soal digulir.</span>
+              <span class="node-meta"><b>402 rb</b><span>11 mnt</span><span>opus</span></span>
+            </span>
+          </button>
+
+          <button class="node n-be" data-id="be" data-to="fe" aria-pressed="false">
+            <span class="band" data-s="done"><svg class="ico" aria-hidden="true"><use href="#i-done"/></svg>Selesai</span>
+            <span class="node-body">
+              <span class="node-name">be</span>
+              <span class="node-act">Endpoint sisa waktu siap</span>
+              <span class="node-snip">GET /api/tryout/:id/sisa-waktu, 6 tes lulus.</span>
+              <span class="node-meta"><b>296 rb</b><span>9 mnt</span><span>sonnet</span></span>
+            </span>
+          </button>
+
+          <button class="node n-fe" data-id="fe" data-to="critic" aria-pressed="true">
+            <span class="band" data-s="run" id="bandFe"><svg class="ico" aria-hidden="true"><use href="#i-run"/></svg><span class="lbl">Berjalan</span><span class="side">Putaran 2</span></span>
+            <span class="node-body">
+              <span class="node-name">fe</span>
+              <span class="node-act" id="actFe">Edit src/components/TryoutTimer.tsx</span>
+              <span class="node-snip" id="snipFe">Putaran 1: timer membaca sisa waktu dari server dan berhenti di 00.00.</span>
+              <span class="node-meta"><b>444 rb</b><span>14 mnt</span><span>sonnet</span></span>
+            </span>
+          </button>
+
+          <button class="node n-critic" data-id="critic" aria-pressed="false">
+            <span class="band" data-s="wait"><svg class="ico" aria-hidden="true"><use href="#i-wait"/></svg>Menunggu</span>
+            <span class="node-body">
+              <span class="node-name">ui-critic</span>
+              <span class="node-role">Belum jalan di run ini.</span>
+            </span>
+          </button>
+        </div>
+        <div class="zoom" role="group" aria-label="Zoom grafik">
+          <button class="btn" data-zoom="-1">Perkecil</button>
+          <button class="btn" data-zoom="0">Pas layar</button>
+          <button class="btn" data-zoom="1">Perbesar</button>
+        </div>
+      </section>
+    </main>
+
+    <aside class="panel" aria-label="Panel samping">
+      <nav class="rail" aria-label="Data proyek">
+        <button aria-pressed="false" data-tab="chat">Percakapan <span class="count count--act" aria-label="1 pertanyaan terbuka">1</span></button>
+        <button aria-pressed="false" data-tab="backlog">Backlog</button>
+        <button aria-pressed="false" data-tab="file">File <span class="count">3</span></button>
+        <button aria-pressed="false" data-tab="skill">Skill</button>
+        <button aria-pressed="false" data-tab="token">Token</button>
+        <button aria-pressed="false" data-tab="log">Log</button>
+      </nav>
+
+      <div class="panel-scroll">
+        <div class="tabnote" id="tabnote" hidden>
+          <p><b id="tabName">Percakapan</b>: isi tab ini tidak termasuk mockup arah C.</p>
+          <button class="link" data-back>Kembali ke detail fe</button>
+        </div>
+
+        <article class="detail" id="detail" aria-labelledby="dName">
+          <header class="d-head">
+            <div class="band" data-s="run" id="dBand"><svg class="ico" aria-hidden="true"><use href="#i-run"/></svg><span class="lbl">Berjalan</span><span class="side">Putaran 2 dari 2</span></div>
+            <div class="d-title">
+              <div>
+                <h2 id="dName">fe</h2>
+                <p id="dRole">Menyambung layar ke data dan API.</p>
+              </div>
+              <button class="btn" id="dClose">Tutup</button>
+            </div>
+          </header>
+
+          <div class="d-block">
+            <div class="warn" id="dWarn">
+              <span class="warn-mark"><svg class="ico" aria-hidden="true"><use href="#i-warn"/></svg></span>
+              <p><b>Model beda: diminta opus, terpakai sonnet</b><small>Diubah di definisi agent, lewat Claude.</small></p>
+            </div>
+            <p class="answer" id="dAnswer">Sedang: Edit <span class="mono">src/components/TryoutTimer.tsx</span></p>
+            <dl class="nums" id="dNums">
+              <div><dt>Durasi</dt><dd>8 mnt<span class="tot">total 14 mnt</span></dd></div>
+              <div><dt>Token setara</dt><dd>236 rb<span class="tot">total 444 rb</span></dd></div>
+              <div><dt>Putaran</dt><dd>2<span class="tot">&nbsp;</span></dd></div>
+            </dl>
+          </div>
+
+          <div id="dMore">
+            <details class="sec" open>
+              <summary>Hasil <svg class="ico" aria-hidden="true"><use href="#i-down"/></svg></summary>
+              <div class="sec-body">
+                <p>Putaran 1 selesai. <span class="mono">TryoutTimer</span> membaca sisa waktu dari server tiap 30 detik dan berhenti di 00.00. Halaman ujian memakai hook <span class="mono">useTryoutSession</span>.</p>
+                <button class="link" data-toast="Teks lengkap hasil tidak diisi di mockup.">Tampilkan semua</button>
+              </div>
+            </details>
+            <details class="sec" open>
+              <summary>File berubah (3) <svg class="ico" aria-hidden="true"><use href="#i-down"/></svg></summary>
+              <div class="sec-body">
+                <ul class="files">
+                  <li><span class="mono">src/components/TryoutTimer.tsx</span><span class="kind">diubah</span><span class="diff"><span class="plus">+48</span> <span class="minus">−12</span></span></li>
+                  <li><span class="mono">src/hooks/useTryoutSession.ts</span><span class="kind">baru</span><span class="diff"><span class="plus">+86</span></span></li>
+                  <li><span class="mono">src/pages/ujian/[id].tsx</span><span class="kind">diubah</span><span class="diff"><span class="plus">+9</span> <span class="minus">−3</span></span></li>
+                </ul>
+              </div>
+            </details>
+            <details class="sec">
+              <summary>Tugas yang diberikan <svg class="ico" aria-hidden="true"><use href="#i-down"/></svg></summary>
+              <div class="sec-body"><p>Sambungkan timer layar ujian ke endpoint sisa waktu. Timer berhenti di 00.00 dan memanggil kumpul otomatis.</p></div>
+            </details>
+            <details class="sec">
+              <summary>Langkah kerja (14) <svg class="ico" aria-hidden="true"><use href="#i-down"/></svg></summary>
+              <div class="sec-body"><p class="quiet">Terbaru: Edit <span class="mono">src/components/TryoutTimer.tsx</span>, 14.43.</p></div>
+            </details>
+            <details class="sec">
+              <summary>Skill <svg class="ico" aria-hidden="true"><use href="#i-down"/></svg></summary>
+              <div class="sec-body"><p>Dipanggil: project-context. Termuat: ponytail.</p></div>
+            </details>
+            <details class="sec">
+              <summary>Model dan izin <svg class="ico" aria-hidden="true"><use href="#i-down"/></svg></summary>
+              <div class="sec-body"><p>Terdeklarasi opus, terbukti sonnet dari transkrip: Beda. Tool: Read, Edit, Write, Bash.</p></div>
+            </details>
+            <details class="sec">
+              <summary>Pemakaian token <svg class="ico" aria-hidden="true"><use href="#i-down"/></svg></summary>
+              <div class="sec-body"><p>Putaran 2: 236 rb setara dari 31 giliran. Total dua putaran 444 rb.</p></div>
+            </details>
+            <details class="sec">
+              <summary>Definisi agent <svg class="ico" aria-hidden="true"><use href="#i-down"/></svg></summary>
+              <div class="sec-body"><p class="quiet">Sumber: <span class="mono">plugins/fullstack-dev/agents/fe.md</span></p></div>
+            </details>
+          </div>
+        </article>
+      </div>
+    </aside>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const graph = $('#graph'), edges = $('#edges');
+  const toast = $('#toast');
+  const say = (msg) => { toast.textContent = msg; toast.classList.add('show'); clearTimeout(say.t); say.t = setTimeout(() => toast.classList.remove('show'), 2200); };
+
+  /* Garis penghubung siku dari posisi node */
+  const NS = 'http://www.w3.org/2000/svg';
+  function drawEdges() {
+    edges.innerHTML = '';
+    const g = graph.getBoundingClientRect(), k = scale;
+    const box = (el) => { const r = el.getBoundingClientRect(); return { l: (r.left - g.left) / k, t: (r.top - g.top) / k, r: (r.right - g.left) / k, b: (r.bottom - g.top) / k }; };
+    $$('.node[data-to]', graph).forEach((from) => {
+      from.dataset.to.split(' ').forEach((id) => {
+        const to = $(`.node[data-id="${id}"]`, graph); if (!to) return;
+        const a = box(from), b = box(to);
+        let d, hx, hy, dir;
+        if (b.l > a.r) {
+          const y1 = a.t + 40, y2 = b.t + 40, mx = a.r + (b.l - a.r) / 2;
+          d = `M${a.r} ${y1}H${mx}V${y2}H${b.l - 6}`; hx = b.l; hy = y2; dir = 'r';
+        } else {
+          const x = a.l + 40;
+          d = `M${x} ${a.b}V${b.t - 6}`; hx = x; hy = b.t; dir = 'd';
+        }
+        const on = to.querySelector('.band').dataset.s === 'run' && from.querySelector('.band').dataset.s === 'done';
+        const p = document.createElementNS(NS, 'path'); p.setAttribute('d', d); if (on) p.classList.add('on'); edges.append(p);
+        const h = document.createElementNS(NS, 'path');
+        h.setAttribute('d', dir === 'r' ? `M${hx} ${hy}l-8 -5v10z` : `M${hx} ${hy}l-5 -8h10z`);
+        h.classList.add('head'); if (on) h.classList.add('on'); edges.append(h);
+      });
+    });
+  }
+
+  /* Zoom */
+  let scale = 1;
+  $$('[data-zoom]').forEach((b) => b.addEventListener('click', () => {
+    const z = +b.dataset.zoom;
+    scale = z === 0 ? 1 : Math.min(1.3, Math.max(0.6, +(scale + z * 0.1).toFixed(2)));
+    graph.style.transform = `scale(${scale})`;
+  }));
+
+  /* Keadaan contoh */
+  const S = {
+    input: {
+      title: '(1) Butuh input · tryouthub', ink: 'input', ico: 'i-input', text: 'Butuh input: jawab di Claude',
+      sub: '<span><b>fe</b> · Edit <span class="mono">src/components/TryoutTimer.tsx</span></span><span>Sesi utama menunggu sejak 14.42</span>',
+      claude: ['input', 'i-input', 'Butuh input'], claudeAct: 'Bertanya: aturan saat timer habis',
+      fe: ['run', 'i-run', 'Berjalan'], feAct: 'Edit src/components/TryoutTimer.tsx',
+      notice: { ink: 'input', tab: 'Butuh input · 2 mnt lalu', ico: 'i-input',
+        q: 'Timer habis saat jawaban peserta belum tersimpan. Apa yang harus terjadi?',
+        from: 'Ditanya Sesi utama saat menyusun bagian Ujian berwaktu.', opts: true,
+        hint: 'Jawab di aplikasi Claude.', link: 'Lihat percakapan', tab2: 'chat' },
+      answer: 'Sedang: Edit <span class="mono">src/components/TryoutTimer.tsx</span>'
+    },
+    fail: {
+      title: '(1) Gagal · tryouthub', ink: 'fail', ico: 'i-fail', text: '1 agent gagal',
+      sub: '<span><b>fe</b> berhenti: 2 tes merah di <span class="mono">TryoutTimer.test.tsx:41</span></span>',
+      claude: ['run', 'i-run', 'Berjalan'], claudeAct: 'Menunggu hasil fe',
+      fe: ['fail', 'i-fail', 'Gagal'], feAct: '2 tes merah (TryoutTimer.test.tsx:41)',
+      notice: { ink: 'fail', tab: 'Gagal · 1 mnt lalu', ico: 'i-fail',
+        q: 'fe berhenti: 2 tes merah di TryoutTimer.test.tsx:41.',
+        from: 'Timer tidak berhenti di 00.00 saat sisa waktu dari server negatif.', opts: false,
+        hint: 'Minta ulang lewat Claude bila perlu.', link: 'Lihat detail', tab2: 'detail' },
+      answer: 'Gagal: 2 tes merah di <span class="mono">TryoutTimer.test.tsx:41</span>'
+    },
+    run: {
+      title: 'tryouthub · Flow Viewer', ink: 'run', ico: 'i-run', text: '1 agent berjalan',
+      sub: '<span><b>fe</b> · Edit <span class="mono">src/components/TryoutTimer.tsx</span></span><span>Sesi utama berjalan</span>',
+      claude: ['run', 'i-run', 'Berjalan'], claudeAct: 'Menunggu hasil fe',
+      fe: ['run', 'i-run', 'Berjalan'], feAct: 'Edit src/components/TryoutTimer.tsx',
+      notice: null,
+      answer: 'Sedang: Edit <span class="mono">src/components/TryoutTimer.tsx</span>'
+    }
+  };
+  const setBand = (band, [s, ico, label]) => { band.dataset.s = s; band.querySelector('use').setAttribute('href', '#' + ico); band.querySelector('.lbl').textContent = label; };
+  function setState(key) {
+    const s = S[key];
+    document.title = s.title;
+    $('#who').dataset.ink = s.ink;
+    $('#whoIco use').setAttribute('href', '#' + s.ico);
+    $('#whoText').textContent = s.text;
+    $('#whoSub').innerHTML = s.sub;
+    setBand($('#bandClaude'), s.claude); $('#actClaude').textContent = s.claudeAct;
+    setBand($('#bandFe'), s.fe); $('#actFe').textContent = s.feAct;
+    setBand($('#dBand'), s.fe);
+    $('#dAnswer').innerHTML = s.answer;
+    const n = $('#notice');
+    n.hidden = !s.notice;
+    if (s.notice) {
+      n.dataset.ink = s.notice.ink;
+      $('#noticeTab').innerHTML = `<svg class="ico" aria-hidden="true"><use href="#${s.notice.ico}"/></svg>${s.notice.tab}`;
+      $('#noticeQ').textContent = s.notice.q;
+      $('#noticeFrom').textContent = s.notice.from;
+      $('#noticeOpts').hidden = !s.notice.opts;
+      $('#noticeHint').textContent = s.notice.hint;
+      $('#noticeLink').textContent = s.notice.link;
+      $('#noticeLink').dataset.tab = s.notice.tab2;
+    }
+    requestAnimationFrame(drawEdges);
+  }
+  $('#stateSel').addEventListener('change', (e) => setState(e.target.value));
+
+  /* Panel: detail atau tab */
+  const detail = $('#detail'), note = $('#tabnote');
+  function showTab(tab) {
+    if (tab === 'detail') return showDetail();
+    $$('.rail button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.tab === tab)));
+    const b = $(`.rail [data-tab="${tab}"]`);
+    $('#tabName').textContent = b.firstChild.textContent.trim();
+    detail.hidden = true; note.hidden = false;
+  }
+  function showDetail() {
+    $$('.rail button').forEach((b) => b.setAttribute('aria-pressed', 'false'));
+    note.hidden = true; detail.hidden = false;
+  }
+  $$('[data-tab]').forEach((b) => b.addEventListener('click', () => showTab(b.dataset.tab)));
+  $('[data-back]').addEventListener('click', () => { selectNode('fe'); });
+  $('#dClose').addEventListener('click', () => showTab('chat'));
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { $('#projMenu').hidden = true; $('#projBtn').setAttribute('aria-expanded', 'false'); } });
+
+  function selectNode(id) {
+    $$('.node', graph).forEach((n) => n.setAttribute('aria-pressed', String(n.dataset.id === id)));
+    if (id === 'fe') return showDetail();
+    if (id === 'prompt') return showTab('chat');
+    showTab('chat');
+    say('Detail hanya diisi untuk fe di mockup ini.');
+  }
+  $$('.node', graph).forEach((n) => n.addEventListener('click', () => selectNode(n.dataset.id)));
+
+  /* Bilah atas */
+  $('#projBtn').addEventListener('click', () => {
+    const m = $('#projMenu'); m.hidden = !m.hidden; $('#projBtn').setAttribute('aria-expanded', String(!m.hidden));
+  });
+  $$('#projMenu a').forEach((a) => a.addEventListener('click', (e) => { e.preventDefault(); $('#projMenu').hidden = true; say('Pindah proyek tidak dibuat di mockup.'); }));
+  $$('[data-toast]').forEach((b) => b.addEventListener('click', () => say(b.dataset.toast)));
+  $('#soundBtn').addEventListener('click', (e) => { const b = e.currentTarget; b.setAttribute('aria-pressed', String(b.getAttribute('aria-pressed') !== 'true')); });
+  $('#themeBtn').addEventListener('click', (e) => {
+    const b = e.currentTarget, dark = b.getAttribute('aria-pressed') !== 'true';
+    b.setAttribute('aria-pressed', String(dark));
+    document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+  });
+
+  window.addEventListener('resize', drawEdges);
+  graph.addEventListener('transitionend', drawEdges);
+  (document.fonts ? document.fonts.ready : Promise.resolve()).then(drawEdges);
+  drawEdges();
+})();
+</script>
+</body>
+</html>

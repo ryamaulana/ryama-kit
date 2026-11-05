@@ -1,0 +1,7 @@
+{
+  "sumber": "sintetis",
+  "catatan": "Limit tanpa jam reset: dikenali, resetAt null (penjadwal mencoba tiap 30 menit).",
+  "now": "2026-11-05T06:00:00.000Z",
+  "event": { "type": "assistant", "error": "rate_limit", "message": { "model": "<synthetic>", "role": "assistant", "content": [{ "type": "text", "text": "You've hit your session limit" }] } },
+  "expected": { "resetAt": null }
+}

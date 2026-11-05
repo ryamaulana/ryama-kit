@@ -2,6 +2,31 @@
 
 ## Belum dirilis (fullstack-dev, ui-designer-kit, flow-viewer)
 
+### Agent ux per jenis layar + skill luar untuk landing dan dashboard (fullstack-dev)
+Dasar: TOconnect 3 Nov: landing tidak meyakinkan dan dashboard operator/admin klien penuh tabel. Agent `ux` hanya menghitung langkah; audit UX v1.5 tidak membuka satu pun referensi ux-designer. Detail: `docs/TEMUAN-2026-11-03-landing-dashboard.md`.
+- Skill baru dari GitHub (MIT, isi tanpa ubahan, `description` diganti, evals/ tidak disalin): `product-marketing`, `cro`, `copywriting` (coreyhaines31/marketingskills 88c79f6), `dashboard-design` (abdiraimov-otabek/dashboard-design-skill b813324). Skill baru butuh install-global dijalankan ulang.
+- Agent `ux` ditulis ulang sebagai router: tiap layar digolongkan (layar tugas / dashboard / pemasaran), skill dan referensi ux-designer WAJIB per jenis, ukuran per jenis (langkah; pertanyaan + 3-6 angka + aturan masalah + aksi; paham dalam 5 detik + bukti jujur). Mode audit memakai lensa per jenis. UX.md punya bagian Penggolongan, Dashboard, Pemasaran. Laporan wajib mencantumkan skill/referensi yang dimuat.
+- Dipertimbangkan, tidak dipakai: `kpi-dashboard-design` (wshobson/agents; dashboard bisnis SaaS + SQL, tidak cocok untuk panel admin), ui-ux-pro-max (katalog gaya, bertabrakan dengan prinsip ui-designer).
+- Lanjutan (3 Nov malam, sisi ux): agent `prd` memegang konteks bisnis (tool Skill; `product-marketing` interaktif lewat AskUserQuestion; wawancara area 9 pemasaran dan 10 dashboard; tabel Layar punya kolom Jenis; template 6b Konteks bisnis). `prd-review` temuan 10 (pemasaran tanpa konteks bisnis = Tinggi) dan 11 (dashboard tanpa pertanyaan per peran = Sedang). `ux` memakai kolom Jenis dan konteks dari prd tanpa menimpa jawaban pemilik, dan menulis "Usulan perubahan PRD" bila batasan PRD merugikan tujuan layar.
+
+- Penyesuaian setelah uji prd-check Flow Viewer (3 Nov 21.00): temuan 11 dan area 10 per layar/panel data, bukan per peran (audit tidak menangkap panel Backlog yang hanya "persen, grup, item perlu keputusan"); tabel Layar tanpa kolom Jenis = Rendah.
+
+- ux: UX.md yang sudah ada diperbarui per bagian, nomor bagian lama dipertahankan (uji Flow Viewer: tulis ulang utuh membuat rujukan TASKS/backlog/DESIGN usang).
+
+- run: bila `docs/backlog.json` tidak ada di folder sesi tetapi ada di subfolder (mis. `plugins/flow-viewer`), sebut path itu dan minta sesi dibuka di sana, bukan menyarankan menulis PRD dari awal (uji 4 Nov: sesi di root kit).
+
+- backlog: nilai `urgent` (diurutkan sebelum verifikasi dan irisan yang sudah dimulai). Dasar: uji Flow Viewer 4 Nov, pemilik minta bug keamanan dan tombol Laporan paling awal, agent backlog memberi `high`, tetapi `run` mengambil 4 item irisan server yang sudah dimulai lebih dulu.
+
+- qa: uji regresi bug wajib meniru cara bug terjadi (klik nyata di posisi elemen, elementFromPoint untuk tumpang tindih; force/dispatchEvent/handler langsung tidak sah), uji balik = kembalikan perbaikan yang sebenarnya, lingkungan tidak stabil diperbaiki atau dilaporkan, bukan tesnya dilemahkan. Dasar: uji R1 Flow Viewer memakai dispatchEvent sehingga bug tumpang tindih tidak bisa tertangkap.
+- backlog/run: catatan "Terbuka"/"belum diuji" di laporan agent dijadikan item diparkir oleh orkestrator (bukan hilang di evidence); `urgent` disebut di aturan verifikasi.
+
+### UI per jenis layar (ui-designer-kit, fullstack-dev)
+- ui-designer: prinsip konsistensi hanya untuk identitas (konsep, token, nada); dial dan komposisi per jenis layar. Bagian baru "Jenis layar": dashboard memakai `dashboard-design` (bentuk per angka, hierarki, komponen, QA total/kalimat/salience; tabel penuh sebagai isi pertama = gagal), pemasaran memakai `.agents/product-marketing.md` + `copywriting` (fokus = janji nilai atau produk, elemen wajib PRD harus menunjukkan produk, bukti produk asli, isi `[NEED]` tidak tampil). Pola antislop dilarang sebagai bawaan, bukan bila menjawab pertanyaan layar (ditulis di rancangan). Layar pertama sebuah jenis selalu jalur penuh. DESIGN.md lama dilengkapi tabel dial per jenis. `konsep-3` menulis wujud arah di tiap jenis layar.
+- Template DESIGN.md: "Dial per jenis area" (tugas / dashboard / pemasaran) menggantikan satu "Dial taste"; rancangan layar mencantumkan jenis.
+- ui-direction: langkah 0 jenis layar; tidak menanyakan "layar kunci mana"; layar kunci (a)-(d) per jenis; arah terpilih dilengkapi dan dinilai di setiap jenis sebelum dikunci; jawaban pemilik tidak dipersempit (biaya disebut, lalu dikerjakan). start.md dan README diselaraskan.
+- backlog aturan 6: item ux/ui-designer/ui-critic untuk dashboard atau pemasaran wajib memuat konteks jenis layar (UX.md Penggolongan + Dashboard/Pemasaran, DESIGN.md dial per jenis, product-marketing); ui-designer dan ui-critic boleh membacanya walau tidak tercantum di paket.
+- ui-critic: membaca UX.md (Penggolongan, Dashboard, Pemasaran) dan product-marketing; uji per jenis (5 detik + `cro` untuk pemasaran, first-glance + Critique `dashboard-design` untuk dashboard); temuan UX-GAP; putusan baru GOAL. Sekaligus pemeriksa mandiri isi UX.
+
 ### Hemat token (fullstack-dev, ui-designer-kit)
 Dasar: run TryoutHub (29-30 Okt): 166 juta token mentah untuk 33/147 item, limit tercapai dua kali. 94% dari empat agent opus: be 31% (621 giliran), ui-designer 28% (59 gambar, konteks 189k), orkestrator 26% (satu sesi untuk 6 batch, konteks 254k), architect 9% (5 putaran sinkron ulang).
 - run: item `running` dari sesi yang berhenti di tengah dicek dulu di awal run (bukti lengkap → done, kalau tidak → retry dan lanjut dari working tree). Dulu item itu tertahan selamanya karena `next` hanya mengambil item siap.
@@ -11,6 +36,13 @@ Dasar: run TryoutHub (29-30 Okt): 166 juta token mentah untuk 33/147 item, limit
 - ui-designer: `model: sonnet` untuk porting mockup Approved, perbaikan kritikus, dan jalur cepat; screenshot dibaca paling akhir, perbaikan non-layout dibuktikan dengan angka audit.
 - agent backlog: mode "Atur model" untuk backlog lama.
 - prd-review: temuan baru untuk format data masuk/keluar (file contoh asli wajib, tanpa itu = Tinggi) dan batas angka.
+
+### Konteks awal dan giliran (fullstack-dev, ui-designer-kit)
+Dasar: 10 batch 31 Okt-1 Nov: 2,7 jt token mentah/item, opus 24%. ui-designer mulai di 77k (ui-critic 30k), orkestrator 78k, qa rata-rata 48 giliran, satu item be `l` 12,7 jt (konteks 28k -> 336k).
+- ui-designer: daftar `tools:` (Read, Write, Edit, Glob, Grep, Bash, Skill, WebFetch). Tanpa daftar itu agent mewarisi definisi semua tool MCP.
+- ui-designer-kit: Playwright MCP dinonaktifkan (`.mcp.json` -> `.mcp.json.disabled`); tidak dipakai agent, perintah, atau skill mana pun (audit memakai skrip Node, qa memakai Playwright test), tetapi definisi tool-nya dimuat di setiap sesi. Kembalikan nama file bila dibutuhkan.
+- qa: anggaran token: satu perintah lingkungan dari "Run locally", tulis semua tes item dulu, jalankan sekali dengan reporter ringkas, perbaiki kegagalan sekaligus, maksimal 2 kali ulang, detail dari output/trace.
+- backlog: item `l` untuk be/fe/qa dipecah per seam (aturan 3); `validate` memperingatkan item yang belum dipecah; mode "Atur model" agent backlog ikut memecahnya.
 
 ### Model sesuai berat kerjaan, ui-designer lebih ramping (fullstack-dev, ui-designer-kit)
 Dasar: tiga batch pertama dengan kit hemat (30 Okt sore): token mentah per item turun dari 5,0 jt ke ~2,2 jt, tetapi 90% masih opus: ui-designer 54% (tiap pemanggilan mulai di ~89k; perkiraan ~56k dari dua skill luar yang dimuat di awal), orkestrator 30%.
@@ -29,6 +61,7 @@ Dasar: tiga batch pertama dengan kit hemat (30 Okt sore): token mentah per item 
 - `POST /history/rescan?id=`: analisis ulang run lama dari `events.jsonl` (path transkrip dan id agent dalam rentang waktu run). Tombol "Analisis" dan "Laporan" di tiap baris Riwayat; tab "Pemanggilan" di panel agent.
 - Perbaikan: `server.js` membaca `skills:`/`tools:` berbentuk daftar YAML bertingkat (dulu kosong untuk be, qa, cyber). Modul `agents.js` sudah benar, tetapi server memakai pembacanya sendiri.
 - Perbaikan: token dobel. Event dari satu subagent membawa `agent_transcript_path` miliknya; dulu path itu dipakai untuk semua id agent sejenis, sehingga dua-tiga pemanggilan terbaca sebagai file yang sama (run 30 Okt 16.08 tercatat 23 jt, aslinya ~12 jt). Kini path itu hanya untuk id pengirim, dan file yang sama dihitung sekali. Analisis ulang menghitung ulang total agent dan run.
+- Perbaikan: pemanggilan agent yang masih berjalan saat run berikutnya mulai terekam di dua run. Laporan proyek menghitungnya sekali (run tempat ia mulai); analisis ulang dan hook tidak lagi memasukkannya ke run berikutnya.
 - Perbaikan: laporan agent latar dihitung dari pesan notifikasi (`task-notification`), bukan dari tanda mulai Agent (dulu selalu 1.092 karakter).
 - Riwayat: "Buka" menampilkan kanvas dulu (panel tidak menutupinya); baris run yang sedang berjalan bertombol "Lihat live".
 - Tes: `test/unit/tokens.test.js` (6 kasus); tes agents menyesuaikan be = sonnet.

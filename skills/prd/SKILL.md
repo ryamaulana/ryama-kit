@@ -30,6 +30,16 @@ Tujuan: PRD yang (1) tidak punya celah yang nanti diisi tebakan saat ngoding, da
   6. Hak akses: siapa boleh melihat dan mengubah apa.
   7. Constraint: stack, tempat deploy, integrasi, budget, performa.
   8. Definisi selesai: acceptance criteria yang bisa dites.
+  9. Halaman pemasaran (hanya bila ada landing atau halaman publik untuk menarik pengguna/klien):
+     apa yang diinginkan dari pengunjung (daftar, berlangganan, beli, hubungi), model bayar
+     (per pemakaian, paket, langganan) dan apakah harga boleh tampil, bukti nyata yang boleh
+     ditampilkan (nama klien, angka, testimoni, uji coba gratis), apa yang dipakai calon
+     pembeli sekarang, dan keraguan terbesar mereka. Di Claude Code, jawaban ini juga mengisi
+     `.agents/product-marketing.md` lewat skill `product-marketing`.
+  10. Dashboard (hanya bila ada layar pemantauan): untuk tiap layar atau panel data (dan tiap
+      peran bila berbeda), satu pertanyaan yang ingin dijawab saat membukanya ("event mana yang
+      perlu saya urus?", "bagian backlog mana yang macet?"), keputusan yang diambil dari
+      jawabannya, dan keadaan yang dianggap masalah. "Tampilkan X" bukan pertanyaan.
 - Setiap jawaban yang membuka celah baru, gali lagi. Berhenti hanya kalau satu putaran
   penuh tidak memunculkan pertanyaan baru.
 - Jawaban "terserah" atau "belum tahu" dicatat sebagai Open Question, BUKAN diisi sendiri.
@@ -95,8 +105,15 @@ Edge case:
 - <kosong / gagal / duplikat / ...> -> <perilaku>
 
 ## 6. Layar
-| Layar | Tujuan | Fitur terkait | Wireframe |
-|---|---|---|---|
+| Layar | Jenis (tugas / dashboard / pemasaran) | Tujuan | Fitur terkait | Wireframe |
+|---|---|---|---|---|
+<!-- Pemasaran: tujuan = aksi yang diinginkan dari pengunjung. Dashboard: tujuan = pertanyaan utama peran itu. -->
+
+## 6b. Konteks bisnis (hanya bila ada halaman pemasaran)
+- Aksi yang diinginkan dari pengunjung:
+- Model bayar dan apakah harga tampil:
+- Bukti nyata yang boleh ditampilkan:
+- Konteks lengkap (Claude Code): `.agents/product-marketing.md`
 
 ## 7. Data model
 | Entitas | Field penting | Relasi | Catatan |

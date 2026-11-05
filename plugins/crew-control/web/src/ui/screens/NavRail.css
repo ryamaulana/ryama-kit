@@ -1,0 +1,42 @@
+/* Rel navigasi kiri (UX.md 4; mockup arah-b/layar-proyek.html .rail) */
+.nav-rail {
+  height: 100%; background: var(--sunk);
+  display: flex; flex-direction: column; align-items: center;
+  padding: var(--sp-12) 0;
+}
+.nav-rail__list {
+  list-style: none; margin: 0; padding: 0;
+  display: flex; flex-direction: column; align-items: center; gap: var(--sp-4);
+}
+.nav-rail__item {
+  position: relative; display: grid; place-items: center;
+  width: calc(var(--sp-32) + var(--sp-8)); height: calc(var(--sp-32) + var(--sp-8));
+  padding: 0; border: 0; border-radius: var(--radius-s); background: transparent;
+  color: var(--text-2); text-decoration: none; cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.nav-rail__item svg { width: calc(var(--sp-16) + var(--sp-4)); height: calc(var(--sp-16) + var(--sp-4)); }
+.nav-rail__item:hover { background: var(--line); color: var(--text); }
+.nav-rail__item[aria-current="page"],
+.nav-rail__settings[aria-expanded="true"] { background: var(--surface); color: var(--text); }
+
+/* Run baru: satu-satunya tombol tinta di rel (aksi utama global) */
+.nav-rail__item--new { background: var(--ink); color: var(--on-ink); margin-bottom: var(--sp-12); }
+.nav-rail__item--new:hover { background: var(--text-2); color: var(--on-ink); }
+
+/* Belum ada di fase ini: tetap terlihat, tidak bisa dibuka */
+.nav-rail__item--soon {
+  height: auto; padding: var(--sp-8) 0 var(--sp-4); gap: var(--sp-4);
+  color: var(--text-3); cursor: default;
+}
+.nav-rail__item--soon:hover { background: transparent; color: var(--text-3); }
+.nav-rail__soon { font-size: var(--fs-12); line-height: var(--lh-title); }
+
+.nav-rail__badge {
+  position: absolute; top: var(--sp-4); right: var(--sp-4);
+  min-width: var(--sp-16); height: var(--sp-16); padding: 0 var(--sp-4);
+  border-radius: var(--radius-round); background: var(--ask); color: var(--on-ink);
+  font-size: var(--fs-12); font-weight: var(--fw-bold); line-height: var(--sp-16); text-align: center;
+}
+
+.nav-rail__settings { margin-top: auto; }
