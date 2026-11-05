@@ -35,6 +35,7 @@ const harness = new Harness({
   store, hookBaseUrl: `http://127.0.0.1:${env.CREW_PORT}`, bin: env.CREW_CLAUDE_BIN, maxRuns: env.CREW_MAX_RUNS,
 });
 new FreeFlow({ harness });
+if (!store.getSetting('demo_label')) harness.restoreLimitPaused();
 const app = createApp({
   store, harness, workRoot: env.CREW_WORK_ROOT, maxRuns: env.CREW_MAX_RUNS, defaultModel: env.CREW_DEFAULT_MODEL,
   webDir: path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'web'),

@@ -66,10 +66,10 @@ export class Store {
   saveSession(s: SessionRow): void { q2.upsertSession(this.db, s); }
   getSession(id: string): SessionRow | undefined { return q2.selectSession(this.db, id); }
   listSessions(runId: string): SessionRow[] { return q2.selectSessions(this.db, runId); }
-  saveMilestone(m: MilestoneRow): void { q2.upsertMilestone(this.db, m); }
+  saveMilestone(m: MilestoneRow): void { q2.upsertMilestone(this.db, m); if (m.runId) this.emit(m.runId, 'milestone', m); }
   getMilestone(id: string): MilestoneRow | undefined { return q2.selectMilestone(this.db, id); }
   listMilestones(projectId: string): MilestoneRow[] { return q2.selectMilestones(this.db, projectId); }
-  saveBatch(b: BatchRow): void { q2.upsertBatch(this.db, b); }
+  saveBatch(b: BatchRow): void { q2.upsertBatch(this.db, b); this.emit(b.runId, 'batch', b); }
   listBatches(runId: string): BatchRow[] { return q2.selectBatches(this.db, runId); }
   saveItem(i: ItemRow): void { q2.upsertItem(this.db, i); }
   listItems(projectId: string): ItemRow[] { return q2.selectItems(this.db, projectId); }
@@ -105,6 +105,9 @@ export class Store {
     this.emit(runId, 'tool', t);
   }
 
+  /** Langkah alat satu agent, digabung per toolUseId (mulai + hasil), <= `limit` terakhir. */
+  agentSteps(runId: string, agent: string, limit = 200): ToolEvent[] { return q.selectAgentSteps(this.db, runId, agent, limit); }
+
   eventsAfter(runId: string, after: number, limit = 5000): RunEvent[] {
     return q.selectEventsAfter(this.db, runId, after, limit);
   }
@@ -127,8 +130,8 @@ export class Store {
     let n = 0;
     for (const run of this.listRuns(undefined, 100000)) {
       if (TERMINAL_STATUSES.includes(run.status)) continue;
-      // tanpa sesi berarti tak pernah punya proses; tidak ada yang terputus
-      if (['limit_paused', 'ready_review', 'needs_owner'].includes(run.status) && !run.sessionId) continue;
+      // limit_paused tidak punya proses (dijadwal ulang main.ts); tanpa sesi berarti tak pernah punya proses: tidak ada yang terputus
+      if (run.status === 'limit_paused' || (['ready_review', 'needs_owner'].includes(run.status) && !run.sessionId)) continue;
       for (const m of this.listMessages(run.id)) {
         if (m.state === 'pending' || m.state === 'queued') {
           this.saveMessage({ ...m, state: 'cancelled', answer: m.answer ?? { from: 'system', answers: null, decision: null, reason: null } });

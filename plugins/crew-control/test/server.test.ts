@@ -323,3 +323,124 @@ test('F5: dua jawaban bersamaan, satu menang (200) dan satu 409 already_answered
   await waitFor(() => s.events.some((e) => e.type === 'run' && e.data.status === 'done'), 8000, 'run selesai');
   assert.match(fs.readFileSync(path.join(s.dir, 'jawaban.txt'), 'utf8'), /^(Merah, Ungu|Biru)$/);
 });
+
+// ---- ch03: kirim pesan, lanjutkan run Selesai, tombol Lanjutkan (F5, F2) ----
+const doneRun = async (s: Awaited<ReturnType<typeof setup>>, prompt = '[ok]', project = s.dir, model = 'haiku') => {
+  const r = await s.api('POST', '/api/runs', { project, prompt, model });
+  await waitFor(() => ['done', 'failed', 'stopped'].includes(s.store.getRun(r.body.id)!.status), 10000, 'run berakhir');
+  return r.body.id as string;
+};
+
+test('pesan saat Jeda: antre ("queued"), terkirim saat lanjut dengan penanda', async (t) => {
+  const s = await setup(); t.after(s.close);
+  const id = (await s.api('POST', '/api/runs', { project: s.dir, prompt: '[jeda]' })).body.id;
+  await s.api('POST', `/api/runs/${id}/pause`, {});
+  const m = await s.api('POST', `/api/runs/${id}/messages`, { text: 'nanti ya' });
+  assert.equal(m.status, 201);
+  assert.equal(m.body.state, 'queued');
+  await s.api('POST', `/api/runs/${id}/resume`, {});
+  const after = s.store.listMessages(id).find((x) => x.id === m.body.id)!;
+  assert.equal(after.state, 'sent');
+  assert.equal(after.sentOnResume, true);
+  await s.api('POST', `/api/runs/${id}/stop`, {});
+});
+
+test('lanjut run Selesai: sesi dan model sama, tanpa run baru; teks tervalidasi', async (t) => {
+  const s = await setup(); t.after(s.close);
+  const id = await doneRun(s);
+  const sess = s.store.getRun(id)!.sessionId;
+  assert.equal((await s.api('POST', `/api/runs/${id}/messages`, { text: '' })).status, 400);
+  assert.equal((await s.api('POST', `/api/runs/${id}/messages`, { text: 'x'.repeat(8001) })).status, 400);
+  assert.equal((await s.api('POST', `/api/runs/${id}/messages`, { text: 'lagi', extra: 1 })).status, 400);
+  const r = await s.api('POST', `/api/runs/${id}/messages`, { text: 'lagi' });
+  assert.equal(r.status, 201);
+  assert.equal(s.store.getRun(id)!.status, 'running');
+  await waitFor(() => s.store.listMessages(id).some((m) => m.text === `lanjut:${sess}:lagi:haiku`), 8000, 'sesi sama + model sama');
+  await waitFor(() => s.store.getRun(id)!.status === 'done');
+  assert.equal(s.store.listRuns(s.dir).length, 1);
+});
+
+test('lanjut run Selesai ditolak: folder hilang / di luar folder kerja; run tetap Selesai', async (t) => {
+  const s = await setup(); t.after(s.close);
+  const id = await doneRun(s);
+  fs.rmSync(s.dir, { recursive: true });
+  const r = await s.api('POST', `/api/runs/${id}/messages`, { text: 'halo' });
+  assert.equal(r.status, 400);
+  assert.match(r.body.error.code, /^project_/);
+  assert.equal(s.store.getRun(id)!.status, 'done');
+  assert.equal(s.store.listMessages(id).some((m) => m.kind === 'owner'), false);
+  // di luar folder kerja (run lama menunjuk ke luar)
+  const out = tmpProject('luar');
+  const id2 = await doneRun(s, '[ok]', out.dir).catch(() => null);
+  assert.equal(id2, null); // proyek di luar folder kerja sudah ditolak saat mulai
+  const run = s.store.getRun(id)!;
+  s.store.saveRun({ ...run, project: out.dir });
+  const r2 = await s.api('POST', `/api/runs/${id}/messages`, { text: 'halo' });
+  assert.equal(r2.body.error.code, 'project_outside_root');
+  assert.equal(s.store.getRun(id)!.status, 'done');
+});
+
+test('pesan ditolak: capacity (dengan activeRunIds), run_read_only, 404', async (t) => {
+  const s = await setup(); t.after(s.close);
+  const id = await doneRun(s);
+  const other = tmpProject('lain');
+  fs.cpSync(other.dir, path.join(s.root, 'lain'), { recursive: true });
+  const busy = (await s.api('POST', '/api/runs', { project: path.join(s.root, 'lain'), prompt: '[jeda]' })).body.id;
+  const r = await s.api('POST', `/api/runs/${id}/messages`, { text: 'halo' });
+  assert.equal(r.status, 409);
+  assert.equal(r.body.error.code, 'capacity');
+  assert.deepEqual(r.body.error.details.activeRunIds, [busy]);
+  assert.equal(s.store.listMessages(id).some((m) => m.kind === 'owner'), false);
+  await s.api('POST', `/api/runs/${busy}/stop`, {});
+  await waitFor(() => s.store.getRun(busy)!.status === 'stopped', 10000);
+  const r2 = await s.api('POST', `/api/runs/${busy}/messages`, { text: 'halo' });
+  assert.equal(r2.body.error.code, 'run_read_only');
+  assert.equal((await s.api('POST', '/api/runs/tidak-ada/messages', { text: 'x' })).status, 404);
+});
+
+test('pesan ke run desktop ditolak desktop_no_prompt', async (t) => {
+  const s = await setup(); t.after(s.close);
+  const id = await doneRun(s);
+  s.store.saveRun({ ...s.store.getRun(id)!, origin: 'desktop' });
+  assert.equal((await s.api('POST', `/api/runs/${id}/messages`, { text: 'halo' })).body.error.code, 'desktop_no_prompt');
+  assert.equal((await s.api('POST', `/api/runs/${id}/continue`, {})).body.error.code, 'desktop_no_prompt');
+});
+
+test('Lanjutkan: run failed dilanjut di sesi terakhir (run sama); galat lain', async (t) => {
+  const s = await setup(); t.after(s.close);
+  const id = await doneRun(s, '[crash]');
+  assert.equal(s.store.getRun(id)!.status, 'failed');
+  const sess = s.store.getRun(id)!.sessionId;
+  assert.equal((await s.api('POST', `/api/runs/${id}/continue`, { x: 1 })).status, 400);
+  const r = await s.api('POST', `/api/runs/${id}/continue`, {});
+  assert.equal(r.status, 200, JSON.stringify(r.body));
+  assert.equal(r.body.id, id);
+  assert.equal(r.body.status, 'running');
+  await waitFor(() => s.store.listMessages(id).some((m) => m.text === `lanjut:${sess}:Lanjutkan pekerjaan sebelumnya.:haiku`), 8000, 'resume');
+  assert.ok(s.store.listMessages(id).some((m) => m.kind === 'system' && m.text === 'Dilanjutkan di sesi baru.'));
+  await waitFor(() => s.store.getRun(id)!.status === 'done');
+  assert.equal(s.store.listRuns(s.dir).length, 1);
+  // sudah Selesai: bukan untuk Lanjutkan
+  assert.equal((await s.api('POST', `/api/runs/${id}/continue`, {})).body.error.code, 'run_not_active');
+  assert.equal((await s.api('POST', '/api/runs/tidak-ada/continue', {})).status, 404);
+});
+
+test('Lanjutkan ditolak: bukan run terakhir, capacity, folder hilang', async (t) => {
+  const s = await setup(); t.after(s.close);
+  const a = await doneRun(s, '[crash]');
+  const b = await doneRun(s, '[ok]'); // run baru di proyek sama -> a bukan terakhir
+  assert.equal((await s.api('POST', `/api/runs/${a}/continue`, {})).body.error.code, 'run_read_only');
+  const c = await doneRun(s, '[crash]');
+  const lain = path.join(s.root, 'lain'); fs.mkdirSync(lain);
+  const busy = (await s.api('POST', '/api/runs', { project: lain, prompt: '[jeda]' })).body.id;
+  const cap = await s.api('POST', `/api/runs/${c}/continue`, {});
+  assert.equal(cap.body.error.code, 'capacity');
+  assert.deepEqual(cap.body.error.details.activeRunIds, [busy]);
+  assert.equal(s.store.getRun(c)!.status, 'failed');
+  await s.api('POST', `/api/runs/${busy}/stop`, {});
+  await waitFor(() => s.store.getRun(busy)!.status === 'stopped', 10000);
+  fs.rmSync(s.dir, { recursive: true });
+  assert.match((await s.api('POST', `/api/runs/${c}/continue`, {})).body.error.code, /^project_/);
+  assert.equal(s.store.getRun(c)!.status, 'failed');
+  assert.ok(b);
+});

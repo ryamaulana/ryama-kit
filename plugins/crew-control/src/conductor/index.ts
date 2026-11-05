@@ -23,8 +23,16 @@ export class Conductor {
   /** Pesan pemilik. Run done terakhir dilanjutkan (sesi sama) hanya bila proyek bebas dan kapasitas ada. */
   chat(runId: string, text: string): Message {
     const run = this.o.store.getRun(runId);
+    if (run?.origin === 'desktop') throw new HarnessError('desktop_no_prompt', 'Sesi desktop hanya bisa dihentikan dari sini.', 409);
     if (run && TERMINAL_STATUSES.includes(run.status) && this.o.harness.activeRunId(run.project) !== runId) this.admit(run.project, runId);
     return this.o.harness.sendMessage(runId, text);
+  }
+
+  /** Lanjutkan run failed/disconnected: admission sama dengan chat. */
+  continue(runId: string): Run {
+    const run = this.o.store.getRun(runId);
+    if (run && ['failed', 'disconnected'].includes(run.status) && run.origin !== 'desktop' && this.o.harness.activeRunId(run.project) !== runId) this.admit(run.project, runId);
+    return this.o.harness.continueFailed(runId);
   }
 
   /** Run aktif di proyek ini (proses hidup, atau tertahan di data: needs_owner/limit_paused/ready_review), atau null. */

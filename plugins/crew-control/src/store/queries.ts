@@ -1,6 +1,6 @@
 // Semua SQL Store di satu tempat; parameter selalu lewat placeholder.
 import type { DatabaseSync } from 'node:sqlite';
-import type { Message, MessageV2, Run, RunEvent } from '../contract/index.js';
+import type { Message, MessageV2, Run, RunEvent, ToolEvent } from '../contract/index.js';
 
 export function insertEvent(db: DatabaseSync, runId: string, type: string, at: string, data: unknown): number {
   const r = db.prepare('INSERT INTO events (run_id, type, at, json) VALUES (?, ?, ?, ?)').run(runId, type, at, JSON.stringify(data));
@@ -54,4 +54,16 @@ export function selectEventsAfter(db: DatabaseSync, runId: string, after: number
     .prepare('SELECT seq, run_id, type, at, json FROM events WHERE run_id = ? AND seq > ? ORDER BY seq LIMIT ?')
     .all(runId, after, limit) as { seq: number; run_id: string; type: RunEvent['type']; at: string; json: string }[];
   return rows.map((r) => ({ seq: r.seq, runId: r.run_id, at: r.at, type: r.type, data: JSON.parse(r.json) }) as RunEvent);
+}
+
+export function selectAgentSteps(db: DatabaseSync, runId: string, agent: string, limit: number): ToolEvent[] {
+  const rows = db.prepare("SELECT json FROM events WHERE run_id = ? AND type = 'tool' AND json_extract(json, '$.agent') = ? ORDER BY seq").all(runId, agent) as { json: string }[];
+  const merged = new Map<string, ToolEvent>();
+  rows.forEach((r, i) => {
+    const e: ToolEvent = JSON.parse(r.json);
+    const key = e.toolUseId ?? `#${i}`;
+    const prev = merged.get(key);
+    merged.set(key, prev ? { ...prev, ...e, input: e.input ?? prev.input } : e); // hasil menimpa status/result/at; input dari event mulai dipertahankan
+  });
+  return [...merged.values()].slice(-limit);
 }

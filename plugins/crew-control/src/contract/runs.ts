@@ -8,7 +8,7 @@ export const Run = z.object({
   projectName: z.string(),
   prompt: z.string(),
   model: z.string().nullable(),
-  origin: z.literal('dashboard'),
+  origin: z.enum(['dashboard', 'desktop']),
   status: RunStatus,
   reason: z.string().nullable(), // alasan gagal/berhenti, teks biasa
   lastLog: z.string().nullable(), // ekor stderr claude saat gagal, teks biasa

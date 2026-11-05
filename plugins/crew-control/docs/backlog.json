@@ -526,7 +526,7 @@
       "finishedAt": "2026-11-05T01:23:35.238Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "lp01-transkrip",
         "lp02-aktivitas-agent",
@@ -547,7 +547,11 @@
       "value": "high",
       "size": "m",
       "done": "GET /api/runs/:id (RunDetail dengan isLatest), GET /api/runs/:id/agents/:agent (definisi, model deklarasi vs terpakai, putaran, <=200 langkah, file, token, durasi, bukti), SSE menyertakan activity/batch/milestone; event baru tiba < 1 dtk (tes); agent belum jalan memuat definisinya; npm test hijau.",
-      "notes": "[Fase 1]"
+      "notes": "[Fase 1]",
+      "attempts": 1,
+      "startedAt": "2026-11-05T02:19:54.986Z",
+      "evidence": "test/run-detail-api.test.ts 4/4 lulus (SSE <1 dtk, 250 langkah dipotong 200); npm test 152 lulus 1 gagal (policy A3 Glob absolut, sudah gagal sebelum item ini); typecheck bersih",
+      "finishedAt": "2026-11-05T02:20:24.929Z"
     },
     {
       "status": "done",
@@ -709,7 +713,7 @@
       "finishedAt": "2026-11-05T00:51:48.358Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "lp05-ui-kerangka-proyek",
         "lp10-fe-lib-run",
@@ -735,10 +739,14 @@
       "value": "high",
       "size": "m",
       "done": "ProjectContainer di /proyek/:id (run aktif atau terakhir), useRunStream (SSE, sambung ulang, Last-Event-ID), bar atas dari data, kolom agent, Jeda/Lanjut tanpa konfirmasi dan Stop dengan konfirmasi (T8 = 2 langkah); memuat/galat/kosong; typecheck dan build bersih; tes lib.",
-      "notes": "[Fase 1] Bar atas tanpa milestone (Fase 2). Token total harus sama dengan jumlah semua sesi menurut transkrip."
+      "notes": "[Fase 1] Bar atas tanpa milestone (Fase 2). Token total harus sama dengan jumlah semua sesi menurut transkrip.",
+      "attempts": 1,
+      "startedAt": "2026-11-05T02:20:40.824Z",
+      "evidence": "3 file baru ada (ProjectContainer, useRunStream, projectScreen); test/web-lib.test.ts 20/20 lulus; npm run build sukses; typecheck bersih (laporan agent). Belum dicek di browser",
+      "finishedAt": "2026-11-05T02:22:08.261Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "lp06-ui-peta",
         "lp12a-fe-proyek-data"
@@ -759,10 +767,14 @@
       "value": "high",
       "size": "m",
       "done": "@xyflow/react memakai simpul/ruas dari ui/ dan railLayout; zoom, geser, pas layar; toggle grafik/timeline diingat per perangkat; peta tidak bergeser saat tab Detail dan pertanyaan masuk; klik simpul membuka Detail; screenshot 12 agent.",
-      "notes": "[Fase 1] Timeline tidak dibangun (PRD Q4)."
+      "notes": "[Fase 1] Timeline tidak dibangun (PRD Q4).",
+      "attempts": 1,
+      "startedAt": "2026-11-05T02:22:11.986Z",
+      "evidence": "screenshot docs/bukti/lp12b-fe-peta/peta-12-agent.png ada; Playwright 12 simpul/12 ruas, zoom/geser/pas layar OK (laporan agent); web-lib 22/22 lulus; typecheck bersih",
+      "finishedAt": "2026-11-05T02:31:59.477Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "lp07-ui-chat",
         "lp12a-fe-proyek-data"
@@ -783,7 +795,11 @@
       "value": "high",
       "size": "s",
       "done": "Klik agent (kolom kiri atau peta) membuka Detail dari /api/runs/:id/agents/:agent; lencana jumlah pada tab Chat bila pertanyaan baru masuk saat Detail terbuka; posisi zoom tetap; agent belum jalan menampilkan definisi.",
-      "notes": "[Fase 1]"
+      "notes": "[Fase 1]",
+      "attempts": 1,
+      "startedAt": "2026-11-05T02:32:03.080Z",
+      "evidence": "agentDetail.ts ada; web-lib 23/23 lulus; build sukses; typecheck bersih (laporan agent). Zoom tetap dan layar belum diuji di browser",
+      "finishedAt": "2026-11-05T02:33:07.234Z"
     },
     {
       "status": "todo",
@@ -842,7 +858,7 @@
       "finishedAt": "2026-11-05T01:34:46.159Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "ch01-pesan-jawab"
       ],
@@ -864,10 +880,14 @@
       "size": "m",
       "model": "opus",
       "notes": "[Fase 1] Menyentuh [SEC]; model opus.",
-      "done": "Policy.decide(tool, input, project, rules); always disimpan di permission_rules hanya untuk kategori tidak berisiko, kategori berisiko (hapus massal, push, reset, instal global, unduh-jalankan, perintah sistem) ditolak rule_not_allowed; pesan sistem \"Aturan disimpan\" dan DELETE /api/projects/:id/rules/:ruleId; tes tiap kategori dan pola path/awalan perintah; tes policy lama tetap lulus."
+      "done": "Policy.decide(tool, input, project, rules); always disimpan di permission_rules hanya untuk kategori tidak berisiko, kategori berisiko (hapus massal, push, reset, instal global, unduh-jalankan, perintah sistem) ditolak rule_not_allowed; pesan sistem \"Aturan disimpan\" dan DELETE /api/projects/:id/rules/:ruleId; tes tiap kategori dan pola path/awalan perintah; tes policy lama tetap lulus.",
+      "attempts": 1,
+      "startedAt": "2026-11-05T02:20:40.866Z",
+      "evidence": "npm test 188/188 lulus (termasuk policy A3 Glob absolut yang tadinya gagal, kini diperbaiki); typecheck bersih; test/rules.test.ts baru",
+      "finishedAt": "2026-11-05T02:25:27.554Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "ch01-pesan-jawab",
         "f14-ketat-resume"
@@ -891,7 +911,11 @@
       "value": "high",
       "size": "m",
       "done": "POST /api/runs/:id/messages: ke sesi aktif; queued saat Jeda (\"terkirim saat lanjut\"); run terakhir done dilanjutkan di sesi yang sama dengan model yang sama tanpa run baru; folder hilang/di luar folder kerja ditolak dan run tetap done; project_busy dan capacity; POST /api/runs/:id/continue untuk failed/disconnected; tes tiap galat; npm test hijau.",
-      "notes": "[Fase 1]"
+      "notes": "[Fase 1]",
+      "attempts": 1,
+      "startedAt": "2026-11-05T02:25:27.634Z",
+      "evidence": "npm test 195/195 lulus (7 tes ch03 baru di test/server.test.ts); tsc --noEmit bersih",
+      "finishedAt": "2026-11-05T02:27:41.101Z"
     },
     {
       "status": "todo",
@@ -977,7 +1001,7 @@
       "finishedAt": "2026-11-05T00:51:48.397Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "rb03b-free-flow",
         "ch03-kirim-lanjutkan"
@@ -998,10 +1022,14 @@
       "size": "m",
       "model": "opus",
       "notes": "[Fase 1] Konkurensi penahan hook dan penutupan proses.",
-      "done": "Setelah 50 mnt dijeda: interrupt, proses ditutup, sesi detached, run tetap paused; Lanjut memakai --resume dengan pesan antrean atau \"Lanjutkan.\"; Stop 10 dtk (tutup stdin 3 dtk, taskkill 6 dtk) tetap benar dan pekerjaan belum commit tetap; tes dengan fake-claude dan jam tiruan."
+      "done": "Setelah 50 mnt dijeda: interrupt, proses ditutup, sesi detached, run tetap paused; Lanjut memakai --resume dengan pesan antrean atau \"Lanjutkan.\"; Stop 10 dtk (tutup stdin 3 dtk, taskkill 6 dtk) tetap benar dan pekerjaan belum commit tetap; tes dengan fake-claude dan jam tiruan.",
+      "attempts": 1,
+      "startedAt": "2026-11-05T02:27:45.073Z",
+      "evidence": "npm test 202/202 lulus (6 tes baru test/jeda-panjang.test.ts, jam tiruan); tsc --noEmit bersih",
+      "finishedAt": "2026-11-05T02:31:32.845Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "ll01-parser-limit",
         "rb03b-free-flow",
@@ -1023,7 +1051,11 @@
       "value": "high",
       "size": "m",
       "done": "Run limit_paused + limitResetAt; jadwal reset+60 dtk, jam tak terbaca coba tiap 30 mnt; dijadwal ulang saat server mulai; batch yang sama diulang atau --resume di run yang sama; tes jam tiruan; npm test hijau. | main.ts memulihkan: proses hilang -> disconnected, tanpa sesi tetap utuh; Lanjutkan FreeFlow memakai --resume sesi terakhir dengan \"Lanjutkan pekerjaan sebelumnya.\" dan pesan sistem \"Dilanjutkan di sesi baru\"; tes restart.",
-      "notes": "[Fase 1] Gabungan ll03 dan ll04. Pemberitahuan limit di Fase 1 hanya judul tab dan bunyi."
+      "notes": "[Fase 1] Gabungan ll03 dan ll04. Pemberitahuan limit di Fase 1 hanya judul tab dan bunyi.",
+      "attempts": 1,
+      "startedAt": "2026-11-05T02:31:36.365Z",
+      "evidence": "npm test 208/208 lulus (4 tes baru test/limit-jadwal.test.ts, jam tiruan); tsc --noEmit bersih. Jalur BacklogFlow (Fase 2) tidak ada",
+      "finishedAt": "2026-11-05T02:35:17.941Z"
     },
     {
       "status": "done",
@@ -1055,7 +1087,7 @@
       "finishedAt": "2026-11-05T01:12:52.821Z"
     },
     {
-      "status": "todo",
+      "status": "done",
       "needs": [
         "rb05-ui-run-baru",
         "pb01-api-proyek",
@@ -1077,7 +1109,11 @@
       "value": "high",
       "size": "m",
       "done": "ProjectListContainer di /: polling /api/projects 3 dtk, aksi satu klik (butuh kamu -> Chat tergulir ke kartu tertua, siap review -> Review, gagal -> Lanjutkan + Lihat alasan), lencana NavRail; memuat/galat/kosong; typecheck dan build bersih.",
-      "notes": "[Fase 1] Status siap review (Fase 2) tidak ditampilkan."
+      "notes": "[Fase 1] Status siap review (Fase 2) tidak ditampilkan.",
+      "attempts": 1,
+      "startedAt": "2026-11-05T02:27:45.124Z",
+      "evidence": "3 file baru ada (ProjectListContainer, projectList, useProjects); test/web-lib.test.ts 22/22 lulus; build dan typecheck bersih (laporan agent). Belum dicek di browser",
+      "finishedAt": "2026-11-05T02:29:00.302Z"
     },
     {
       "status": "todo",
@@ -1884,7 +1920,7 @@
       "title": "Panduan menjalankan dan memasang (laptop, tailscale serve), tanpa tampilan HP",
       "type": "be",
       "agent": "be",
-      "status": "todo",
+      "status": "done",
       "needs": [
         "rb06-fe-run-baru",
         "f04-vite-boilerplate",
@@ -1901,7 +1937,11 @@
       "size": "s",
       "done": "README crew-control memuat langkah npm ci/build/start, .env, plugin, tailscale serve, CREW_TAILSCALE_USERS, matikan hook Flow Viewer; langkah diverifikasi dengan menjalankannya (keluaran singkat).",
       "slice": "jaringan",
-      "notes": "[Fase 1] Ditarik dari Fase 2 (keputusan pemilik 2026-11-05); tampilan HP khusus tetap Fase 2."
+      "notes": "[Fase 1] Ditarik dari Fase 2 (keputusan pemilik 2026-11-05); tampilan HP khusus tetap Fase 2.",
+      "attempts": 1,
+      "startedAt": "2026-11-05T01:54:24.666Z",
+      "evidence": "README.md ada; npm ci, build (1.77s), npm start (GET /app/ 200) dijalankan. tailscale serve dan claude plugin disable tidak bisa diverifikasi di sandbox (Tailscale tidak terpasang); perintah diambil dari ARCHITECTURE.md#13",
+      "finishedAt": "2026-11-05T01:55:33.004Z"
     },
     {
       "id": "cyber-fase2",
@@ -2588,7 +2628,150 @@
       "value": "mid",
       "size": "m",
       "notes": "asal: lp02-aktivitas-agent"
+    },
+    {
+      "id": "hp05-tindak-lanjut-plugin",
+      "title": "Tulis ulang langkah pasang plugin di README setelah plugin crew-control bisa dipasang (F10)",
+      "type": "be",
+      "agent": "be",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: hp05-dokumen-jalankan; plugin.json dan marketplace belum ada"
+    },
+    {
+      "id": "hp05-tindak-lanjut-vapid",
+      "title": "Tambah CREW_VAPID_SUBJECT di .env.example dan src/main.ts bersama fitur push",
+      "type": "be",
+      "agent": "be",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: hp05-dokumen-jalankan; ada di ARCHITECTURE/README tapi belum di kode"
+    },
+    {
+      "id": "hp05-tindak-lanjut-tailscale",
+      "title": "Verifikasi langkah tailscale serve dan disable flow-viewer di mesin pemilik",
+      "type": "be",
+      "agent": "be",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: hp05-dokumen-jalankan; tidak bisa diuji di sandbox"
+    },
+    {
+      "id": "lp12a-tindak-lanjut-topbar",
+      "title": "Topbar: fase untuk run Selesai, prop teks desktop, tampilan token persis; tipe Run perlu title dan teamId",
+      "type": "ui",
+      "agent": "ui-designer",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: lp12a-fe-proyek-data; status Selesai terpetakan ke Dihentikan; cast lokal untuk RunV2"
+    },
+    {
+      "id": "ch02-tindak-lanjut-fe",
+      "title": "Chat: tampilkan keputusan 'Selalu setujui' dengan benar, beri tahu UI kapan tombol boleh tampil, cegah aturan ganda",
+      "type": "fe",
+      "agent": "fe",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: ch02-izin-aturan; chatItems.ts:18 menampilkan always sebagai Ditolak; tidak ada dedupe aturan"
+    },
+    {
+      "id": "pb03-tindak-lanjut-kartu",
+      "title": "Layar proyek: baca ?kartu=tertua dan gulir Chat ke kartu tertua",
+      "type": "fe",
+      "agent": "fe",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: pb03-fe-daftar; tautan Jawab hanya membuka proyek; sentuh ProjectContainer.tsx setelah lp12b/ch04"
+    },
+    {
+      "id": "ll02-tindak-lanjut-sesi",
+      "title": "Tulis baris sessions (end=detached) dan tes Lanjut saat proses masih ditutup",
+      "type": "be",
+      "agent": "be",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: ll02-jeda-panjang; sesi terlepas hanya di memori; restart mengubah paused terlepas jadi disconnected; kasus Lanjut saat penutupan belum dites"
+    },
+    {
+      "id": "lp12b-tindak-lanjut-spa",
+      "title": "Server: layani fallback SPA untuk /app/proyek/:id (buka URL langsung memberi 404 JSON)",
+      "type": "be",
+      "agent": "be",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: lp12b-fe-peta"
+    },
+    {
+      "id": "lp12b-tindak-lanjut-uji-peta",
+      "title": "Uji peta tetap saat tab Detail dan pertanyaan masuk, setelah slot chat tersambung",
+      "type": "qa",
+      "agent": "qa",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: lp12b-fe-peta; tunggu ch04 dan lp12c"
+    },
+    {
+      "id": "lp12c-tindak-lanjut",
+      "title": "Detail agent: tampilkan jenis perubahan file dan daftar MCP (butuh keputusan kontrak); uji zoom tetap di browser",
+      "type": "fe",
+      "agent": "fe",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: lp12c-fe-detail-agent; AgentDetail.files hanya path, tidak ada MCP di kontrak; tak ada screenshot"
+    },
+    {
+      "id": "ll03-tindak-lanjut",
+      "title": "Limit: tambah limitResetAt di kontrak Run, blokir Lanjut manual sebelum reset, notifikasi judul tab dan bunyi (fe)",
+      "type": "be",
+      "agent": "be",
+      "status": "parked",
+      "needs": [],
+      "criteria": [],
+      "context": [],
+      "value": "mid",
+      "size": "m",
+      "notes": "asal: ll03-limit-jadwal; limitResetAt disimpan lewat cast; resume manual melanjutkan lebih awal"
     }
   ],
-  "updatedAt": "2026-11-05T01:34:46.160Z"
+  "updatedAt": "2026-11-05T02:35:17.994Z"
 }

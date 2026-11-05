@@ -38,6 +38,7 @@ async function tool(name, input) {
 async function run(prompt) {
     const cwd = process.cwd();
   if (sc === 'ok') { say('halo dari fake'); finish(); }
+  if (sc === 'limit') { say('mulai kerja'); finish({ is_error: true, result: 'Claude AI usage limit reached' + (process.env.FAKE_LIMIT_EPOCH ? '|' + process.env.FAKE_LIMIT_EPOCH : '') }); }
   if (sc === 'html') { say('<img src=x onerror=alert(1)> **tebal**'); finish(); }
   if (sc === 'tanya' || sc === 'cancel' || sc === 'tanya6') {
     const six = sc === 'tanya6'; // lebih dari 4 pilihan + multi-pilih
@@ -62,6 +63,11 @@ async function run(prompt) {
     if (r1.behavior === 'allow') fs.writeFileSync(path.join(cwd, 'dalam.txt'), '1');
     const r2 = await tool('Write', { file_path: '../luar.txt', content: '2' });
     say(r2.behavior === 'allow' ? 'izin:allow' : 'izin:deny:' + r2.message);
+    finish();
+  }
+  if (sc === 'izin-bahaya') {
+    const r = await tool('Bash', { command: 'rm -rf build' });
+    say(r.behavior === 'allow' ? 'bahaya:allow' : 'bahaya:deny');
     finish();
   }
   if (sc === 'pesan') {

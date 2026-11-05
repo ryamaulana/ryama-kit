@@ -20,3 +20,9 @@ export const TestsFile = z.object({
   passed: z.number().int(), failed: z.number().int(), skipped: z.number().int().optional(),
   command: z.string(), files: z.array(z.string()),
 }).strict();
+
+// Bukti tersimpan (tabel evidence) untuk tampilan; path relatif proyek.
+export const Evidence = z.object({
+  id: z.string(), itemKey: z.string(), kind: EvidenceKind, path: RelPath, caption: z.string(), size: z.number().int(), present: z.boolean(),
+}).strict();
+export type Evidence = z.infer<typeof Evidence>;

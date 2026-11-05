@@ -6,12 +6,12 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { TERMINAL_STATUSES, type AnswerRequest, type Message, type Question, type Run } from '../contract/index.js';
 import { decide } from '../policy.js';
-import { projectKey } from '../projects.js';
+import { projectId, projectKey } from '../projects.js';
 import { HarnessError, type HarnessOptions, type Live } from './session.js';
 import { QuestionsInput, clip, createActivityTracker, nowIso, summarize } from './stream.js';
 import type { RunMeta } from '../store/types.js';
 import { liveStatus } from '../conductor/status.js';
-import { LIMIT_DEFAULTS, killTree as killTreeOf, type ResolvedOptions } from './limits.js';
+import { LIMIT_DEFAULTS, detectLimit, killTree as killTreeOf, type ResolvedOptions } from './limits.js';
 
 export { HarnessError, type HarnessOptions } from './session.js';
 
@@ -23,6 +23,9 @@ export class Harness {
   private live = new Map<string, Live>();
   private byKey = new Map<string, Live>();
   private byToken = new Map<string, Live>();
+  /** Run dijeda > pauseDetachMs: proses sudah ditutup, run tetap paused dan memegang proyek; Lanjut = --resume. */
+  private detached = new Map<string, { run: Run; key: string; queued: Live['queued'] }>();
+  private limitTimers = new Map<string, unknown>(); // jadwal lanjut otomatis per run limit_paused
   private o: ResolvedOptions;
 
   constructor(opts: HarnessOptions) {
@@ -43,7 +46,10 @@ export class Harness {
   }
 
   /** Id run aktif di folder ini, atau null. */
-  activeRunId(projectDir: string): string | null { return this.byKey.get(projectKey(projectDir))?.run.id ?? null; }
+  activeRunId(projectDir: string): string | null {
+    const key = projectKey(projectDir);
+    return this.byKey.get(key)?.run.id ?? [...this.detached.values()].find((d) => d.key === key)?.run.id ?? null;
+  }
 
   /** Tutup stdin sesi: claude keluar dengan tenang setelah giliran selesai. */
   closeSession(runId: string): void {
@@ -57,10 +63,11 @@ export class Harness {
   /** Jalankan proses claude untuk run ini (baru, atau melanjutkan sesi `resumeId` setelah giliran sebelumnya selesai). */
   private launch(run: Run, firstText: string, resumeId: string | null, meta?: RunMeta): Run {
     const key = projectKey(run.project);
-    const busy = this.byKey.get(key);
-    if (busy) throw new HarnessError('project_busy', 'Proyek ini sudah punya run aktif.', 409, { activeRunId: busy.run.id });
-    if (this.live.size >= this.o.maxRuns) {
-      throw new HarnessError('capacity', `Sudah ada ${this.live.size} run aktif (batas ${this.o.maxRuns}).`, 409);
+    const busy = this.activeRunId(run.project);
+    if (busy) throw new HarnessError('project_busy', 'Proyek ini sudah punya run aktif.', 409, { activeRunId: busy });
+    const used = this.live.size + this.detached.size;
+    if (used >= this.o.maxRuns) {
+      throw new HarnessError('capacity', `Sudah ada ${used} run aktif (batas ${this.o.maxRuns}).`, 409);
     }
     // T2 (SPIKE): id sesi diberikan sendiri agar diketahui sebelum proses jalan; lanjut sesi tetap lewat --resume.
     if (!resumeId) run = { ...run, sessionId: crypto.randomUUID() };
@@ -141,7 +148,12 @@ export class Harness {
       this.reply(l, p.requestId, { behavior: 'allow', updatedInput: { ...(p.input as object), answers } });
       answered = { ...msg, state: 'answered', answer: { from: 'dashboard', answers, decision: null, reason: null }, answeredAt: nowIso() };
     } else {
-      if (body.decision === 'allow') this.reply(l, p.requestId, { behavior: 'allow', updatedInput: p.input });
+      // always: aturan dihitung ulang dari input asli; kategori berisiko tidak pernah disimpan.
+      const rule = body.decision === 'always' ? this.ruleFor(msg, p.input, l.run.project) : null;
+      if (body.decision === 'always' && !rule) {
+        throw new HarnessError('rule_not_allowed', 'Selalu setujui tidak tersedia untuk perintah berisiko. Pilih Izinkan atau Tolak.', 400);
+      }
+      if (body.decision !== 'deny') this.reply(l, p.requestId, { behavior: 'allow', updatedInput: p.input });
       else this.reply(l, p.requestId, { behavior: 'deny', message: body.reason ? `Ditolak pemilik: ${body.reason}` : 'Ditolak pemilik.' });
       answered = {
         ...msg, state: 'answered', answeredAt: nowIso(),
@@ -150,8 +162,30 @@ export class Harness {
     }
     l.pending.delete(messageId);
     this.store.saveMessage(answered);
+    if (body.kind === 'permission' && body.decision === 'always') this.saveRule(msg, p.input, l.run.project);
     this.sync(l);
     return answered;
+  }
+
+  private ruleFor(msg: Message, input: unknown, project: string) {
+    const d = decide(msg.tool?.name ?? '', input, project);
+    return d.action === 'ask' ? d.rule : null;
+  }
+
+  private saveRule(msg: Message, input: unknown, project: string) {
+    const rule = this.ruleFor(msg, input, project)!;
+    const id = crypto.randomUUID();
+    this.store.saveRule({ id, projectId: projectId(project), tool: rule.tool, pattern: rule.pattern, createdFrom: msg.id, createdAt: nowIso(), revokedAt: null });
+    this.store.saveMessage({ ...this.newMessage(msg.runId, 'system', `Aturan disimpan untuk proyek ini: ${describeRule(rule)}`), ref: { ruleId: id } });
+  }
+
+  /** Batalkan "Selalu setujui" (DELETE /api/projects/:id/rules/:ruleId); pesan sistem di run asal aturan. */
+  revokeRule(projectIdOf: string, ruleId: string): void {
+    const rule = this.store.listRules(projectIdOf).find((r) => r.id === ruleId);
+    if (!rule) throw new HarnessError('not_found', 'Aturan tidak ditemukan.', 404);
+    this.store.saveRule({ ...rule, revokedAt: nowIso() });
+    const origin = rule.createdFrom ? this.store.getMessage(rule.createdFrom) : undefined;
+    if (origin) this.store.saveMessage({ ...this.newMessage(origin.runId, 'system', `Aturan dibatalkan: ${describeRule(rule)}`), ref: { ruleId } });
   }
 
   /** Run aktif: pesan masuk ke sesi yang jalan. Run sudah berakhir tetapi punya sesi: lanjutkan sesi yang sama (chat berkelanjutan). */
@@ -165,17 +199,18 @@ export class Harness {
         if (old.sessionId) return this.continueRun(old, text);
       }
     }
-    const l = this.activeOrThrow(runId);
+    const d = this.detached.get(runId);
+    const l = d ? null : this.activeOrThrow(runId);
     const base = this.newMessage(runId, 'owner', text);
-    if (l.paused) {
+    if (d || l!.paused) {
       const m = { ...base, state: 'queued' as const };
-      l.queued.push({ messageId: m.id, text });
+      (d ?? l!).queued.push({ messageId: m.id, text });
       this.store.saveMessage(m);
       return m;
     }
     const m = { ...base, state: 'sent' as const };
     this.store.saveMessage(m);
-    this.sendUser(l, text);
+    this.sendUser(l!, text);
     return m;
   }
 
@@ -187,16 +222,48 @@ export class Harness {
     return m;
   }
 
+  /** Lanjutkan: run failed/disconnected terakhir proyek (dashboard) dilanjut di sesi terakhirnya, run yang sama. */
+  continueFailed(runId: string): Run {
+    const old = this.store.getRun(runId);
+    if (!old) throw new HarnessError('not_found', 'Run tidak ditemukan.', 404);
+    if (old.origin === 'desktop') throw new HarnessError('desktop_no_prompt', 'Sesi desktop hanya bisa dihentikan dari sini.', 409);
+    if (this.live.has(runId) || !['failed', 'disconnected'].includes(old.status) || !old.sessionId) {
+      throw new HarnessError('run_not_active', 'Hanya run gagal atau terputus yang bisa dilanjutkan.', 409);
+    }
+    const latest = this.store.listRuns(old.project, 1)[0];
+    if (latest && latest.id !== old.id) throw new HarnessError('run_read_only', 'Run ini bukan run terakhir proyek.', 409, { latestRunId: latest.id });
+    const run = this.launch({ ...old, status: 'running', reason: null, lastLog: null, pending: 0, endedAt: null, durationMs: null }, 'Lanjutkan pekerjaan sebelumnya.', old.sessionId);
+    this.store.saveMessage({ ...this.newMessage(runId, 'system', 'Dilanjutkan di sesi baru.'), state: 'sent' as const });
+    return run;
+  }
+
   pause(runId: string): Run {
+    const d = this.detached.get(runId);
+    if (d) return d.run;
     const l = this.activeOrThrow(runId);
+    if (!l.paused) l.detachTimer = this.o.clock.setTimeout(() => this.detach(l), this.o.pauseDetachMs);
     l.paused = true;
     this.sync(l);
     return l.run;
   }
 
+  /** Jeda terlalu lama: putus giliran dan tutup proses (urutan sama dengan Stop); finalize menyimpan run sebagai terlepas. */
+  private detach(l: Live) {
+    if (!l.paused || l.stopRequested || l.exited || l.detaching) return;
+    l.detaching = true;
+    l.waiters.splice(0).forEach((r) => r());
+    this.control(l, { subtype: 'interrupt' });
+    l.stopTimers.push(setTimeout(() => this.endStdin(l), this.o.stopSoftMs));
+    l.stopTimers.push(setTimeout(() => this.killTree(l), this.o.stopKillMs));
+  }
+
   resume(runId: string): Run {
+    const d = this.detached.get(runId);
+    if (d) return this.resumeDetached(runId, d);
     const l = this.activeOrThrow(runId);
+    if (l.detaching) { l.resumeAfterDetach = true; return l.run; }
     if (!l.paused) return l.run;
+    this.o.clock.clearTimeout(l.detachTimer);
     l.paused = false;
     for (const q of l.queued.splice(0)) {
       const m = this.store.getMessage(q.messageId);
@@ -208,7 +275,68 @@ export class Harness {
     return l.run;
   }
 
+  /** Run limit_paused memegang proyek tanpa proses (seperti sesi terlepas) dan dijadwalkan lanjut: reset + 60 dtk, atau tiap 30 mnt bila jam tak terbaca. */
+  private holdLimit(run: Run, key: string) {
+    this.detached.set(run.id, { run, key, queued: [] });
+    const at = (run as Run & { limitResetAt?: string | null }).limitResetAt;
+    const delay = at ? Math.max(0, Date.parse(at) + 60_000 - Date.now()) : 30 * 60_000;
+    this.limitTimers.set(run.id, this.o.clock.setTimeout(() => this.fireLimit(run.id), delay));
+  }
+
+  private fireLimit(runId: string) {
+    this.limitTimers.delete(runId);
+    const d = this.detached.get(runId);
+    if (!d || d.run.status !== 'limit_paused') return;
+    try {
+      this.resumeDetached(runId, { ...d, run: { ...d.run, reason: null, limitResetAt: null } as Run });
+    } catch { // kapasitas penuh dsb.: coba lagi 30 mnt
+      this.limitTimers.set(runId, this.o.clock.setTimeout(() => this.fireLimit(runId), 30 * 60_000));
+    }
+  }
+
+  /** Dipanggil main.ts saat server mulai: run limit_paused di data dijadwal ulang (berlaku untuk run ber-sesi). */
+  restoreLimitPaused(): number {
+    let n = 0;
+    for (const { run, origin } of this.store.listActiveRuns()) {
+      if (run.status !== 'limit_paused' || origin === 'desktop' || !run.sessionId || this.detached.has(run.id)) continue;
+      this.holdLimit(run, projectKey(run.project));
+      n++;
+    }
+    return n;
+  }
+
+  private clearLimitTimer(runId: string) {
+    this.o.clock.clearTimeout(this.limitTimers.get(runId));
+    this.limitTimers.delete(runId);
+  }
+
+  /** Sesi terlepas: proses baru `--resume` sesi yang sama; pesan antrean (digabung) atau "Lanjutkan.". */
+  private resumeDetached(runId: string, d: { run: Run; key: string; queued: Live['queued'] }): Run {
+    this.detached.delete(runId);
+    this.clearLimitTimer(runId);
+    const text = d.queued.length ? d.queued.map((q) => q.text).join('\n\n') : 'Lanjutkan.';
+    let run: Run;
+    try {
+      run = this.launch({ ...d.run, status: 'running' }, text, d.run.sessionId);
+    } catch (e) {
+      this.detached.set(runId, d);
+      throw e;
+    }
+    for (const q of d.queued) {
+      const m = this.store.getMessage(q.messageId);
+      if (m) this.store.saveMessage({ ...m, state: 'sent', sentOnResume: true });
+    }
+    return run;
+  }
+
   stop(runId: string): Run {
+    const d = this.detached.get(runId);
+    if (d) { // tanpa proses: berhenti seketika, pekerjaan di folder tidak disentuh
+      this.detached.delete(runId);
+      this.clearLimitTimer(runId);
+      for (const q of d.queued) this.cancelMessage(q.messageId);
+      return this.end(d.run, 'stopped', 'Dihentikan oleh pemilik.', null);
+    }
     const l = this.live.get(runId);
     if (!l) {
       const r = this.store.getRun(runId);
@@ -235,9 +363,10 @@ export class Harness {
     const l = this.byToken.get(token);
     if (!l) return {};
     if (body?.hook_event_name === 'PreToolUse') {
-      while (l.paused && !l.stopRequested && !l.exited) await new Promise<void>((r) => l.waiters.push(r));
-      if (l.stopRequested) {
-        return { hookSpecificOutput: { hookEventName: 'PreToolUse', permissionDecision: 'deny', permissionDecisionReason: 'Run dihentikan oleh pemilik.' } };
+      while (l.paused && !l.stopRequested && !l.exited && !l.detaching) await new Promise<void>((r) => l.waiters.push(r));
+      if (l.stopRequested || l.detaching) {
+        const why = l.stopRequested ? 'Run dihentikan oleh pemilik.' : 'Run dijeda lama; langkah ini diulang saat dilanjutkan.';
+        return { hookSpecificOutput: { hookEventName: 'PreToolUse', permissionDecision: 'deny', permissionDecisionReason: why } };
       }
     }
     return {};
@@ -245,6 +374,7 @@ export class Harness {
 
   /** Server berhenti: matikan semua proses; run ditandai Terputus (bukan Gagal). */
   shutdown(): void {
+    for (const id of [...this.limitTimers.keys()]) this.clearLimitTimer(id);
     for (const l of this.live.values()) { l.disconnect = true; this.killTree(l); }
   }
 
@@ -273,6 +403,7 @@ export class Harness {
   private onLine(l: Live, line: string) {
     let m: any;
     try { m = JSON.parse(line); } catch { return; }
+    l.limit ??= detectLimit(m) ?? undefined;
     const t = l.tracker.feed(m); // langkah alat (orkestrator + subagent) dan status agent
     for (const s of t.tools) this.store.addTool(l.run.id, s);
     for (const a of t.activities) this.store.saveActivity(a);
@@ -324,7 +455,7 @@ export class Harness {
       this.sync(l);
       return;
     }
-    const d = decide(tool, input, l.run.project);
+    const d = decide(tool, input, l.run.project, this.store.listRules(projectId(l.run.project)));
     if (d.action === 'allow') {
       this.reply(l, m.request_id, { behavior: 'allow', updatedInput: input });
       return;
@@ -359,7 +490,7 @@ export class Harness {
         cacheRead: u.cache_read_input_tokens ?? 0, cacheWrite: u.cache_creation_input_tokens ?? 0,
       },
     });
-    if (l.stopRequested) this.endStdin(l);
+    if (l.stopRequested || l.detaching) this.endStdin(l);
     else this.onTurn?.(l.run.id, 'result');
   }
 
@@ -382,13 +513,32 @@ export class Harness {
     for (const a of l.tracker.end()) this.store.saveActivity(a);
     this.onTurn?.(l.run.id, 'end');
     l.stopTimers.forEach(clearTimeout);
+    this.o.clock.clearTimeout(l.detachTimer);
     l.waiters.splice(0).forEach((r) => r());
     for (const mid of l.pending.keys()) this.cancelMessage(mid);
-    for (const q of l.queued) this.cancelMessage(q.messageId);
+    const detached = l.detaching && !l.stopRequested && !l.disconnect;
+    if (!detached) for (const q of l.queued) this.cancelMessage(q.messageId);
     l.pending.clear();
     this.live.delete(l.run.id);
     this.byKey.delete(l.key);
     this.byToken.delete(l.token);
+    if (detached) { // run tetap paused tanpa proses; antrean disimpan untuk --resume
+      this.patch(l, { status: 'paused', pending: 0 });
+      this.detached.set(l.run.id, { run: l.run, key: l.key, queued: l.queued });
+      if (l.resumeAfterDetach) this.resume(l.run.id);
+      return;
+    }
+
+    if (l.limit && !l.stopRequested && !l.disconnect && l.run.sessionId) { // tahan run; jalan lagi sendiri setelah reset
+      const at = l.limit.resetAt;
+      const when = at ? `Lanjut otomatis sekitar ${new Date(at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}.` : 'Jam reset tidak terbaca; dicoba lagi tiap 30 menit.';
+      const run = { ...l.run, status: 'limit_paused' as const, reason: `Batas pemakaian tercapai. ${when}`, pending: 0, endedAt: null, durationMs: null, limitResetAt: at } as Run;
+      l.run = run;
+      this.store.saveRun(run);
+      this.store.saveMessage(this.newMessage(run.id, 'system', run.reason!));
+      this.holdLimit(run, l.key);
+      return;
+    }
 
     const res = l.lastResult;
     let status: Run['status'];
@@ -400,13 +550,16 @@ export class Harness {
       status = 'failed';
       reason = res ? `Claude melaporkan galat (${res.subtype ?? 'error'}).` : `Proses claude berhenti tanpa hasil (kode ${code ?? 'tidak ada'}).`;
     }
+    l.run = this.end(l.run, status, reason, status === 'failed' && l.stderrTail ? clip(l.stderrTail.trim(), 2000) : null);
+  }
+
+  private end(run: Run, status: Run['status'], reason: string | null, lastLog: string | null): Run {
     const endedAt = nowIso();
-    this.patch(l, {
-      status, reason, pending: 0, endedAt, durationMs: Date.parse(endedAt) - Date.parse(l.run.startedAt),
-      lastLog: status === 'failed' && l.stderrTail ? clip(l.stderrTail.trim(), 2000) : null,
-    });
+    const next = { ...run, status, reason, pending: 0, endedAt, durationMs: Date.parse(endedAt) - Date.parse(run.startedAt), lastLog };
+    this.store.saveRun(next);
     const text = status === 'done' ? 'Run selesai.' : status === 'stopped' ? 'Run dihentikan.' : status === 'disconnected' ? 'Run terputus.' : `Run gagal. ${reason}`;
-    this.store.saveMessage(this.newMessage(l.run.id, 'system', text));
+    this.store.saveMessage(this.newMessage(run.id, 'system', text));
+    return next;
   }
 
   // ---------- util ----------
@@ -433,3 +586,5 @@ export class Harness {
     }
   }
 }
+
+const describeRule = (r: { tool: string; pattern: string | null }) => (r.pattern === null ? r.tool : `${r.tool} ${r.pattern}`);

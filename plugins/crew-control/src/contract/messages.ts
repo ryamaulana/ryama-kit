@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import { Run } from './runs.js';
 import { RunStatus, Tokens } from './common.js';
+import { TeamAgent } from './teams.js';
+import { Evidence } from './evidence.js';
 
 export const Question = z.object({
   question: z.string(),
@@ -28,12 +30,14 @@ export const Message = z.object({
     .object({
       from: z.enum(['dashboard', 'desktop', 'agent', 'system']), // desktop = dijawab di terminal Claude Code; agent = dibatalkan claude (mis. dijawab di tempat lain); system = run berakhir
       answers: z.record(z.string(), z.string()).nullable(), // question -> jawaban (multi-pilih digabung ", ")
-      decision: z.enum(['allow', 'deny']).nullable(),
+      decision: z.enum(['allow', 'deny', 'always']).nullable(), // always = izinkan + aturan proyek disimpan (F5)
       reason: z.string().nullable(),
     })
     .nullable(),
   answeredAt: z.string().nullable(),
   sentOnResume: z.boolean(), // owner: dikirim saat Lanjut ("terkirim saat lanjut")
+  // system "Aturan disimpan": ruleId untuk Batalkan (DELETE /api/projects/:id/rules/:ruleId).
+  ref: z.object({ itemId: z.string().optional(), milestoneId: z.string().optional(), batchId: z.string().optional(), ruleId: z.string().optional() }).strict().nullable().optional(),
 });
 export type Message = z.infer<typeof Message>;
 
@@ -62,6 +66,21 @@ export const AgentActivity = z.object({
 }).strict();
 export type AgentActivity = z.infer<typeof AgentActivity>;
 
+// Batch dan Milestone (ARCHITECTURE 5): event SSE `batch` dan `milestone`, dan bagian RunDetail.
+export const Batch = z.object({
+  id: z.string(), runId: z.string(), milestoneId: z.string().nullable(), number: z.number().int(), sessionId: z.string().nullable(),
+  itemKeys: z.array(z.string()), commitHash: z.string().nullable(), commitError: z.string().nullable(),
+  startedAt: z.string(), endedAt: z.string().nullable(), tokens: Tokens,
+}).strict();
+export type Batch = z.infer<typeof Batch>;
+export const Milestone = z.object({
+  id: z.string(), projectId: z.string(), backlogKey: z.string(), name: z.string(), kind: z.string(),
+  status: z.enum(['proposed', 'approved', 'running', 'ready_review', 'accepted']), reviewRound: z.number().int(),
+  runId: z.string().nullable(), initialItemCount: z.number().int(), proposedAt: z.string().nullable(), approvedAt: z.string().nullable(),
+  runningAt: z.string().nullable(), readyReviewAt: z.string().nullable(), acceptedAt: z.string().nullable(),
+}).strict();
+export type Milestone = z.infer<typeof Milestone>;
+
 // Setiap perubahan status run (dari, ke, alasan, waktu): sumber riwayat dan pemberitahuan. from null = run baru.
 export const RunStatusChange = z.object({ from: RunStatus.nullable(), to: RunStatus, reason: z.string().nullable(), at: z.string() }).strict();
 export type RunStatusChange = z.infer<typeof RunStatusChange>;
@@ -72,6 +91,8 @@ export const RunEvent = z.discriminatedUnion('type', [
   z.object({ seq: z.number().int(), runId: z.string(), at: z.string(), type: z.literal('tool'), data: ToolEvent }),
   z.object({ seq: z.number().int(), runId: z.string(), at: z.string(), type: z.literal('status'), data: RunStatusChange }),
   z.object({ seq: z.number().int(), runId: z.string(), at: z.string(), type: z.literal('activity'), data: AgentActivity }),
+  z.object({ seq: z.number().int(), runId: z.string(), at: z.string(), type: z.literal('batch'), data: Batch }),
+  z.object({ seq: z.number().int(), runId: z.string(), at: z.string(), type: z.literal('milestone'), data: Milestone }),
 ]);
 export type RunEvent = z.infer<typeof RunEvent>;
 
@@ -83,7 +104,7 @@ export const AnswerRequest = z.discriminatedUnion('kind', [
   }).strict(),
   z.object({
     kind: z.literal('permission'),
-    decision: z.enum(['allow', 'deny']),
+    decision: z.enum(['allow', 'deny', 'always']), // always: 400 rule_not_allowed untuk kategori berisiko
     reason: z.string().trim().max(1000).optional(), // alasan penolakan, diteruskan ke agent
   }).strict(),
 ]);
@@ -114,4 +135,14 @@ export type AnswerRequestV2 = z.infer<typeof AnswerRequestV2>;
 
 export const OwnerMessageRequest= z.object({ text: z.string().trim().min(1).max(8000) }).strict();
 
-export const RunDetail = z.object({ run: Run, messages: z.array(Message) });
+export const RunDetail = z.object({
+  run: Run, messages: z.array(Message), batches: z.array(Batch), milestone: Milestone.nullable(), activities: z.array(AgentActivity), isLatest: z.boolean(),
+});
+
+// GET /api/runs/:id/agents/:agent (6.2). definition null = agent di luar tim; modelUsed null = belum jalan.
+export const AgentDetail = z.object({
+  definition: TeamAgent.nullable(), inTeam: z.boolean(), modelDeclared: z.string().nullable(), modelUsed: z.string().nullable(),
+  rounds: z.array(AgentActivity), steps: z.array(ToolEvent).max(200), files: z.array(z.string()), tokens: Tokens, durationMs: z.number(),
+  evidence: z.array(Evidence),
+}).strict();
+export type AgentDetail = z.infer<typeof AgentDetail>;
