@@ -182,3 +182,73 @@ test('applyEvent: langkah alat mulai + hasil digabung per toolUseId, waktu mulai
   assert.equal(s.tools.length, 2);
   assert.deepEqual([s.tools[0].status, s.tools[0].result, s.tools[0].at], ['done', 'hai', '2026-11-05T00:00:01.000Z']);
 });
+
+import { phaseOf, topBarStats, agentRows, backoffMs } from '../web/src/app/lib/projectScreen.js';
+
+test('phaseOf: terminal = stopped, jeda = paused, ada pending = ask', () => {
+  assert.equal(phaseOf(any({ status: 'done', pending: 0 })), 'stopped');
+  assert.equal(phaseOf(any({ status: 'limit_paused', pending: 0 })), 'paused');
+  assert.equal(phaseOf(any({ status: 'running', pending: 2 })), 'ask');
+  assert.equal(phaseOf(any({ status: 'running', pending: 0 })), 'run');
+});
+
+test('topBarStats: token tanpa cache baca, durasi berjalan dari startedAt, milestone + batch', () => {
+  const r = any({ tokens: { input: 1000, output: 2000, cacheRead: 99999, cacheWrite: 500 }, durationMs: null, startedAt: '2026-01-01T00:00:00Z', pending: 1, milestone: { name: 'UI', done: 7, total: 24 }, batchNo: 2 });
+  const s = topBarStats(r, Date.parse('2026-01-01T00:02:05Z'));
+  assert.equal(s.tokens, '3,5 rb token');
+  assert.equal(s.duration, '2 mnt 5 dtk');
+  assert.equal(s.waiting, 1);
+  assert.deepEqual(s.milestone, { name: 'UI', done: 7, total: 24, batch: 'batch 2' });
+  assert.equal(topBarStats(any({ ...r, tokens: null, milestone: null }), 0).tokens, undefined);
+});
+
+test('agentRows: status tampilan, putaran > 1, item dari activity terbaru', () => {
+  const rows = agentRows(
+    [{ id: 'fe', name: 'fe', status: 'running', round: 3, inTeam: true }, { id: 'qa', name: 'qa', status: 'idle', round: 0, inTeam: true }],
+    any([{ agent: 'fe', startedAt: '1', itemKey: 'a' }, { agent: 'fe', startedAt: '2', itemKey: 'b' }]),
+  );
+  assert.deepEqual(rows[0], { id: 'fe', name: 'fe', status: 'run', statusText: 'Jalan · putaran 3', item: 'b' });
+  assert.equal(rows[1]!.status, 'ready');
+});
+
+test('backoffMs: naik dua kali lipat, maksimum 15 detik', () => {
+  assert.deepEqual([0, 1, 3, 10].map(backoffMs), [1000, 2000, 8000, 15000]);
+});
+
+import { parseMapView } from '../web/src/app/lib/mapView.js';
+test('parseMapView: bawaan grafik; timeline diingat; nilai asing = grafik', () => {
+  assert.equal(parseMapView(null), 'graph');
+  assert.equal(parseMapView('timeline'), 'timeline');
+  assert.equal(parseMapView('x'), 'graph');
+});
+
+import { groupBoard } from '../web/src/app/lib/projectList.js';
+test('daftar proyek: urutan perlu diurus, Lanjutkan hanya pada gagal, siap review tidak tampil (F11)', () => {
+  const base = { path: '/x', origin: 'dashboard', milestone: null, activeAgents: [], tokens: null, durationMs: null, limitResetAt: null, reason: null, oldestPendingAt: null, pending: 0 } as const;
+  const mk = (o: object) => ({ ...base, relPath: 'a', lastActivityAt: '2026-01-01T10:00:00Z', latestRunId: 'r', ...o }) as never;
+  const g = groupBoard({
+    totals: { needsOwner: 2, readyReview: 5, active: 1, maxRuns: 1, failed: 1, limitPaused: 0, earliestReset: null },
+    projects: [
+      mk({ id: 'bad', name: 'bad', status: 'failed', reason: 'x' }),
+      mk({ id: 'new', name: 'new', status: 'needs_owner', pending: 1, oldestPendingAt: '2026-01-02T00:00:00Z' }),
+      mk({ id: 'old', name: 'old', status: 'needs_owner', pending: 1, oldestPendingAt: '2026-01-01T00:00:00Z' }),
+      mk({ id: 'rr', name: 'rr', status: 'ready_review' }),
+    ],
+  });
+  assert.deepEqual(g.attention.map((r) => r.id), ['old', 'new', 'bad']);
+  assert.equal(g.attention[2]!.canResume, true);
+  assert.equal(g.attention[0]!.canResume, undefined);
+  assert.equal(g.totals.readyReview, 0);
+  assert.deepEqual(g.quiet.map((r) => r.id), ['rr']);
+});
+
+test('toDetailData: agent belum jalan menampilkan definisi, tanpa token dan durasi', async () => {
+  const { toDetailData } = await import('../web/src/app/lib/agentDetail.js');
+  const row = { id: 'fe', name: 'fe', status: 'ready' as const };
+  const base = { definition: { id: 'fe', name: 'fe', role: 'Frontend', model: 'sonnet', skills: ['tdd'], tools: ['Read'] }, inTeam: true, modelDeclared: 'sonnet', modelUsed: null, rounds: [], steps: [], files: [], tokens: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 }, durationMs: 0, evidence: [] };
+  const idle = toDetailData(row, any(base));
+  assert.equal(idle.role, 'Frontend'); assert.deepEqual(idle.skills, ['tdd']);
+  assert.equal(idle.modelUsed, undefined); assert.equal(idle.tokens, undefined);
+  const ran = toDetailData(row, any({ ...base, modelUsed: 'opus', durationMs: 65000, tokens: { input: 10, output: 5, cacheRead: 999, cacheWrite: 5 }, files: ['a.ts'] }));
+  assert.equal(ran.modelUsed, 'opus'); assert.equal(ran.tokens, '20'); assert.equal(ran.duration, '1 mnt 5 dtk'); assert.deepEqual(ran.files, [{ path: 'a.ts', change: 'ubah' }]);
+});

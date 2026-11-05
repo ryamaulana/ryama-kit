@@ -5,10 +5,11 @@ import fastifyStatic from '@fastify/static';
 import Fastify, { type FastifyInstance, type FastifyReply } from 'fastify';
 import { z, type ZodType } from 'zod';
 import {
-  AnswerRequest, ApiError, Config, EmptyBody, FolderListing, Message, MODELS, OwnerMessageRequest, Project, ProjectBoard, ProjectSettingsRequest,
+  AgentDetail, AnswerRequest, ApiError, Config, EmptyBody, FolderListing, Message, MODELS, OwnerMessageRequest, Project, ProjectBoard, ProjectSettingsRequest,
   ProjectsQuery, Run, RunDetail, RunList, SettingsRequest, SettingsResponse,
-  StartRunRequestV2, TERMINAL_STATUSES, Team, type ModelId,
+  StartRunRequestV2, TERMINAL_STATUSES, Team, type ModelId, type Tokens,
 } from './contract/index.js';
+import { Conductor } from './conductor/index.js';
 import { buildBoard, detail, findProject } from './board.js';
 import { createCatalog } from './teams/catalog.js';
 import { HarnessError, type Harness } from './harness/index.js';
@@ -62,6 +63,7 @@ function parse<T>(schema: ZodType<T>, data: unknown): T {
 export function createApp(o: AppOptions): FastifyInstance {
   const app = Fastify({ bodyLimit: 64 * 1024, logger: false });
   const { store, harness } = o;
+  const conductor = new Conductor({ store, harness, maxRuns: o.maxRuns });
   const catalog = createCatalog(o.teamDirs ?? []);
   harness.teamAgentsOf = (id) => catalog.get(id)?.agents.map((a) => a.id) ?? null;
 
@@ -169,6 +171,12 @@ export function createApp(o: AppOptions): FastifyInstance {
       teamId: body.teamId ?? p.teamId, batchSize: body.batchSize ?? p.batchSize });
     return ok(reply, Project, detail(store, o.workRoot, defBatch, projectOr404(p.id)));
   });
+  app.delete('/api/projects/:id/rules/:ruleId', async (req, reply) => {
+    const p = req.params as { id: string; ruleId: string };
+    parse(z.object({}).strict(), req.body);
+    harness.revokeRule(projectOr404(p.id).id, p.ruleId);
+    return reply.code(204).send();
+  });
   app.put('/api/settings', async (req, reply) => {
     const { batchSize } = parse(SettingsRequest, req.body);
     store.setSetting('batchSize', String(batchSize));
@@ -211,7 +219,31 @@ export function createApp(o: AppOptions): FastifyInstance {
 
   app.get('/api/runs/:id', async (req, reply) => {
     const run = runOr404((req.params as { id: string }).id);
-    return ok(reply, RunDetail, { run, messages: store.listMessages(run.id) });
+    const pid = projectId(run.project);
+    return ok(reply, RunDetail, {
+      run, messages: store.listMessages(run.id), batches: store.listBatches(run.id),
+      milestone: store.listMilestones(pid).filter((m) => m.runId === run.id).pop() ?? null,
+      activities: store.listActivities(run.id), isLatest: store.listRuns(run.project, 1)[0]?.id === run.id,
+    });
+  });
+
+  app.get('/api/runs/:id/agents/:agent', async (req, reply) => {
+    const p = req.params as { id: string; agent: string };
+    const run = runOr404(p.id);
+    const team = catalog.get(store.runTeamId(run.id) ?? '');
+    const definition = team?.agents.find((a) => a.id === p.agent) ?? null;
+    const rounds = store.listActivities(run.id).filter((a) => a.agent === p.agent);
+    if (!definition && !rounds.length && p.agent !== team?.orchestrator.id) throw new HarnessError('not_found', 'Agent tidak ditemukan di run ini.', 404);
+    const sum = (k: keyof Tokens) => rounds.reduce((n, a) => n + a.tokens[k], 0);
+    const keys = new Set(rounds.map((a) => a.itemKey).filter((k): k is string => !!k));
+    const pid = projectId(run.project);
+    return ok(reply, AgentDetail, {
+      definition, inTeam: !!definition, modelDeclared: definition?.model ?? null, modelUsed: rounds.at(-1)?.modelUsed ?? null, rounds,
+      steps: store.agentSteps(run.id, p.agent), files: [...new Set(rounds.flatMap((a) => a.files))],
+      tokens: { input: sum('input'), output: sum('output'), cacheRead: sum('cacheRead'), cacheWrite: sum('cacheWrite') },
+      durationMs: rounds.reduce((n, a) => n + (Date.parse(a.endedAt ?? new Date().toISOString()) - Date.parse(a.startedAt)), 0),
+      evidence: [...keys].flatMap((k) => store.listEvidence(pid, k)).map(({ id, itemKey, kind, path, caption, size, present }) => ({ id, itemKey, kind, path, caption, size, present })),
+    });
   });
 
   app.post('/api/runs/:id/messages', async (req, reply) => {
@@ -219,7 +251,14 @@ export function createApp(o: AppOptions): FastifyInstance {
     const id = (req.params as { id: string }).id;
     const run = store.getRun(id);
     if (run && TERMINAL_STATUSES.includes(run.status)) resolveProject(o.workRoot, run.project); // folder harus masih sah sebelum sesi dilanjutkan
-    return ok(reply, Message, harness.sendMessage(id, text), 201);
+    return ok(reply, Message, conductor.chat(id, text), 201);
+  });
+
+  app.post('/api/runs/:id/continue', async (req, reply) => {
+    parse(EmptyBody, req.body);
+    const run = runOr404((req.params as { id: string }).id);
+    if (['failed', 'disconnected'].includes(run.status)) resolveProject(o.workRoot, run.project);
+    return ok(reply, Run, conductor.continue(run.id));
   });
 
   app.post('/api/runs/:id/messages/:mid/answer', async (req, reply) => {

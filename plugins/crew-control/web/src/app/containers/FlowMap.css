@@ -1,0 +1,12 @@
+/* Hanya struktur kanvas peta; warna/ukuran stasiun dan ruas datang dari ui/project/ProjectView.css. */
+.pv-map__canvas .flowmap { width: 100%; height: 100%; min-height: 360px; position: relative; }
+.pv-map__canvas .flowmap svg { max-width: none; height: auto; width: auto; }
+.pv-map__canvas .flowmap .react-flow__edges svg { width: 100%; height: 100%; }
+.flowmap .react-flow { background: transparent; }
+.flowmap__node { display: block; position: relative; padding: 0; border: 0; background: none; font: inherit; cursor: pointer; }
+.flowmap__node svg { display: block; overflow: visible; }
+.flowmap__node--sel .lbl { text-decoration: underline; }
+.flowmap__tools { display: flex; gap: var(--sp-8); }
+.flowmap__views { display: flex; gap: var(--sp-8); margin: 0 0 var(--sp-8); }
+.flowmap__soon { color: var(--text-2); text-align: center; padding: var(--sp-24); }
+.flowmap .react-flow__node { pointer-events: all !important; } /* xyflow mematikannya untuk simpul yang tidak bisa dipilih/geser */

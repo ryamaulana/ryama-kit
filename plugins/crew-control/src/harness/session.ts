@@ -18,7 +18,11 @@ export interface HarnessOptions {
   maxRuns?: number;
   stopSoftMs?: number; // setelah Stop: tutup stdin bila claude belum berhenti
   stopKillMs?: number; // setelah Stop: matikan paksa seluruh pohon proses
+  pauseDetachMs?: number; // Jeda lebih lama dari ini: proses ditutup, sesi terlepas (bawaan 50 mnt, ARCHITECTURE 7.E)
+  clock?: Clock; // jam untuk batas Jeda; tes memakai jam tiruan
 }
+
+export interface Clock { setTimeout(fn: () => void, ms: number): unknown; clearTimeout(h: unknown): void }
 
 export interface Live {
   run: Run;
@@ -37,4 +41,8 @@ export interface Live {
   stderrTail: string;
   seq: number;
   tracker: ActivityTracker; // status agent live dari stream sesi ini
+  detachTimer?: unknown; // batas Jeda berjalan
+  detaching?: boolean; // Jeda terlalu lama: proses sedang ditutup, run tetap paused
+  limit?: { resetAt: string | null }; // galat batas pemakaian terlihat di stream: finalize menahan run (limit_paused)
+  resumeAfterDetach?: boolean; // Lanjut ditekan saat proses masih ditutup
 }

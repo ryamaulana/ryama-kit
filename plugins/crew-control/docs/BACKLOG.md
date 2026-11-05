@@ -2,34 +2,24 @@
 
 Diperbarui otomatis oleh backlog.js. Jangan edit tangan; ubah lewat perintah atau agent backlog.
 
-**Progres: 28/45 selesai** · berjalan 0 · siap 4 · menunggu 13 · gagal 0
+**Progres: 38/45 selesai** · berjalan 0 · siap 3 · menunggu 4 · gagal 0
 
 ## Siap dikerjakan
 
 | ID | Jenis | Judul | Agent | Nilai/Usaha |
 |---|---|---|---|---|
-| lp03-api-detail-run | be | API detail run dan detail agent | be | high/m |
-| ch02-izin-aturan | be | Izin otomatis A3 dan aturan "Selalu setujui" per proyek | be (opus) | high/m |
-| ch03-kirim-lanjutkan | be | Kirim pesan, lanjutkan run Selesai, tombol Lanjutkan | be | high/m |
-| hp05-dokumen-jalankan | be | Panduan menjalankan dan memasang (laptop, tailscale serve), tanpa tampilan HP | be | mid/s |
+| cyber-fase1 | sec | Tinjauan keamanan dan kode Fase 1 sekali: mulai run, Harness, izin, Chat, penyimpanan, penyajian teks agent, jaringan Tailscale | cyber | high/m |
+| ch04-fe-chat | fe | Chat: jawab pertanyaan, kotak ketik, baca saja | fe | high/m |
+| hapus-web-lama | fe | Hapus tampilan polos lama setelah rute React hidup | fe | high/s |
 
 ## Menunggu dependensi
 
 | ID | Judul | Menunggu |
 |---|---|---|
-| lp12a-fe-proyek-data | Layar proyek: data live, bar atas, kolom agent, Jeda/Lanjut/Stop | lp03-api-detail-run |
-| lp12b-fe-peta | Layar proyek: peta jalur dengan zoom, geser, pas layar (tanpa timeline) | lp12a-fe-proyek-data |
-| lp12c-fe-detail-agent | Layar proyek: tab Detail agent dan lencana Chat | lp12a-fe-proyek-data |
-| lp13-critic-proyek | Kritik layar proyek yang sudah tersambung data (peta, Chat, Detail agent) | lp12a-fe-proyek-data, lp12b-fe-peta, lp12c-fe-detail-agent, ch04-fe-chat, ch05-fe-izin |
-| ch04-fe-chat | Chat: jawab pertanyaan, kotak ketik, baca saja | ch03-kirim-lanjutkan, lp12a-fe-proyek-data |
-| ch05-fe-izin | Chat: kartu izin, serta tampilan Gagal/Terputus/Jeda limit dengan Lanjutkan | ch04-fe-chat, ch02-izin-aturan, lp12a-fe-proyek-data, ch03-kirim-lanjutkan, ll03-limit-jadwal |
-| ll02-jeda-panjang | Jeda lebih dari 50 menit dan lanjut dari sesi terlepas | ch03-kirim-lanjutkan |
-| ll03-limit-jadwal | Jeda limit: lanjut otomatis setelah reset, bertahan saat restart, pemulihan setelah restart | ch03-kirim-lanjutkan |
-| pb03-fe-daftar | Daftar proyek: polling 3 detik dan aksi satu klik | ch03-kirim-lanjutkan |
-| hapus-web-lama | Hapus tampilan polos lama setelah rute React hidup | pb03-fe-daftar, lp12a-fe-proyek-data |
-| nt01-fe-judul-bunyi | Judul tab dan bunyi untuk pertanyaan, izin, run gagal/terhenti, dan batas pemakaian (bisa dimatikan) | ch05-fe-izin, pb03-fe-daftar |
-| qa-fase1 | Uji Fase 1 sekali: Run baru, layar proyek, Chat, jeda limit, Daftar proyek, judul tab dan bunyi | lp12b-fe-peta, lp12c-fe-detail-agent, ch05-fe-izin, ll02-jeda-panjang, ll03-limit-jadwal, pb03-fe-daftar, nt01-fe-judul-bunyi, hapus-web-lama, lp13-critic-proyek |
-| cyber-fase1 | Tinjauan keamanan dan kode Fase 1 sekali: mulai run, Harness, izin, Chat, penyimpanan, penyajian teks agent, jaringan Tailscale | ch02-izin-aturan, ch03-kirim-lanjutkan, ll03-limit-jadwal, lp12c-fe-detail-agent, hp05-dokumen-jalankan |
+| lp13-critic-proyek | Kritik layar proyek yang sudah tersambung data (peta, Chat, Detail agent) | ch04-fe-chat, ch05-fe-izin |
+| ch05-fe-izin | Chat: kartu izin, serta tampilan Gagal/Terputus/Jeda limit dengan Lanjutkan | ch04-fe-chat |
+| nt01-fe-judul-bunyi | Judul tab dan bunyi untuk pertanyaan, izin, run gagal/terhenti, dan batas pemakaian (bisa dimatikan) | ch05-fe-izin |
+| qa-fase1 | Uji Fase 1 sekali: Run baru, layar proyek, Chat, jeda limit, Daftar proyek, judul tab dan bunyi | ch05-fe-izin, nt01-fe-judul-bunyi, hapus-web-lama, lp13-critic-proyek |
 
 ## Selesai
 
@@ -53,14 +43,24 @@ Diperbarui otomatis oleh backlog.js. Jangan edit tangan; ubah lewat perintah ata
 | rb06-fe-run-baru | Menyambung Run baru: ingat folder dan model, Enter untuk mulai | tes web-lib+web 21 lulus/0 gagal; tsc -p web bersih; build berhasil; belum diuji di browser dengan server nyata |
 | lp01-transkrip | Token dan model per pemanggilan agent dari transkrip | test/transcripts.test.ts 5 lulus/0 gagal; npm test penuh 131 lulus/1 gagal (A3 lama); src/transcripts.ts ada |
 | lp02-aktivitas-agent | Status agent live dari aliran sesi | npm test 147/148 lulus (1 gagal lama: policy A3), typecheck bersih, activity.test.ts 6/6 |
+| lp03-api-detail-run | API detail run dan detail agent | test/run-detail-api.test.ts 4/4 lulus (SSE <1 dtk, 250 langkah dipotong 200); npm test 152 lulus 1 gagal (policy A3 Glob absolut, sudah gagal sebelum item ini); typecheck bersih |
 | lp04-seed-demo | Data contoh berlabel dari run asli dan satu skenario tim fullstack (npm run seed) | npm test hasil lihat laporan; test/seed.test.ts; src/seed.ts; data/demo.db diabaikan git |
 | lp05-ui-kerangka-proyek | Layar proyek (1/3): bar atas, kolom agent, rangka tiga kolom | typecheck lulus; screenshot+audit 1440 di docs/bukti/lp05-ui-kerangka-proyek/{terang,gelap,stop,henti,enam}; audit terang/stop/henti/enam lulus, gelap 1 temuan sedang (batasan skrip token warna, dicek visual) |
 | lp06-ui-peta | Layar proyek (2/3): peta jalur, bangun dan audit dalam satu item | tsc -p web bersih; screenshot+audit 1440 di docs/bukti/lp06-ui-peta/{terang,gelap,kosong}, bukti.json; audit terang/kosong tanpa tinggi/sedang, gelap 1 sedang (batasan skrip token, a.skip) |
 | lp07-ui-chat | Layar proyek (3/3): panel Chat, kartu, dan tab Detail agent | tsc -p web bersih; screenshot+audit 375/1440 di docs/mockups/arah-b/screenshots/lp07/*; tinggi 0, token luar 0; ui-critic perlu menilai |
 | lp10-fe-lib-run | Logika tampilan murni: status run, format, susunan Chat, status agent, tata letak peta | web/src/app/lib/{runState,format,agentStates,chatItems,railLayout}.ts; web-lib.test.ts lulus |
+| lp12a-fe-proyek-data | Layar proyek: data live, bar atas, kolom agent, Jeda/Lanjut/Stop | 3 file baru ada (ProjectContainer, useRunStream, projectScreen); test/web-lib.test.ts 20/20 lulus; npm run build sukses; typecheck bersih (laporan agent). Belum dicek di browser |
+| lp12b-fe-peta | Layar proyek: peta jalur dengan zoom, geser, pas layar (tanpa timeline) | screenshot docs/bukti/lp12b-fe-peta/peta-12-agent.png ada; Playwright 12 simpul/12 ruas, zoom/geser/pas layar OK (laporan agent); web-lib 22/22 lulus; typecheck bersih |
+| lp12c-fe-detail-agent | Layar proyek: tab Detail agent dan lencana Chat | agentDetail.ts ada; web-lib 23/23 lulus; build sukses; typecheck bersih (laporan agent). Zoom tetap dan layar belum diuji di browser |
 | ch01-pesan-jawab | Pesan Chat dan jawaban: pertanyaan dan izin, jawaban pertama menang | npm test 148/149 lulus (1 gagal lama: policy A3), tsc bersih; tes F5 dua jawaban bersamaan 200+409. SSE <2 dtk belum diukur angka |
+| ch02-izin-aturan | Izin otomatis A3 dan aturan "Selalu setujui" per proyek | npm test 188/188 lulus (termasuk policy A3 Glob absolut yang tadinya gagal, kini diperbaiki); typecheck bersih; test/rules.test.ts baru |
+| ch03-kirim-lanjutkan | Kirim pesan, lanjutkan run Selesai, tombol Lanjutkan | npm test 195/195 lulus (7 tes ch03 baru di test/server.test.ts); tsc --noEmit bersih |
 | ll01-parser-limit | Fixture dan pengenalan batas pemakaian serta jam reset | src/harness/limits.ts + 12 fixture test/fixtures/limits; limits.test.ts lulus |
+| ll02-jeda-panjang | Jeda lebih dari 50 menit dan lanjut dari sesi terlepas | npm test 202/202 lulus (6 tes baru test/jeda-panjang.test.ts, jam tiruan); tsc --noEmit bersih |
+| ll03-limit-jadwal | Jeda limit: lanjut otomatis setelah reset, bertahan saat restart, pemulihan setelah restart | npm test 208/208 lulus (4 tes baru test/limit-jadwal.test.ts, jam tiruan); tsc --noEmit bersih. Jalur BacklogFlow (Fase 2) tidak ada |
 | pb01-api-proyek | API daftar proyek, detail proyek, pengaturan | test/projects-api.test.ts 2 tes lulus; npm test 134 lulus/1 gagal (A3 lama); src/board.ts ada |
+| pb03-fe-daftar | Daftar proyek: polling 3 detik dan aksi satu klik | 3 file baru ada (ProjectListContainer, projectList, useProjects); test/web-lib.test.ts 22/22 lulus; build dan typecheck bersih (laporan agent). Belum dicek di browser |
+| hp05-dokumen-jalankan | Panduan menjalankan dan memasang (laptop, tailscale serve), tanpa tampilan HP | README.md ada; npm ci, build (1.77s), npm start (GET /app/ 200) dijalankan. tailscale serve dan claude plugin disable tidak bisa diverifikasi di sandbox (Tailscale tidak terpasang); perintah diambil dari ARCHITECTURE.md#13 |
 | lp07a-keputusan-screenshot | Pemilik menilai screenshot layar proyek dengan data contoh sebelum disambung ke data | Keputusan pemilik: Setuju, sambungkan: tampilan 1440 disetujui; HP penuh di item berikutnya |
 | sc01-jaringan | Keamanan jaringan: pengguna Tailscale, CSP, batas laju | npm test 111 lulus/1 gagal (A3 lama); test/security.test.ts 6 tes; tsc bersih |
 
@@ -126,6 +126,17 @@ Diperbarui otomatis oleh backlog.js. Jangan edit tangan; ubah lewat perintah ata
 - bug-policy-a3-glob-absolut: Tes kebijakan A3 gagal: glob absolut mengembalikan allow, harusnya ask - asal: rb04-api-mulai-run; test/policy.test.ts A3, kemungkinan path gaya Windows di Linux; berkaitan keamanan izin
 - bug-run-baru-polish: Run baru: daftar terakhir dipakai tanpa label sedang jalan; layar memuat/galat polos; tautan Run baru dari Layar proyek belum dipasang - asal: rb06-fe-run-baru
 - lp02-sisa-tindak-lanjut: Tindak lanjut lp02: FreeFlow tunggu background_tasks kosong; tipe AgentActivity web pakai kontrak; endpoint batas 200 langkah - asal: lp02-aktivitas-agent
+- hp05-tindak-lanjut-plugin: Tulis ulang langkah pasang plugin di README setelah plugin crew-control bisa dipasang (F10) - asal: hp05-dokumen-jalankan; plugin.json dan marketplace belum ada
+- hp05-tindak-lanjut-vapid: Tambah CREW_VAPID_SUBJECT di .env.example dan src/main.ts bersama fitur push - asal: hp05-dokumen-jalankan; ada di ARCHITECTURE/README tapi belum di kode
+- hp05-tindak-lanjut-tailscale: Verifikasi langkah tailscale serve dan disable flow-viewer di mesin pemilik - asal: hp05-dokumen-jalankan; tidak bisa diuji di sandbox
+- lp12a-tindak-lanjut-topbar: Topbar: fase untuk run Selesai, prop teks desktop, tampilan token persis; tipe Run perlu title dan teamId - asal: lp12a-fe-proyek-data; status Selesai terpetakan ke Dihentikan; cast lokal untuk RunV2
+- ch02-tindak-lanjut-fe: Chat: tampilkan keputusan 'Selalu setujui' dengan benar, beri tahu UI kapan tombol boleh tampil, cegah aturan ganda - asal: ch02-izin-aturan; chatItems.ts:18 menampilkan always sebagai Ditolak; tidak ada dedupe aturan
+- pb03-tindak-lanjut-kartu: Layar proyek: baca ?kartu=tertua dan gulir Chat ke kartu tertua - asal: pb03-fe-daftar; tautan Jawab hanya membuka proyek; sentuh ProjectContainer.tsx setelah lp12b/ch04
+- ll02-tindak-lanjut-sesi: Tulis baris sessions (end=detached) dan tes Lanjut saat proses masih ditutup - asal: ll02-jeda-panjang; sesi terlepas hanya di memori; restart mengubah paused terlepas jadi disconnected; kasus Lanjut saat penutupan belum dites
+- lp12b-tindak-lanjut-spa: Server: layani fallback SPA untuk /app/proyek/:id (buka URL langsung memberi 404 JSON) - asal: lp12b-fe-peta
+- lp12b-tindak-lanjut-uji-peta: Uji peta tetap saat tab Detail dan pertanyaan masuk, setelah slot chat tersambung - asal: lp12b-fe-peta; tunggu ch04 dan lp12c
+- lp12c-tindak-lanjut: Detail agent: tampilkan jenis perubahan file dan daftar MCP (butuh keputusan kontrak); uji zoom tetap di browser - asal: lp12c-fe-detail-agent; AgentDetail.files hanya path, tidak ada MCP di kontrak; tak ada screenshot
+- ll03-tindak-lanjut: Limit: tambah limitResetAt di kontrak Run, blokir Lanjut manual sebelum reset, notifikasi judul tab dan bunyi (fe) - asal: ll03-limit-jadwal; limitResetAt disimpan lewat cast; resume manual melanjutkan lebih awal
 
 ## Ditolak
 
